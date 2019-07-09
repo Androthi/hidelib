@@ -1,0 +1,80 @@
+unit config_class_uns;
+	
+	#includeonce ("src/hidelib.hhf")
+	?@nodisplay := true;
+	?@noalignstack := true;
+	
+	const
+		bufesi	:text := "(type tBuffer [esi])";
+	endconst;
+	
+	
+	method tConfig.writeUns (sec:string; key:string; value:uns32);
+		var
+			buf	:pointer to tBuffer;
+		
+	begin writeUns;
+		USE (EAX, EDX);
+		mov( esi, buf );
+		if (this.findSectionA (sec)) then
+			if (this.findKeyA (key)) then
+				
+				// found, overwrite
+				this.getIndex();
+				mov (eax, ecx);
+				this.cursorToEOL();
+				this.setBlock (ecx, eax);
+				this.deleteBlock();
+				this.insertu32 (value);
+				
+			else
+				
+				// append key at end of list
+				this.cursorLeft (1);	// rewind the skip the '[' if present
+				this.rspan (hide.whiteSpaceCset);	// reverse to 1st non-space char
+				this.cursorRight (1);
+				buf.insert (nl, key, '=', value);
+			endif;
+			
+		else
+	
+			this.eof();
+			buf.insert (nl, '[', sec, ']', nl, key, '=', value, nl);
+			
+		endif;
+		ENDUSE;
+	end writeUns;
+
+
+	method tConfig.readUns (sec:string; key:string);
+		var
+			_s	:string;
+			found:dword;
+			
+	begin readUns;
+		if (this.findSectionA (sec)) then
+			if (this.findKeyA (key)) then
+				this.a_getLineFromCursor();
+				mov (eax, _s);
+				try
+					conv.strTou32(_s,0);
+					str.free (_s);
+					mov( true, found );
+				exception (ex.ConversionError);
+					str.free (_s);
+					xor (eax, eax);
+					mov( eax, found );
+				endtry;	
+				
+				if( found ) then
+					stc();
+				endif;
+			else
+				xor (eax, eax);
+			endif;	
+		else
+			xor (eax, eax);
+		endif;
+	end readUns;
+
+end config_class_uns;

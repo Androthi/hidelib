@@ -1,0 +1,92 @@
+unit config_class_int;
+	
+	#include ("src/hidelib.hhf")
+	?@nodisplay := true;
+	?@noalignstack := true;
+	
+	
+	method tConfig.writeInt (sec:string; key:string; value:int32);
+		var
+			buf	:pointer to tBuffer;
+		endvar;
+	begin writeInt;
+		USE (EAX, ECX);
+		if (this.findSectionA (sec)) then
+			if (this.findKeyA (key)) then
+				
+				// found, overwrite
+				this.getIndex();
+				mov (eax, ecx);
+				this.cursorToEOL();
+				this.setBlock (ecx, eax);
+				this.deleteBlock();
+				this.inserti32( value );
+				
+			else
+				
+				// append key at end of list
+				this.cursorLeft (1);	// rewind the skip the '[' if present
+				this.rspan (hide.whiteSpaceCset);	// reverse to 1st non-space char
+				this.cursorRight (1);
+				this.puts( nl );
+				this.puts( key );
+				this.putByte( '=' );
+				this.inserti32( value );
+				
+			endif;
+			
+		else
+	
+			this.eof();
+			this.puts( nl );
+			this.putByte( '[' );
+			this.puts( sec );
+			this.putByte( ']' );
+			this.puts( nl );
+			this.puts( key );
+			this.putByte( '=' );
+			this.inserti32( value );
+			this.puts( nl);
+			
+		endif;
+		ENDUSE;
+	end writeInt;
+
+	method tConfig.readInt (sec:string; key:string);
+		var
+			_s	:string;
+			found :dword;
+			
+	begin readInt;
+
+		if (this.findSectionA (sec)) then
+			if (this.findKeyA (key)) then
+			
+				this.a_getLineFromCursor();
+				mov (eax, _s);
+
+				try
+					conv.strToi32(_s,0);
+					str.free (_s);
+					mov( true, found );
+				exception (ex.ConversionError);
+					str.free (_s);
+					xor (eax, eax);
+					mov( eax, found );
+				endtry;	
+				
+				if( found ) then
+					stc();
+				endif;
+				
+			else
+				xor (eax, eax);
+				endif;	
+		else
+			xor (eax, eax);
+		endif;
+
+	end readInt;
+
+
+end config_class_int;

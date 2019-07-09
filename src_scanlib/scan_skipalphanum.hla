@@ -1,0 +1,39 @@
+unit scan_skipalphanumCset_unit;
+
+	#includeonce ("hide/hidefunc.hhf")
+	#includeonce ("chars.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	procedure scan.skipan; @noframe;
+	begin skipan;
+		
+		push( eax );
+		xor( eax, eax );
+		sub( 1, esi );
+		scan:
+			add( 1, esi );
+			mov( [esi], al );
+			test( al, al );
+			jz returnFalse;
+			bt( eax, hide.alphanumCset );
+			jc scan;
+			jmp returnTrue;
+		
+		returnFalse:
+			clc();
+			jmp done;
+		
+		returnTrue:
+			stc();
+			
+		done:
+			pop( eax );
+			ret();
+			
+	end skipan;
+
+
+
+end scan_skipalphanumCset_unit;

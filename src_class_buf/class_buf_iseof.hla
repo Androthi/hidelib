@@ -1,0 +1,24 @@
+unit class_buf_iseof_unit;
+
+	#includeonce ("hide/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	proc
+		
+		tBuf.isEof		:method { @noframe };
+		begin isEof;
+			mov (this.data, edi);
+			add (this.length, edi);
+			if( edi = this.cursor ) then
+				stc();
+			else
+				clc();
+			endif;
+			ret();
+
+		end isEof;
+
+
+end class_buf_iseof_unit;

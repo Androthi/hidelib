@@ -1,0 +1,64 @@
+unit memsizeunit;
+	
+	#include ("src/hidefunc.hhf")
+	#include ("excepts.hhf")
+	
+	procedure mem2.size (pMemory:dword);
+	
+		type
+		memRec:
+			/* **	WARNING ** READ ONLY !! * */
+			/* ** dont forget to sub @size(memRec) from 'size' */
+			record := -24;
+				prev		:dword;
+				next		:dword;
+				prevInList	:dword;
+				nextInList	:dword;
+				size		:dword;
+				refCount	:dword;
+			endrecord;
+		endtype;
+	
+	begin size;
+		
+		
+		if (pMemory = NULL) then
+			
+			raise (ex.AttemptToDerefNULL);
+			xor (eax, eax);
+			
+		else
+	
+			mov (pMemory, eax);
+			mov ( (type memRec[eax]).size, eax);
+			sub (@size (memRec), eax);
+			
+		endif;	
+	end size;
+	
+	procedure mem2.fillMem (var lpSource:dword; MemSize:dword; Value:byte );
+		@noframe; @nodisplay; @noalignstack;
+	
+	begin fillMem;
+		
+		push( ebp );
+		mov( esp, ebp );
+		push( eax );
+		push( edi );
+		push( ecx );
+		
+		cld();
+		mov( lpSource, edi );
+		mov( MemSize, ecx );
+		mov( Value, al );
+		rep.stosb();
+		
+		pop( ecx );
+		pop( edi );
+		pop( eax );
+		pop( ebp );
+		ret( _parms_ );
+			
+	end fillMem;
+
+end memsizeunit;

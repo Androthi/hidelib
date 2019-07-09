@@ -1,0 +1,26 @@
+unit class_buf_moveto_unit;
+
+	#includeonce ("hide/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	proc
+		tBuf.moveTo	:method( index:uns32 );
+		begin moveTo;
+			
+			mov( this.length, eax );
+			if( index > eax ) then
+				mov( eax, index );
+			endif;
+			
+			mov( this.data, eax );
+			add( index, eax );
+			mov( eax, this.cursor );
+			
+			this.isEof();
+			cmc();
+			
+		end moveTo;
+		
+end class_buf_moveto_unit;

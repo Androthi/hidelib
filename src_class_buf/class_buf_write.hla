@@ -1,0 +1,79 @@
+unit class_buf_write_unit;
+
+	#include ("src/hidelib.hhf")
+	#include ("strings.hhf")
+	#includeonce ("macros/macros.hhf")
+	#includeonce("stdout.hhf")
+	#includeonce("fileio.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	method tBuf.writeStdout; @noframe;
+	begin writeStdout;
+	USE (EAX, EBX, EDX);
+		mov (this.data, ebx);
+		mov (this.length, edx);
+		add (ebx, edx);
+		while (ebx < edx) do
+			mov ([ebx], al);
+			if (! al) then
+				stdout.putc (' ');
+			else
+				stdout.putc (al);		
+			endif;
+			add (1, ebx);
+		endwhile;
+	ENDUSE;
+	RET();
+	end writeStdout;
+
+	method tBuf.writeFile; @noframe;
+	begin writeFile;
+		USE( EAX, EBX );
+		if( this.fileName > 0 ) then
+			fileio.openNew( this.fileName );
+			mov( eax, ebx );
+			mov( this.data, eax );
+			fileio.write( ebx, [eax], this.length );
+			fileio.close( ebx );
+			stc();
+		else
+			clc();
+		endif;
+		ENDUSE;
+		ret();
+	end writeFile;
+
+
+	method tBuf.writeFileName (fileName:string);	
+	begin writeFileName;
+		USE (EAX);
+		if( this.fileName > 0 ) then
+			str.free( this.fileName );
+		endif;
+		str.a_cpy( fileName );
+		mov( eax, this.fileName );
+		this.writeFile();
+		ENDUSE;
+	end writeFileName;
+
+	method tBuf.writeString( s:string );
+	begin writeString;
+
+		mov( this.data, eax );
+		mov( eax, edi );
+		add( this.length, eax );
+		mov( 0, (type byte [eax]) );
+		mov( s, eax );
+		if (eax) then
+			str.cpyz( edi, s );
+		else
+			str.a_cpyz( edi );
+		endif;
+		
+	end writeString;
+
+
+
+end class_buf_write_unit;

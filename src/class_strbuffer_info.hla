@@ -1,0 +1,16 @@
+unit class_strbuffer_info_unit;
+
+	#includeonce ("src/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	method tStrBuffer.getCount; @noframe;
+		// returns number of zstrings in buffer in eax
+	begin getCount;
+		mov (this.count,eax);
+		ret();
+	end getCount;
+
+
+end class_strbuffer_info_unit;

@@ -1,0 +1,38 @@
+unit class_buf_right_unit;
+
+
+	#includeonce ("hide/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	proc
+		
+		tBuf.right	:method( n:uns32 );
+		begin right;
+			
+			mov( this.data, edi );
+			add( this.length, edi );
+			
+			mov( this.cursor, eax );
+			cmp( eax, edi );
+			je at_eof;
+			
+			add( n, eax );
+			if( eax > edi ) then
+				mov( edi, eax );
+			endif;
+			
+			mov (eax, this.cursor);
+			stc();
+			jmp done;
+			
+			at_eof:
+				clc();
+				
+			done:
+			
+		end right;
+
+
+end class_buf_right_unit;

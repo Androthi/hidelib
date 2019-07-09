@@ -1,0 +1,37 @@
+unit class_buffer_out;
+	
+			
+	#include ("src/hidelib.hhf")
+	#include ("strings.hhf")
+	#includeonce ("macros/macros.hhf")
+	#includeonce("stdout.hhf")
+	#includeonce("fileio.hhf")
+
+	?@noalignstack:= true;
+	?@nodisplay := true;
+
+	// depricated but maintained for legacy
+	// use parent class methods from now on
+
+	// output methods
+	method tBuffer.toOut; @noframe;
+	begin toOut;
+		this.writeStdout();
+		ret();
+	end toOut;
+
+	method tBuffer.toFile (fileName:string);
+		// write the data to file
+		// overwrites 'fileName'
+	begin toFile;
+		this.writeFileName( fileName );
+	end toFile;
+	
+	method tBuffer._toString (dst:string);
+		// converts data to HLA style string
+	begin _toString;
+		this.writeString( dst );
+	end _toString;
+
+	
+end class_buffer_out;

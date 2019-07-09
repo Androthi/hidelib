@@ -1,0 +1,88 @@
+unit scan_imatch_unit;
+
+	#includeonce ("hide/hidefunc.hhf")
+	#includeonce ("strings.hhf")
+	#includeonce ("excepts.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	procedure scan.imatch( toMatch:string ); @noframe;
+		
+		// matches string starting from ESI
+		// similar to str_icmp
+		
+		// returns
+		//		carry = set, true, EDI = pointer to just beyond matched word
+		//		carry = clear, false, EDI undefined
+		var
+			saveEAX	:dword;
+			saveEBX	:dword;
+			startESI:dword;
+		
+	begin imatch;
+		
+		push( ebp );
+		mov( esp, ebp );
+		sub( _vars_, esp );
+		
+		mov( eax, saveEAX );
+		mov( ebx, saveEBX );
+		mov( esi, startESI );
+	
+		mov( toMatch, edi );
+		test( edi, edi );
+		jz radn;
+		
+		sub( 1, esi );
+		sub( 1, edi );
+		cmpLoop:
+	        add( 1, esi );
+	        add( 1, edi );
+
+	        mov( [esi], al );
+	        mov( [edi], ah );
+	        
+	        test( al, al );
+	        jz returnFalse;
+	        
+	        test( ah, ah );
+	        jz returnTrue;
+	        
+	        cmp( al, ah );
+	        je cmpLoop;
+	        
+	        mov( ax, bx );
+	        and( $dfdf, bx );
+	        cmp( bl, 'A' );
+	        jb returnFalse;
+	        cmp( bl, 'Z' );
+	        ja returnFalse;
+	        cmp( bl, bh );
+	        je cmpLoop;
+	        
+		returnFalse:
+			clc();
+			jmp done;
+			
+		returnTrue:
+			// edi = pointer to just beyond end of found string
+			mov( esi, edi );
+			stc();	// carry = true
+			
+		done:
+			mov( startESI, esi );
+			mov( saveEAX, eax );
+			mov( saveEBX, ebx );
+			
+			mov( ebp, esp );
+			pop( ebp );
+			ret( _parms_ );
+		
+		radn:
+			raise( ex.AttemptToDerefNULL );
+		
+
+	end imatch;
+	
+end scan_imatch_unit;

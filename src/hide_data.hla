@@ -1,0 +1,24 @@
+unit hide_data_unit;
+
+	#includeonce ("hidefunc.hhf")
+	#includeonce ("strings.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	static
+		
+		hide.versionStr		:string := "1.71.78";
+	 	hide.versionNote	:string := "Built with HLA 2.14, stdlib v8";
+		
+		hide.whiteSpaceCset	:cset := { ' ', #$0A, #$0D, #$09 };
+		
+		hide.alphanumCset	:cset := { 'a'..'z', 'A'..'Z', '0'..'9' };
+		
+		hide.nlCset			:cset := { #$0A, #$0D };
+		
+		hide.binCset		:cset := { '0'..'9', 'a'..'f', 'A'..'F'};
+		
+		hide.strbuf			:str.strvar( 300 );
+	 	
+end hide_data_unit;

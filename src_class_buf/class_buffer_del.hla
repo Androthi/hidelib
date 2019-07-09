@@ -1,0 +1,77 @@
+unit class_buffer_del;
+
+	#include ("src/hidelib.hhf")
+	#include ("strings.hhf")
+	#includeonce ("macros/macros.hhf")
+
+	?@noalignstack:= true;
+	?@nodisplay := true;
+
+
+	method tBuffer.deleteCursor ( length:uns32);
+		
+		// depricated, use delete method
+		
+	begin deleteCursor;
+		push( eax );
+		this.delete( length );
+		pop( eax );
+	end deleteCursor;
+
+	method tBuffer.deleteIndex ( start_index:uns32; end_index:uns32);
+	begin deleteIndex;
+	USE (EAX, ECX);
+		mov (start_index, eax);
+		if ( eax < this.length) then
+			
+			if (eax < end_index) then
+				mov (end_index, ecx);
+				if (ecx > this.length) then
+					mov (this.length, ecx);
+				endif;
+				
+				sub (start_index, ecx);	// ecx = length
+				
+				// reposition cursor
+				mov (this.data, eax);
+				add (start_index, eax);
+				mov (eax, this.cursor);
+				this.adjustForDelete(ecx);
+	
+			endif;
+		endif;
+	ENDUSE;
+	end deleteIndex;
+
+	method tBuffer.deleteCursorToEOL; @noframe;
+	begin deleteCursorToEOL;
+	USE (EAX, ECX);
+		this.getIndex();
+		mov (eax, ecx);	// start index
+		this.cursorToEOL();
+		this.deleteIndex (ecx, eax);
+		mov (this.length, eax);
+		if (eax >1) then
+			this.getCursor();
+			mov ([eax], al);
+			if (al = $d) then
+				this.delete (2);
+			elseif (al = $a) then
+				this.delete (1);
+			endif;
+		endif;
+	ENDUSE;
+	ret();
+	end deleteCursorToEOL;
+
+
+	method tBuffer.deleteCursorLine; @noframe;
+	begin deleteCursorLine;
+	USE (EAX);
+		this.cursorToBOL();
+		this.deleteCursorToEOL();
+	ENDUSE;
+	ret();
+	end deleteCursorLine;
+	
+end class_buffer_del;

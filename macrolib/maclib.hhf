@@ -1,0 +1,533 @@
+#IF ( ! @defined ( maclib_hhf ) )
+	?maclib_hhf := true;
+
+	#includeonce("hla.hhf")
+	
+//=========================================================================\\
+// this pair of macros preserves all but the eax general purpose registers
+#macro push5;
+	push(edx);push(ecx);push(esi);push(edi);push(ebx);
+#endmacro
+
+#macro pop5;
+	pop(ebx);pop(edi);pop(esi);pop(ecx);pop(edx);
+#endmacro
+
+// this one for Windows programming.  Windows expects the
+// registers ebx, esi and edi to remain unchanged, especially
+// useful inside WndProc.
+#macro pushabi;
+	push(ebx);push(esi);push(edi);
+#endmacro
+
+#macro popabi;
+	pop(edi);pop(esi);pop(ebx);
+#endmacro
+
+// valid only in const section
+// typeConsts( prefix, type, 32bit registers[] );
+// generates text constants in the form
+// prefixreg32 :text := "(type type[reg32])";
+// for each register.
+// eg:
+// typeConsts( list, List, eax, ebx );
+// generates:
+// listeax :text := "(type List[eax])";
+// listebx :text := "(type List[ebx])";
+#macro typeConsts( _prefix_, _type_, _regs_[] ):i,j;
+	
+	#for( i in _regs_ )
+		#if( @reg32( i ) )
+			?j := @string(_prefix_) + string( i ) + " :text := ""(type " +
+					@string(_type_) + "[" + string( i ) + "])"";";
+			@text( j );
+		#else
+			#error( "syntax: typeConsts( _prefix_, _type_, _regs_[] )" )
+		#endif
+	#endfor
+#endmacro
+
+
+//=========================================================================\\
+// RGB macro - Combines three constants to form an RGB constant.
+// NOTE: this works for Win32 platform.  Linux expects
+// these to be REVERSED.
+#macro RGB( _red_, _green_, _blue_ );
+
+	( _red_ | ( _green_ << 8 ) | ( _blue_ << 16 ))
+
+#endmacro
+
+// alternate to HLA's mov (mem, mem) syntax.
+// this one is more visible as to what's happening
+// behind the scenes.
+// also idea by emil halim, adds ability to process
+// address operator of vars using '&' symbol
+#macro move (_arg1_, _arg2_);
+	pushd (_arg1_);
+	pop (_arg2_);
+#endmacro
+
+
+//=========================================================================\\
+// Use:
+// myStr :zstr ( "This is a zero terminated, dword aligned string" );
+// depricated -- hla now offers z string natively.
+#macro mzstr ( _strData_ );
+	byte; @nostorage;
+	byte _strData_,0;
+	align(4);
+#endmacro;
+
+
+//=========================================================================\\
+// These trio of macros allows for a simple way of generating constants
+// enumX ( n, args...) starts the constants at n
+// enum0 starts the constants at 0
+// enumBT starts with 0, and squares each time (for bits testing constants)
+
+#macro enumX( _startfrom_, _enums_[] ):_curEnumValue_, _curEnum_;
+ 
+    ?_curEnumValue_ := _startfrom_;
+    #for( _curEnum_ in _enums_ )
+         ?@text(_curEnum_) := _curEnumValue_;
+        ?_curEnumValue_ += 1;
+ 
+    #endfor
+#endmacro
+
+#macro enumBT( _enums_[] ):_curEnumValue_, _curEnum_;
+ 
+    ?_curEnumValue_ := 0; // Or whatever starting value you want
+    #for( _curEnum_ in _enums_ )
+ 
+        ?@text(_curEnum_) := @{_curEnumValue_};
+        ?_curEnumValue_ += 1;
+ 
+    #endfor
+#endmacro
+
+// depricating this, use enumX ( 0, ..., ... ) instead
+#macro enum0( _enums_[] ):_curEnumValue_, _curEnum_;
+ 
+    ?_curEnumValue_ := 0; // Or whatever starting value you want
+    #for( _curEnum_ in _enums_ )
+ 
+        ?@text(_curEnum_) := _curEnumValue_;
+        ?_curEnumValue_ += 1;
+ 
+    #endfor
+#endmacro
+
+//=========================================================================\\
+// placed anywhere in the code where instructions are legal.
+// USE ( < comma separated list of registers to preserve >);
+// ENDUSE;
+
+#macro	USE( _reglist_[] ):_pushes_, _pops_, _curreg_, _i_, _j_;
+	
+	?_i_ :uns32 := 0;
+	?_j_ :uns32 := 0;
+
+	#if(! @defined(_uselex_))
+		?_uselex_:=0;
+	#endif
+	
+	#if(! @defined(_usecur_))
+		?_usecur_:=0;
+	#endif
+
+	?_usecur_:=_usecur_ + 1;
+
+    #if( @elements( _reglist_ ) > 0 )    
+        #for( _i_ := 0 to @elements( _reglist_ ) - 1 )     
+            #if( !@reg32( _reglist_[_i_] ))
+                #error("Argument ", + _reglist_[_i_] + " must be a 32-bit register")
+            #endif
+            #for( _j_ := 0 to @elements( _reglist_ ) - 2 )
+                #if( _i_ <> _j_ )
+                    #if( _reglist_[_i_] = _reglist_[_j_] )
+  						#error("Argument " + _reglist_[_i_] + " appears twice in the 'USE' list")
+ 					#endif
+                #endif
+            #endfor
+        #endfor
+        ?_pushes_ := "";
+        ?_pops_ := "";
+        #for( _curreg_ in _reglist_ )
+            ?_pushes_ += "push(" + _curreg_ + ");";
+            ?_pops_ := "pop(" + _curreg_ + ");" + _pops_;
+        #endfor
+        
+        @text(_pushes_)
+        
+        #terminator ENDUSE;
+        	@text(_pops_)
+        	?_uselex_:=_uselex_ +1;
+    #endif
+#endmacro
+
+#macro USEINTEGRITY;
+	 #if(_uselex_ <> _usecur_)
+    	#error("Unmatched USE/ENDUSE statements");
+    #endif
+#endmacro
+
+#macro auxreg:
+    _theLetter_,
+    _strLetter_,
+    _dword_;
+
+    // Allow HLA-style declarations, using "auxreg" as a type.
+    // Begin by capturing the symbol immediately before the
+    // auxreg "type":
+
+    forward( _theLetter_ );
+
+/*
+    this macro will create an area of static memory
+    addressable like a register.  you supply
+    a letter f..z.  assuming the letter entered
+    is 'j', the macro creates:
+    a 4 byte memory addressable by the following
+    labels:
+
+    jl byte 0 (LO byte)
+    jh byte 1 (HO byte of LO word)
+    jx byte 0-1 (LO word)
+    ejx byte 0-3 (entire dword)
+    ej byte 2-3 (HO word)
+    ejh byte 3 (HO byte)
+    ejl byte 2 (LO byte of HO word) 
+
+    since HLA allows memory-memory moves using
+    the 'mov' instruction, it's perfectly legal
+    to write:
+    mov (jx, ej);
+
+
+    also possible to simulate a 64-bit "register"
+    but this might be a bit messy in determining symbol names!
+
+*/
+
+    // Convert _theLetter_ from text to string:
+
+	?_strLetter_ := @string( @text( @string( _theLetter_ )));
+
+    // start with some errorchecking
+
+    #if ( @length (_strLetter_) > 1 )
+        #error (":auxreg: please enter a single letter argument");
+    #elseif ( _strLetter_ <="Z")
+        #error (":auxreg: only lower case symbols supported");
+    #elseif ( _strLetter_ < "f")
+        #error (":auxreg: you entered a reserved letter, use f .. z");
+    #endif
+
+    // error checking complete, now create the auxiliary register
+
+    ?_dword_ := 'e' + _strLetter_ + 'x';
+    ?@text( _strLetter_ + 'x') :text := "(type word " + _dword_ + ")";
+    ?@text( 'e' + _strLetter_) :text := "(type word " + _dword_ + "[2])";
+    ?@text( _strLetter_ + 'l') :text := "(type byte " + _dword_ + ")";
+    ?@text( _strLetter_ + 'h') :text := "(type byte " + _dword_ + "[1])";
+	?@text( 'e' + _strLetter_ + 'h' )	:text := "(type byte " + _dword_ + "[3])";
+	?@text( 'e' + _strLetter_ + 'l' ):text := "(type byte " + _dword_ + "[2])";
+	
+    @text(_dword_) : dword
+
+#endmacro
+
+//=========================================================================\\
+// this macro discontinued and left only for backwards compatibility
+//
+// the extern macro simulates an HLA section for external symbols
+// use it:
+// extern ( comma delimite list of external labels using proper syntax );
+//
+//	syntax for static symbols, with optional " as ("external_symbol");
+//	label : type; [as ("external label");]
+//
+//  syntax for procedure symbols
+//	procedure label [(optional procedure args);] [as ("optional extern_label");] 
+//
+// if useing "as", the keyword must appear with a blank space before and after the " as "
+//
+// eg:
+//  extern (
+//		staticLabel	:dword;,
+//		procedure procedureLabel (parm:dword); );
+//
+	#macro extern (_parms_[]):
+			_i_, _entries_,
+			_label_, _type_, _colon_,
+			_as_, _asOff_, _extlabel_,
+			_static_, _proc_, _right_, _left_;
+		
+		?_entries_ := @elements (_parms_);
+		?_i_ := 0;
+		?_static_ := "static" + #13;
+		?_proc_ := "";
+		
+		#while ( _i_ < _entries_ )
+			
+			?_left_ 	:= _parms_[_i_];
+			?_right_	:= "";
+
+			
+			#if ( @matchiStr ( _left_, "procedure", _right_) )
+
+				?_as_   := @index (_parms_[_i_], 0, " as ");		
+				#if (_as_ = -1)
+			
+					?_label_	:= _parms_[_i_];
+					?_extlabel_ := " @external;";
+
+				#else
+			
+					?_extlabel_ := " @external " + @substr (_parms_[_i_], _as_ +3, 20000);
+					?_label_ 	:= @substr (_parms_[_i_], 0, _as_);
+			
+				#endif
+				
+				?_proc_ += _label_ + _extlabel_ + #13;
+				
+			#else
+				
+				?_colon_	:= @index (_parms_[_i_], 0, ':');
+				?_as_		:= @index (_parms_[_i_], _colon_, " as ");
+				
+				#if (_colon_ = -1)
+					#error ("extrn: syntax label : type [as ""externlabel""]");
+				#endif
+				
+				#if ( _as_ = -1 )
+					?_as_ := 20000;
+					?_asOff_ := 0;
+				#else
+					?_asOff_ := _as_ +3;
+					?_as_ := _as_ - _colon_ -1;
+				#endif
+				
+				#if ( _colon_ <> -1 )
+					
+					?_label_ := @substr (_parms_[_i_], 0, _colon_);
+					?_type_  := @substr (_parms_[_i_], _colon_ +1, _as_);
+					#if (_asOff_ > 0)
+						?_extlabel_ := " @external " + @substr (_parms_[_i_], _asOff_, 20000);
+					#else
+						?_extlabel_ := " @external;";
+					#endif
+					
+					?_static_ += _label_ + ":" + _type_ + " " + _extlabel_ + #13;
+				#endif
+
+			
+			#endif 
+			
+			?_i_ += 1;
+		#endwhile
+
+//		?_static_ += "endstatic;" + #13;
+		@text (_static_)
+		@text (_proc_)
+		
+	#endmacro
+
+//=========================================================================\\
+// simple if..else..endif macro, does not support elseif
+// Only good if you don't want all the 'if' statements with code-folding
+// (in the HIDE editor)
+
+#macro _if(expr): jmpfalse,ifdone,withelse;
+	?withelse:=false;
+	jf(expr) jmpfalse;
+
+	#keyword _else;
+	#if(withelse)
+		#error("multiple _else statements");
+	#else
+		?withelse:=true;
+		jmp ifdone;
+		jmpfalse:
+	#endif
+	
+
+	#terminator _endif;
+	#if(withelse)
+		ifdone:
+	#else
+		jmpfalse:
+	#endif
+#endmacro
+
+
+//=========================================================================\\
+//
+//	this strvar macro works similar to the one in the hlalib str.strvar
+//	except that it accepts an optional 2nd paramter to initialize the
+//	buffer with a string. 
+//
+namespace str;
+
+#macro strvar2( _args_[] ): _strVar_, _curlen_, _maxlen_;
+
+	#if( ( @section & hla.inStatic ) != hla.inStatic )
+
+		#error( "strvar is legal only in the STATIC section" )
+		string // To prevent cascading errors
+
+	#else
+		#if( @elements(_args_) > 2 )
+			
+			#error( "arguments : strvar( """string constant""" [,optional string length]" );
+			string // to prevent cascading errors
+			
+		#else
+			
+			#if( !@IsConst( @text(_args_[0]) ) | !hla.isNumber( @text(_args_[0]) ) )
+
+				#error( "Expected an integer constant string size" );
+				string // To prevent cascading errors
+			
+			#else
+			
+				?_maxlen_ := @text(_args_[0]);
+				?_curlen_ := 0;
+				
+				#if( @elements( _args_ ) = 2 )
+					?_curlen_ := @length( @text(_args_[1]) );
+				#endif
+				
+				// make sure max length isn't less than string constant
+				#if( _maxlen_ < _curlen_ )
+					?_maxlen_ := _curlen_;
+				#endif
+				
+				string := &_strVar_;
+				align(4);
+				
+				// set maximum length of string with optional second parameter
+				dword _maxlen_;
+					
+				// set current length of string
+				dword _curlen_;
+				
+				_strVar_:char; @nostorage;
+				
+				#if( _curlen_ > 0 ) 
+					byte @text(_args_[1]);
+				#endif
+	
+				// add the padding up to _maxlen_
+				?_maxlen_ := ((_maxlen_ - _curlen_) +4 ) & -4;
+				#while( _maxlen_ > 0 )
+					?_maxlen_ := _maxlen_ - 1;
+					byte $0;
+				#endwhile
+				
+			#endif
+			
+		#endif
+
+	#endif
+
+#endmacro
+end str;
+
+//=========================================================================\\
+
+
+// 	- assign
+//
+// 	Definition:
+//		Combines blocks of mov() statements.
+//
+//	Examples of usage:
+//			assign ( eax = 0 )
+//
+//			assign ( testvar = ecx = xor(eax, eax) returns eax,
+//					 ebx = 33)
+//
+//			assign ( ecx 	 = 323, eax =  34,  
+//					testvar =  77 )
+//
+// 			Set up the window class (wc) object:
+//			assign( wc.cbSize = @size( w.WNDCLASSEX ),
+//		    	wc.style = w.CS_HREDRAW | w.CS_VREDRAW,
+//		    	wc.lpfnWndProc = &WndProc,	
+//				wc.cbClsExtra = NULL,	     
+//				wc.cbWndExtra = NULL,
+//				wc.hbrBackground = w.COLOR_WINDOW+1,
+//				wc.lpszMenuName = ID_MAINMENU,
+//				wc.lpszClassName = ClassName,
+//			 
+//				// Get this process' handle:
+//				hInstance = w.GetModuleHandle( NULL ),
+//				wc.hInstance = eax,
+//				wc.hIcon   = w.LoadIcon( ID_ICONLOGO2, hInstance),
+//				wc.hIconSm = w.LoadIcon(hInstance, val ID_ICONSMALL ),
+//				wc.hCursor = w.LoadCursor( NULL, val w.IDC_ARROW )
+//			)
+#macro assign(_input_[]):
+	_pvalueArray_,
+	_curparm_,
+	_lastValue_,
+	_lastParamArray_,
+	_loop_,
+	_returnValue_,
+	_saveParam_;
+	
+	?_curparm_:uns32 := 0;
+	?_lastValue_:uns32 := 0;
+	?_returnValue_ := "";
+	#while( _curparm_ < @elements( _input_ ))
+		?_pvalueArray_ := @tokenize(_input_[_curparm_], 0, {'='}, {} );
+		?_lastValue_ := @elements( _pvalueArray_ ) - 1;
+		
+		// check for 'returns' in last parameter
+		?_lastParamArray_ := @tokenize(_pvalueArray_[_lastValue_], 0, {' '}, {});
+		?_loop_ := 0;
+		?_saveParam_ := "";
+		#while( _loop_ < @elements( _lastParamArray_ ))
+			#if (@lowercase(_lastParamArray_[_loop_], 0) = "returns")
+				?_loop_ := _loop_ + 1;
+				?_returnValue_ := _lastParamArray_[_loop_];
+			#else
+				?_saveParam_ := _saveParam_ + " " +  _lastParamArray_[_loop_];
+			#endif
+			?_loop_ := _loop_ + 1;
+		#endwhile
+		?_pvalueArray_[_lastValue_] := _saveParam_;
+		?_loop_ := 0;
+		#while( _loop_ < _lastValue_ )
+			// small optimization using the register for storing the value
+			#if( _loop_ = 0 & @isReg32(@text(_pvalueArray_[_loop_])) & _returnValue_ = "" )
+				mov(@text(_pvalueArray_[_lastValue_]), @text(_pvalueArray_[_loop_]) );
+				?_pvalueArray_[_lastValue_] := _pvalueArray_[_loop_];
+			#elseif( _loop_ = 0 & _returnValue_ <> "")
+				@text(_pvalueArray_[_lastValue_]);
+				?_pvalueArray_[_lastValue_] := _returnValue_;
+				mov(@text(_pvalueArray_[_lastValue_]), @text(_pvalueArray_[_loop_]) );
+			#else
+				mov(@text(_pvalueArray_[_lastValue_]), @text(_pvalueArray_[_loop_]) );
+			#endif
+			
+			?_loop_ := _loop_ + 1;
+		#endwhile
+		
+		?_curparm_ := _curparm_ + 1;
+	#endwhile
+#endmacro
+
+
+//=========================================================================\\
+
+
+//=========================================================================\\
+
+
+//=========================================================================\\
+
+#ENDIF

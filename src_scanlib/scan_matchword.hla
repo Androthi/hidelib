@@ -1,0 +1,51 @@
+unit scan_matchword_unit;
+
+	#includeonce ("hide/hidefunc.hhf")
+	#includeonce ("strings.hhf")
+	#includeonce ("excepts.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	procedure scan.matchWord( toMatch:string ); @noframe;
+		
+		// matches word starting from ESI
+		// uses delimiter set to definde end of word
+		// zero is always end of word
+		
+		// returns
+		//		carry = set, true, EDI = pointer to 1 char beyond matched word
+		//		carry = clear, false, EDI = undefined
+		
+	begin matchWord;
+		
+		push( ebp );
+		mov( esp, ebp );
+		push( eax );
+		
+		scan.match( toMatch );
+		jnc returnFalse;
+		
+		movzx( (type byte[edi]), eax );
+		test( al, al );
+		jz returnTrue;
+		
+		bt( eax, scan.token_cset );
+		jnc returnFalse;  
+		
+		returnTrue:
+			stc();
+			jmp done;
+		
+		returnFalse:
+			clc();
+			
+		done:
+			pop( eax );
+			pop( ebp );
+			ret( _parms_ );
+		
+	end matchWord;
+
+
+end scan_matchword_unit;

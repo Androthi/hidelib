@@ -1,0 +1,22 @@
+unit class_buf_putq_unit;
+
+	#includeonce ("hide/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	proc
+		
+		tBuf.putQword		:method( q:qword );
+		begin putQword;
+			this.adjustForInsert( 8 );
+			mov( this.cursor, eax );
+			add( 8, eax );
+			mov( (type dword q), edi );
+			mov( edi, [eax-8] );
+			mov( (type dword q[4]), edi );
+			mov( edi, [eax-4] );
+			mov( eax, this.cursor );
+		end putQword;
+
+end class_buf_putq_unit;

@@ -1,0 +1,208 @@
+unit config_class_hex;
+	
+	#include ("src/hidelib.hhf")
+	?@nodisplay := true;
+	?@noalignstack := true;
+#if (os.win32)
+	#includeonce ("hide/dbgwin.hhf")
+#endif
+
+	const
+		bufesi	:text := "(type tBuffer [esi])";
+	endconst;
+	
+	
+	method tConfig.writeHex (sec:string; key:string; value:dword);
+
+	begin writeHex;
+		USE( EAX, ECX );
+		if (this.findSectionA (sec)) then
+			if (this.findKeyA (key)) then
+				
+				// found, overwrite
+				this.getIndex();
+				mov (eax, ecx);
+				this.cursorToEOL();
+				this.setBlock (ecx, eax);
+				this.deleteBlock();
+				this.insertd( value );
+				
+			else
+				
+				// append key at end of list
+				this.cursorLeft (1);	// rewind the skip the '[' if present
+				this.rspan (hide.whiteSpaceCset);	// reverse to 1st non-space char
+				this.cursorRight (1);
+				this.puts( nl );
+				this.puts( key );
+				this.putByte( '=' );
+				this.insertd( value );
+				
+			endif;
+			
+		else
+	
+			this.eof();
+			this.puts( nl );
+			this.putByte( '[' );
+			this.puts( sec );
+			this.putByte( ']' );
+			this.puts( nl );
+			this.puts( key );
+			this.putByte( '=' );
+			this.insertd( value );
+			this.puts( nl );
+			
+		endif;
+		ENDUSE;
+	end writeHex;
+
+
+	method tConfig.readHex (sec:string; key:string);
+		var
+			_s	:string;
+			found:dword;
+		
+	begin readHex;
+		if (this.findSectionA (sec)) then
+			if (this.findKeyA (key)) then
+				
+				this.a_getLineFromCursor();
+				mov (eax, _s);
+				
+				try
+					conv.strToh32(_s,0);
+					str.free (_s);
+					mov( true, found );
+					
+				exception (ex.ConversionError);
+				
+					str.free (_s);
+					xor (eax, eax);
+					mov( eax, found );
+				
+				endtry;
+			else
+				
+				xor (eax, eax);
+			
+			endif;
+			
+			if( found ) then
+				stc();
+			endif;
+		else
+			xor (eax, eax);
+		endif;
+
+	end readHex;
+
+	method tConfig.writeBin (sec:string; key:string; var addr:dword; size:uns32);
+		var
+			buf	:pointer to tBuffer;
+
+		procedure writeIt; @noframe;
+		begin writeIt;
+			xor (ecx, ecx);
+			mov (ebp::addr, edx);
+			while (ecx < ebp::size) do
+				
+				mov ([edx], al);
+				this.insertb (al);
+				inc (ecx);
+				inc (edx);
+			endwhile;
+			ret();
+		end writeIt;
+
+	begin writeBin;
+		USE ( EAX, EDX, ECX);
+		if (this.findSectionA (sec)) then
+			if (this.findKeyA (key)) then
+				
+				// found, overwrite
+				this.getIndex();
+				mov (eax, ecx);
+				this.cursorToEOL();
+				this.setBlock (ecx, eax);
+				this.deleteBlock();
+				writeIt();
+				
+			else
+				
+				// append key at end of list
+				this.cursorLeft (1);	// rewind the skip the '[' if present
+				this.rspan (hide.whiteSpaceCset);	// reverse to 1st non-space char
+				this.nextLine();
+				this.puts( key );
+				this.putByte( '=' );
+				writeIt();
+				this.puts (nl);
+			endif;
+			
+		else
+	
+			this.eof();
+			this.puts( nl "[");
+			this.puts( sec );
+			this.puts( "]" nl );
+			this.puts( key );
+			this.putByte( '=' );
+			writeIt();
+			this.puts (nl);
+		endif;
+	ENDUSE;
+	end writeBin;
+
+
+	method tConfig.readBin (sec:string; key:string; var addr:dword; size:uns32);
+
+	begin readBin;
+		USE (EBX, ECX, EDX);
+		if (this.findSectionA (sec)) then
+			if (this.findKeyA (key)) then
+			
+				this.getCursor();
+				mov (eax, edx);
+				str.cpy ("00", hide.strbuf);
+				mov (hide.strbuf, ebx);
+				xor (ecx, ecx);
+				mov (addr, edi);
+				
+				while (ecx < size) do
+					mov ([edx], ax);
+					if (! al) then
+						xor (eax, eax);
+						break;
+					elseif (al in {' ', #$9 }) then
+						inc (edx);
+						continue;
+					elseif (al in { #$a, #$d }) then
+						// ran out of data, short record, return -1
+						or (-1, eax);
+						break;
+						
+					elseif (al in hide.binCset && ah in hide.binCset) then
+						mov (ax, (type word[ebx]));
+						conv.strToh8( (type string ebx),0);
+						mov(al,[edi]);
+						inc (edi);
+						add (2, edx);
+						stc();
+					else
+						xor (eax, eax);
+						break;
+					endif;
+				endwhile;
+				
+			else
+				xor (eax, eax);
+			endif;	
+		else
+			xor (eax, eax);
+		endif;
+	ENDUSE;
+	end readBin;
+
+
+end config_class_hex;

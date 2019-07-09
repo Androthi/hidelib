@@ -1,0 +1,53 @@
+unit class_buf_ieq_unit;
+
+
+	#includeonce ("hide/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	proc
+		
+		tBuf.ieq		:method (var buf:var);
+		
+			// returns carry set if equal
+			// carry clear if not equal
+		
+		begin ieq;
+			USE( EBX, EDX );	
+			mov(this.data, ebx );
+			mov( buf, edi );
+			mov( (type tBufferBase[edi]).data, edx);
+			cmp( ebx, edx );
+			je retTrue;
+	
+			mov( this.length, eax );
+			cmp( eax, ( type tBufferBase[edi]).length );
+			jne retFalse;
+	
+			// zero terminate both buffers.
+			mov( (type tBufferBase[edi]).data, eax);
+			push (eax);
+			add( (type tBufferBase[edi]).length, eax );
+			mov( 0, (type byte[eax]) );
+			
+			mov( this.data, eax );
+			add( this.length, eax );
+			mov( 0, (type byte[eax]) );
+			
+			pop( eax );
+			hide.stricmp ( this.data, eax);
+			jne retFalse;
+			
+			retTrue:
+				stc();
+				jmp done;
+				
+			retFalse:
+				clc();
+			
+			done:
+			ENDUSE;	
+		end ieq;
+
+end class_buf_ieq_unit;

@@ -1,0 +1,26 @@
+[Win32]
+
+For building the library under Windows, the project is set up
+as a HIDE 1.23+ project.
+ 
+[linux]
+
+For building with linux, change directory to the hidelib folder
+and use the bash 'source' command to launch
+the script 'linuxbuild_hla'.
+
+Final output will be 'hidelib.a'
+
+------------------------------------------
+
+[For Win32 and linux]
+
+If you have HIDE, the headers are already located in the
+hlalib/hide folder
+
+To include all the headers, use:
+
+#include ("hide/hidelib.hhf")
+
+Otherwise, all the headers may also be found in the src folder.
+Copy these to your hlainc path.

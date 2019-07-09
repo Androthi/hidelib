@@ -1,0 +1,130 @@
+unit class_baselist_utils_unit;
+
+	#includeonce ("src/hidelib.hhf")
+	#includeonce("memory.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	const
+		listebx	:text := "(type baseNode_t[ebx])";
+		listeax	:text := "(type baseNode_t[eax])";
+		listecx	:text := "(type baseNode_t[ecx])";		
+
+	method tBaseList.insert (var lNode:baseNode_t; index:uns32 );
+	begin insert;
+	USE (EBX, ECX);
+		
+		if (this.head = 0) then
+			mov (lNode, ebx);
+			mov (ebx, this.head);
+		else
+			mov (index, eax);
+			if ( eax < this.count) then
+				xor (ecx, ecx);
+				mov (this.head, eax);
+				if (index > 0) then
+					while ( ecx < index) do
+						mov (listeax.next, eax);
+						inc (ecx);
+					endwhile;
+				endif;
+
+				mov (lNode, ebx);
+				mov (listeax.prev, ecx);
+				mov (ebx, listeax.prev);
+				mov (eax, listebx.next);
+				if (ecx) then
+					mov (ebx, listecx.next);
+				else
+					mov (ebx, this.head);
+				endif;
+				mov (ecx, listebx.prev);
+				
+			else
+				// add it to tail
+				if (this.tail = 0) then
+					mov (lNode, ebx);
+					mov (ebx, this.tail);
+					mov (this.head, eax);
+					mov (ebx, listeax.next);
+					mov (eax, listebx.prev);
+				else
+					mov (lNode, ebx);
+					mov (this.tail, eax);
+					mov (ebx, listeax.next);
+					mov (eax, listebx.prev);
+					mov (ebx, this.tail);
+				endif;
+			endif;
+		endif;
+		
+		inc (this.count);
+	ENDUSE;
+	
+		// returns actual placing of node index
+		mov (this.count, eax);
+		dec (eax);
+	end insert;
+
+
+	method tBaseList.append (var lNode:baseNode_t);
+	begin append;
+		this.insert (lNode, this.count);
+	end append;
+
+	method tBaseList.remove (var lNode:baseNode_t);
+		var
+			prev	:dword;
+			next	:dword;
+	
+	begin remove;
+	USE (EBX, EAX);
+		mov (lNode, ebx);
+		test (ebx, ebx);
+		jz _end;
+		move (listebx.next, next);
+		move (listebx.prev, prev);
+	
+		mem.free (ebx);
+		dec (this.count);
+		
+		mov (next, eax);
+		if (eax) then
+			move (prev, listeax.prev);
+		else
+			// just killed tail
+			move (prev, this.tail);
+		endif;
+		
+		mov (prev, eax);
+		if (eax) then
+			move (next, listeax.next);
+		else
+			// just killed the head!
+			move (next, this.head);
+		endif;
+		
+		// see if head and tail are the same
+		mov (this.head, eax);
+		if (eax = this.tail) then
+			mov (0, this.tail);
+		endif;
+	_end:
+	ENDUSE;
+	end remove;
+
+	method tBaseList.removeIndex (index:uns32);
+	begin removeIndex;
+	USE (EAX);
+		if (this.getNodeIndex (index)) then
+			this.remove ([eax]);
+			clc();
+		else
+			stc();
+		endif;
+	ENDUSE;
+	end removeIndex;
+
+
+end class_baselist_utils_unit;

@@ -1,0 +1,45 @@
+unit class_buf_puts_unit;
+
+	#includeonce ("hide/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	proc
+
+		tBuf.putBytes	:method( startAddr:dword; length:uns32 );
+		begin putBytes;
+			push( ecx );
+			this.adjustForInsert (length);
+			mov (length, ecx);
+			mov (this.cursor, edi);
+			USE (ESI);
+				mov (startAddr, esi);
+				rep.movsb();
+			ENDUSE;
+			mov (edi, this.cursor);
+			mov( edi, eax );
+			pop( ecx );
+		end putBytes;
+
+		tBuf.puts			:method( s:string );
+		begin puts;
+			//push( eax );
+			str.length( s );
+			this.putBytes( s, eax );
+			//pop( eax );
+		end puts;
+
+		tBuf.putz			:method( z:zstring );
+		begin putz;
+			//push( eax );
+			mov( z, eax );
+			while( (type byte[eax]) != 0 ) do
+				inc( eax );
+			endwhile;
+			sub( z, eax );
+			this.putBytes( z, eax );
+			//pop( eax );
+		end putz;
+		
+end class_buf_puts_unit;

@@ -1,0 +1,94 @@
+unit class_config_real_unit;
+
+	#include( "src/hidelib.hhf" )
+	?@nodisplay := true;
+	?@noalignstack := true;
+	
+proc
+	
+	tConfig.writeReal64 :method( sec:string; key:string; value:real64 );
+		
+		var
+			buf	:pointer to tBuffer;
+		
+	begin writeReal64;
+		USE (EAX, EDX);
+		mov( esi, buf );
+		if( this.findSectionA( sec ) ) then
+			if( this.findKeyA( key ) ) then
+				
+				// found, overwrite
+				this.getIndex();
+				mov( eax, ecx );
+				this.cursorToEOL();
+				this.setBlock( ecx, eax );
+				this.deleteBlock();
+				
+			else
+				
+				// append key at end of list
+				this.cursorLeft( 1 );	// rewind the skip the '[' if present
+				this.rspan( hide.whiteSpaceCset );	// reverse to 1st non-space char
+				this.cursorRight( 1 );
+				buf.insert( nl, key, '=' );
+			endif;
+			
+			conv.r64ToStr( value, 15, 6, ' ', hide.strbuf );
+			str.trim( hide.strbuf );
+			this.puts( hide.strbuf );
+			
+		else
+	
+			this.eof();
+			buf.insert (nl, '[', sec, ']', nl, key, '=' );
+			conv.r64ToStr( value, 15, 6, ' ', hide.strbuf );
+			str.trim( hide.strbuf );
+			this.puts( hide.strbuf );
+			this.puts( nl );
+		endif;
+		ENDUSE;
+	end writeReal64;
+
+	tConfig.readReal64 :method( sec:string; key:string; var dest:real64 );
+	
+		var
+			_s		:string;
+			found	:dword;
+			
+	begin readReal64;
+		if( this.findSectionA( sec ) ) then
+			if( this.findKeyA (key) ) then
+			
+				this.a_getLineFromCursor();
+				mov( eax, _s );
+				
+				try
+					conv.strToFlt( _s, 0 );
+					mov( dest, eax );
+					fstp( (type real64 [eax]) );
+					mov( true, found );
+					
+				exception( ex.ConversionError );
+
+					xor( eax, eax );
+					mov( eax, found );
+					
+				endtry;
+				
+				str.free( _s );				
+				
+				if( found ) then
+					stc();
+				endif;
+				
+			else
+				xor( eax, eax );
+				endif;	
+		else
+			xor( eax, eax );
+		endif;
+
+	end readReal64;
+	
+
+end class_config_real_unit;

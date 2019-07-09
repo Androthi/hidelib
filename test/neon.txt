@@ -1,0 +1,15 @@
+[MACROS]
+os = win32
+mac = file01,file02,file03
+
+[BUILD]
+#mactest
+
+[mactest]
+<< message: starting mac test 
+>>
+<< foreach: mac >>
+	<< macro: macline += $(%) >>
+<< endfor >>
+
+<< message: $(macline) >>

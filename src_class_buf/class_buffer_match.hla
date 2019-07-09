@@ -1,0 +1,178 @@
+unit class_buffer_match;
+		
+	#include ("src/hidelib.hhf")
+	#include ("strings.hhf")
+	#include ("stdout.hhf")
+	#includeonce ("macros/macros.hhf")
+
+	?@noalignstack:= true;
+	?@nodisplay := true;
+
+
+	readonly
+		matchWord_cs	:cset := { ' ', #$9, #$A, #$D, #$21 .. #$2F,
+						#$3A ..#$40, #$5B ..#$5E, #$7B .. #$7E };
+		
+
+	method tBuffer.match (s:string);
+	begin match;
+		USE (ESI, ECX);	
+		cld();
+		this.getCursorToEOFLength();
+		mov (eax, ecx);
+		str.length (s);
+		if (eax <= ecx) then
+			mov (eax, ecx);	// ecx = len of s
+			mov (this.cursor, edi);
+			mov (s, esi);
+			repe.cmpsb();
+			if (@e) then
+				mov (1, eax);
+			else
+				or (-1, eax);
+			endif;
+			
+		else
+			or (-1, eax);		// no match
+		endif;
+		
+		ENDUSE;
+		if (eax <> -1) then
+			mov (this.cursor, eax);
+			sub (this.data, eax);	// index in eax
+			stc();
+		else
+			clc();
+		endif;
+	end match;
+
+	method tBuffer.imatch (s:string);
+	begin imatch;
+		USE (ESI, ECX, EBX);
+		cld();
+		mov (this.data, ecx);
+		add (this.length, ecx);
+		sub (this.cursor, ecx);	// get length from cursor to EOF
+		str.length (s);
+		if (eax <= ecx) then
+			mov (eax, ecx);
+			mov (this.cursor, edi);
+			mov (s, esi);
+			
+			cmpLoop:
+		        mov( [esi], al );
+		        mov( [edi], ah );
+		        add( 1, esi );
+		        add( 1, edi );
+		        cmp( al, ah );
+		        je next;
+		        mov( ax, bx );
+		        and( $dfdf, bx );
+		        cmp( bl, 'A' );
+		        jb notEqual;
+		        cmp( bl, 'Z' );
+		        ja notEqual;
+		        cmp( bl, bh );
+		        jne notEqual;
+				next:
+				sub (1, ecx);
+			jnz cmpLoop;
+		
+			// found it
+			mov (1, eax);
+
+		else
+			notEqual:
+			or (-1, eax);	
+		endif;
+		ENDUSE;
+	
+		if (eax <> -1) then
+			mov (this.cursor, eax);
+			sub (this.data, eax);	// index in eax
+			stc();
+		else
+			clc();
+		endif;
+	end imatch;
+
+
+	method tBuffer.matchWord (s:string);
+	begin matchWord;
+		USE (ECX);
+
+		mov (this.cursor, eax);
+		if (eax > this.data) then
+			sub (1, eax);
+			movzx ( (type byte[eax]), eax );
+			bt (eax, matchWord_cs);
+			jnc noMatch;
+		endif;
+		
+		
+		this.match (s);
+		cmp (eax, -1);
+		je noMatch;
+
+		str.length (s);
+		mov (eax, ecx);
+		add (this.cursor, eax);
+		movzx ( (type byte[eax]), eax);
+		bt (eax, matchWord_cs);
+		jnc noMatch;
+		
+		mov (this.cursor, eax);
+		sub (this.data, eax);		// return index in eax
+		stc();
+		jmp done;
+		
+		noMatch:
+			or (-1, eax);
+			clc();
+			
+		done:
+		ENDUSE;
+		
+	end matchWord;
+
+	method tBuffer.imatchWord (s:string);
+	begin imatchWord;
+	USE (ECX);
+
+		mov (this.cursor, eax);
+		if (eax > this.data) then
+			sub (1, eax);
+			movzx ( (type byte[eax]), eax );
+			bt (eax, matchWord_cs);
+			jnc noMatch;
+		endif;
+		
+		
+		this.imatch (s);
+		cmp (eax, -1);
+		je noMatch;
+
+		str.length (s);
+		mov (eax, ecx);
+		add (this.cursor, eax);
+		movzx ( (type byte[eax]), eax);
+		bt (eax, matchWord_cs);
+		jnc noMatch;
+		
+		mov (this.cursor, eax);
+		sub (this.data, eax);		// return index in eax
+		stc();
+		
+		jmp done;
+		
+		noMatch:
+			or (-1, eax);
+			clc();
+		done:
+	ENDUSE;
+	end imatchWord;
+
+end class_buffer_match;
+
+
+

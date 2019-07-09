@@ -1,0 +1,23 @@
+unit class_buf_putbyte_unit;
+
+	#includeonce ("hide/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	proc
+		
+		tBuf.putByte		:method( b:byte );
+		begin putByte;
+			push( ecx );
+			this.adjustForInsert( 1 );
+			mov( b, cl );
+			mov( this.cursor, eax );
+			mov( cl, [eax] );
+			add( 1, eax );
+			mov( eax, this.cursor );
+			pop( ecx );
+		end putByte;
+		
+
+end class_buf_putbyte_unit;

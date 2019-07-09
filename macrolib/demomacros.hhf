@@ -1,0 +1,218 @@
+#if (! @defined (demomacros_hhf))
+	?demomacros_hhf := true;
+
+
+//=========================================================================\\
+
+// The following 3 macros aren't really designed to be used within HLA
+// propramms (as HLA offers better solutions)
+// they are provided as demo macros.
+
+// f(lbl) --
+//  Used as an operand in an instruction requiring
+//  a forward statement label (e.g., a jmp instruction
+//  operand). References the *next* occurrence of
+//  "l(lbl)" that exists in the source file.
+
+#macro f_( _symbol_ ):_f_, _lbl_;
+
+    // Generate a string that represents the
+    // name of the symbol with a prepended "f_".
+    //
+    //  E.g., f(lbl) generates "f_lbl" here.
+
+    ?_lbl_ := "f_" + @string( _symbol_ );
+
+    // If this is the first occurrence of a forward
+    // reference, then create a brand new variable
+    // to hold the unique ID we'll use to reference
+    // this symbol:
+
+    #if( !@defined( @text( _lbl_ ) ) )
+
+        ?@text( "f_" + @string(_symbol_)) := @string( _f_ );
+
+
+    // If this is the first reference *after* some usage
+    // of the "l(xxx)" macro, then overwrite the old
+    // variable with the name of the new label:
+
+    #elseif( @text( _lbl_ ) = "" )
+
+        ?@text( "f_" + @string(_symbol_)) := @string( _f_ );
+
+    #endif
+
+    // Return the unique label we've created in one of the
+    // branches above (or in a previous f(xxx) invocation)
+    // as this macro's result. Note that we have to use
+    // @text twice because one returns the "f_xxx" string
+    // and twice returns whatever "f_xxx" expands into.
+
+    @text( @text( _lbl_ ))
+
+#endmacro
+
+
+
+// b(lbl) --
+//  Used as an operand in an instruction requiring
+//  a backward statement label (e.g., a jmp instruction
+//  operand). References the *previous* occurrence of
+//  "l(lbl)" that exists in the source file.
+
+#macro b_( _symbol_ ):_lbl_;
+
+
+    // Generate a string that represents the
+    // name of the symbol with a prepended "b_".
+    //
+    //  E.g., b(lbl) generates "b_lbl" here.
+
+    ?_lbl_ :text := "b_" + @string(_symbol_);
+
+    // If the symbol does not exist, generate
+    // an error.
+
+    #if( !@defined(@text( _lbl_ )))
+
+        #error( "Symbol b(" + @string( _symbol_ ) + ") does not exist")
+
+    #endif
+
+    // You'll note that _lbl_ is a TEXT object, not
+    // a string object. This is why we don't need
+    // the two @text's here. We get away with this
+    // because we don't have to change the value of
+    // "b_xxx" later on (as we have to do for "f_xxx").
+
+    @text( _lbl_ )
+
+#endmacro
+
+
+// l(lbl) --
+//  Defines a relative local symbol for use by
+//  the b(xxx) and f(xxx) macros.
+
+#macro l_( _symbol_ ):_here_,_lbl_,_purge_, _defined_;
+
+    ?_lbl_ := "f_" + @string( _symbol_ );
+    ?_purge_ :text := _lbl_;
+
+    // If there was a forward reference, emit
+    // the label for that forward symbol.
+
+    ?_defined_ := @defined( @text( _lbl_ ));
+    #if( _defined_ )
+
+        // If there was a previous l(xxx) invocation
+        // of this label and no f(xxx) reference
+        // since then, don't emit the forward label.
+
+        #if( @text( _lbl_ ) <> "" )
+
+            @text( @text( _lbl_ )):
+
+        #endif
+
+    #endif
+
+    // Erase the current "f_xxx" symbol so that the
+    // next invocation of the f(xxx) macro will generate
+    // a new one:
+
+    ?_purge_ := "";
+
+    // Emit a label that the b(xxx) macro
+    // can reference:
+
+    ?@text( "b_" + @string( _symbol_ )) := @string( _here_ );
+    _here_
+
+#endmacro
+
+// 	- assign
+//
+// 	Definition:
+//		Combines blocks of mov() statements.
+//
+//	Examples of usage:
+//			assign ( eax = 0 )
+//
+//			assign ( testvar = ecx = xor(eax, eax) returns eax,
+//					 ebx = 33)
+//
+//			assign ( ecx 	 = 323, eax =  34,  
+//					testvar =  77 )
+//
+// 			Set up the window class (wc) object:
+//			assign( wc.cbSize = @size( w.WNDCLASSEX ),
+//		    	wc.style = w.CS_HREDRAW | w.CS_VREDRAW,
+//		    	wc.lpfnWndProc = &WndProc,	
+//				wc.cbClsExtra = NULL,	     
+//				wc.cbWndExtra = NULL,
+//				wc.hbrBackground = w.COLOR_WINDOW+1,
+//				wc.lpszMenuName = ID_MAINMENU,
+//				wc.lpszClassName = ClassName,
+//			 
+//				// Get this process' handle:
+//				hInstance = w.GetModuleHandle( NULL ),
+//				wc.hInstance = eax,
+//				wc.hIcon   = w.LoadIcon( ID_ICONLOGO2, hInstance),
+//				wc.hIconSm = w.LoadIcon(hInstance, val ID_ICONSMALL ),
+//				wc.hCursor = w.LoadCursor( NULL, val w.IDC_ARROW )
+//			)
+#macro assign(_input_[]):
+	_pvalueArray_,
+	_curparm_,
+	_lastValue_,
+	_lastParamArray_,
+	_loop_,
+	_returnValue_,
+	_saveParam_;
+	
+	?_curparm_:uns32 := 0;
+	?_lastValue_:uns32 := 0;
+	?_returnValue_ := "";
+	#while( _curparm_ < @elements( _input_ ))
+		?_pvalueArray_ := @tokenize(_input_[_curparm_], 0, {'='}, {} );
+		?_lastValue_ := @elements( _pvalueArray_ ) - 1;
+		
+		// check for 'returns' in last parameter
+		?_lastParamArray_ := @tokenize(_pvalueArray_[_lastValue_], 0, {' '}, {});
+		?_loop_ := 0;
+		?_saveParam_ := "";
+		#while( _loop_ < @elements( _lastParamArray_ ))
+			#if (@lowercase(_lastParamArray_[_loop_], 0) = "returns")
+				?_loop_ := _loop_ + 1;
+				?_returnValue_ := _lastParamArray_[_loop_];
+			#else
+				?_saveParam_ := _saveParam_ + " " +  _lastParamArray_[_loop_];
+			#endif
+			?_loop_ := _loop_ + 1;
+		#endwhile
+		?_pvalueArray_[_lastValue_] := _saveParam_;
+		?_loop_ := 0;
+		#while( _loop_ < _lastValue_ )
+			// small optimization using the register for storing the value
+			#if( _loop_ = 0 & @isReg32(@text(_pvalueArray_[_loop_])) & _returnValue_ = "" )
+				mov(@text(_pvalueArray_[_lastValue_]), @text(_pvalueArray_[_loop_]) );
+				?_pvalueArray_[_lastValue_] := _pvalueArray_[_loop_];
+			#elseif( _loop_ = 0 & _returnValue_ <> "")
+				@text(_pvalueArray_[_lastValue_]);
+				?_pvalueArray_[_lastValue_] := _returnValue_;
+				mov(@text(_pvalueArray_[_lastValue_]), @text(_pvalueArray_[_loop_]) );
+			#else
+				mov(@text(_pvalueArray_[_lastValue_]), @text(_pvalueArray_[_loop_]) );
+			#endif
+			
+			?_loop_ := _loop_ + 1;
+		#endwhile
+		
+		?_curparm_ := _curparm_ + 1;
+	#endwhile
+#endmacro
+
+
+#endif

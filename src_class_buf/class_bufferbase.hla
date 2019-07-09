@@ -1,0 +1,300 @@
+unit class_bufferbase;
+
+	#include ("src/hidelib.hhf")
+	#include ("memory.hhf")
+	#include ("fileio.hhf")
+	#include ("excepts.hhf")
+	#include ("strings.hhf")
+	#include ("conv.hhf")
+	#include ("cset.hhf")
+	#include ("excepts.hhf")
+	
+	#includeonce ("macros/macros.hhf")
+	#includeonce ("macros/extensions.hhf")
+//	#include ("hide/dbgwin.hhf")	
+	
+	?@noalignstack:= true;
+	?@nodisplay := true;
+	
+	const
+		padding_size	:= 16;
+		
+	
+	readonly
+		vmt( tBufferBase );
+
+	proc
+		tBufferBase_create		:procedure {@noframe, @returns("EAX")};
+		
+			// internal proc
+		
+		begin tBufferBase_create;
+			if (! esi) then
+				mem.zalloc (@size (tBufferBase));
+				mov (eax, esi);
+			else
+				// initialize static/automatic instance to 0
+				mem2.fillMem ([esi], @size(tBufferBase), 0);
+				xor( eax, eax );
+			endif;
+			
+			mov (&tBufferBase._VMT_, (type tBufferBase[esi])._pVMT_);
+			ret();
+		end tBufferBase_create;
+
+		
+		tBufferBase.create_default	:procedure {@noframe};
+		begin create_default;
+			USE (EAX);
+			tBufferBase_create();
+			if( eax ) then
+				setBit( this.inHeap, this.flags );
+			endif;
+			mov (this.default_size, eax);
+			mov (eax, this.vSize);
+			add (padding_size, eax);
+			mov (eax, this.absSize);
+			mem.alloc( eax );
+			mov (eax, this.data);
+			mov (eax, this.cursor);
+			ENDUSE;
+			ret();
+		end create_default;
+	
+		
+		tBufferBase.create_size		:procedure( initialSize:uns32 );
+		begin create_size;
+			USE (EAX);
+			tBufferBase_create();
+			if( eax ) then
+				setBit( this.inHeap, this.flags );
+			endif;
+			mov (initialSize, eax);
+			if (! eax) then
+				mov (this.default_size, eax);
+			endif;
+			mov (eax, this.vSize);
+			add (padding_size, eax);
+			mov (eax, this.absSize);
+			mem.alloc(eax);
+			mov (eax, this.data);
+			mov (eax, this.cursor);
+			ENDUSE;
+		end create_size;
+	
+		
+		tBufferBase.create_file		:procedure( fileName:string );
+
+			var
+				hfile	:dword;
+
+		begin create_file;
+			USE (EAX);
+			
+			if( filesys.exists( fileName ) ) then 
+			
+				tBufferBase_create();
+				if( eax ) then
+					setBit( this.inHeap, this.flags );
+				endif;
+
+				fileio.open (fileName, fileio.r);
+				mov (eax, hfile);
+				filesys.size (hfile);
+				mov (eax, this.length);
+				mov (eax, this.vSize);
+				add (padding_size, eax);
+				mov (eax, this.absSize);
+				mem.alloc (eax);
+				mov (eax, this.data);
+				mov (eax, this.cursor);
+				fileio.read ( hfile, [eax], this.length);
+				fileio.close (hfile);
+			
+			else
+				
+				(type tBufferBase[esi]).create_default();
+				
+			endif;
+			
+			str.a_cpy( fileName );
+			mov( eax, this.fileName );
+			
+			ENDUSE;
+		end create_file;
+	
+
+		tBufferBase.destroy		:method {@noframe};
+		begin destroy;
+			USE (EAX);
+			mem.free( this.data );
+
+			if( this.fileName > 0 ) then
+				str.free( this.fileName );
+			endif;
+
+			if( flagSet( this.inHeap, this.flags ) ) then
+				mem.free( esi );
+			endif;
+			ENDUSE;
+			RET();
+		end destroy;
+
+		tBufferBase.erase 		:method {@noframe};
+		begin erase;
+			USE (EAX);
+			mem.free (this.data);
+			mov (this.default_size, eax);
+			mov (eax, this.vSize);
+			add (padding_size, eax);
+			mov (eax, this.absSize);
+			mem.alloc (eax);
+			mov (eax, this.data);
+			mov (eax, this.cursor);
+			mov (0, this.length);
+			ENDUSE;
+			ret();
+		end erase;
+	
+		tBufferBase.sizeBuffer		:method( sizeTo:uns32 );
+			
+			// Private method, call this *only* if certain that
+			// sizeTo is larger than current buffer.  No error checking here. 
+			var
+				newMem		:dword;
+				cursorPos	:dword;
+			
+		begin sizeBuffer;
+			USE (EAX, ESI, EDI, ECX);
+				mov (sizeTo, eax);
+				mov (eax, this.vSize);
+				add (padding_size, eax);
+				mov (eax, this.absSize);
+				mem.alloc (eax);
+				mov (eax, newMem);
+				mov (eax, edi);
+				mov (this.length, ecx);
+				add (4, ecx);	// in case if falls on uneven boundry, this is safe since new buffer is 2*length+4
+				shr (2, ecx);
+				mov (this.data, esi);
+				rep.movsd();
+			ENDUSE;
+			
+			// adjust cursor
+			USE (EAX);
+				mov (this.cursor, eax);
+				sub (this.data, eax);
+				mov (eax, cursorPos);
+				mem.free (this.data);
+				mov (newMem, eax);
+				mov (eax, this.data);
+				add (cursorPos, eax);
+				mov (eax, this.cursor);
+			ENDUSE;
+			
+		end sizeBuffer;
+
+	
+		tBufferBase.adjustForInsert	:method( size:uns32 );
+			// Private method
+			// makes room for size and adjusts buffer for insert
+	
+		begin adjustForInsert;
+		USE (EAX, ECX);
+	
+			mov (size, eax);
+			add (this.length, eax);
+			if (eax > this.vSize) then
+				shl (1, eax);
+				add (this.vSize, eax);
+				this.sizeBuffer(eax);
+			endif;
+			
+			mov (this.data, eax);
+			add (this.length, eax);
+			if ( this.cursor < eax) then
+				USE (ESI, EDI, EBX);
+					mov (eax, edi);	// edi is 1 char after end of buffer
+					mov (eax, ecx);	
+					dec (edi);		// edi points to last character
+					sub (this.cursor, ecx); //  ecx = number of characters to move
+					mov (edi, esi);
+					add (size, edi);	// size = number of speces we need to open up at cursor				
+					std();
+					if ( (type uns32 ecx) > 3) then
+						mov (ecx, ebx);
+						shr (2, ecx);
+						and (3, ebx);	// isolate the last 1-3 bytes
+						inc (ecx);		// 1st movsd() only actually moves 1 byte
+						rep.movsd();
+						mov (ebx, ecx);	// get the last 1-3 bytes back into ecx
+						add (4, esi);	// reposition source/dest for last 1-3 bytes
+						add (4, edi);
+					endif;
+					rep.movsb();	// 0-3 bytes left over
+					cld();
+				ENDUSE;	
+				
+			endif;
+			mov (size, eax);
+			add (eax, this.length);
+			
+		ENDUSE;
+		end adjustForInsert;
+	
+		tBufferBase.adjustForDelete	:method( size:uns32 );
+		begin adjustForDelete;
+			// removing characters, no need to expand buffer!
+		USE (EAX, ECX);
+			mov (this.cursor, edi);	// destination position
+			mov (edi, eax);
+			add (size, eax);		// start position
+			mov (this.data, ecx);
+			add (this.length, ecx);
+			sub (eax, ecx);			// ecx = number of characters to move
+			USE (ESI);
+				mov (eax, esi);			// load start position
+				if ( (type uns32 ecx) < 4) then
+					mov (1, ecx);	// this is okay since actual buffer is always at least +4 more than virtual buffer
+				else
+					shr (2, ecx);
+					inc (ecx);		// compensate for 2 bits eliminated by shr 2.  buffer size is guaranteed
+				endif;
+				rep.movsd();
+			ENDUSE;
+			mov (size, eax);
+			sub (eax, this.length);
+		ENDUSE;
+		end adjustForDelete;
+	
+	
+		tBufferBase.resize		:method( size:uns32 );
+		begin resize;
+			USE( EAX );
+			mov( size, eax );
+			cmp( eax, this.vSize );
+			je done;
+			jb resize_smaller;
+			this.sizeBuffer( eax );
+			stc();
+			jmp done;
+			
+			resize_smaller:
+			cmp( eax, this.length );
+			jae size_buffer;
+			mov( this.length, eax );
+			this.sizeBuffer( eax );
+			clc();
+			jmp done;
+			
+			size_buffer:			
+			this.sizeBuffer( eax );
+			stc();
+			done:
+			ENDUSE;
+		end resize;
+	
+	
+
+end class_bufferbase;
+

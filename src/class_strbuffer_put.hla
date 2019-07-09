@@ -1,0 +1,63 @@
+unit class_strbuffer_put_unit;
+
+	#includeonce ("src/hidelib.hhf")
+	#includeonce ("strings.hhf")
+	#includeonce ("stdout.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	const
+		bufesi :text := "(type tBuffer[esi])";
+		
+
+	method tStrBuffer.putStrBytes (mem_start:dword; length:dword);
+		var
+			addr	:dword;
+			
+	begin putStrBytes;
+		// it's possibleto have zero length strings
+		this.insertDword (length);
+		mov (this.cursor, eax);
+		mov (eax, addr);
+		this.insertbytes (mem_start, length);
+		this.insertByte (0);
+		mov (length, eax);
+		add (4, eax);
+		and (-4, eax);
+		sub (length, eax);
+		dec (eax); // count zero byte too
+		if (@ns) then
+			if (eax) then
+				push( ecx );
+				mov( eax, ecx );
+				repeat
+					this.insertByte (0);
+					dec (ecx);
+				until (!ECX);
+			endif;
+			pop( ecx );
+		endif;
+		inc (this.count);
+		mov (this.data, eax);
+		inc ( (type dword [eax + tStrBuffer.count_offset]) );
+		mov (addr, eax);
+	end putStrBytes;
+
+
+	method tStrBuffer.putStrz (strptr:dword);
+	begin putStrz;
+		mov (strptr, eax);
+		zstr.len (eax);
+		this.putStrBytes (strptr, eax);
+	end putStrz;
+
+
+	method tStrBuffer.putStr (strptr:string);
+	begin putStr;
+		this.putStrBytes (strptr, str.length (strptr));
+	end putStr;
+
+
+
+end class_strbuffer_put_unit;

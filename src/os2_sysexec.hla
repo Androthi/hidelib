@@ -1,0 +1,184 @@
+unit sysexec;
+	
+#include ("src/hidefunc.hhf")	
+#include ("os.hhf")
+#include ("strings.hhf")
+#include ("memory.hhf")
+#include ("fileio.hhf")
+#include ("hide/dbgwin.hhf")
+
+#if (os.win32)
+
+	#include ("w.hhf")
+
+	procedure os2.sysexec (cmdLn:string);
+
+		var
+			exitCode:dword;
+			sui		:w.STARTUPINFO;
+			pi		:w.PROCESS_INFORMATION;
+		
+			
+
+	begin sysexec;
+
+		push( ecx );
+		push( edx );
+		
+		lea(eax,pi);
+		mem2.fillMem([eax],@size(pi),0);
+		lea(eax,sui);
+		mem2.fillMem([eax],@size(sui),0);
+		
+		w.CreateProcess
+		(
+			NULL,
+			cmdLn,
+			NULL,
+			NULL,
+			true,
+			0,
+			NULL,
+			NULL,
+			sui,
+			pi
+		);
+	
+		w.WaitForSingleObject
+		(
+			pi.hProcess,
+			w.INFINITE
+		);
+	
+		// Get the exit code for this process:
+	
+		w.GetExitCodeProcess( pi.hProcess, exitCode );
+		// Free up the storage used by the str.tokenize call:
+		
+		w.CloseHandle(pi.hProcess);
+		w.CloseHandle(pi.hThread);
+		
+	
+		pop( edx );
+		pop( ecx );
+	
+		// Return exit code as function result:
+	
+		mov( exitCode, eax );
+		
+	end sysexec;
+	
+
+#elseif (os.linux)
+
+	#include ("linux.hhf")
+	
+	static
+			envp	:dword;	@external( "_envp__hla_" );
+	endstatic;
+
+	procedure os2.sysexec (cmdLn:string);
+	/* execute a command.
+		The Linux execve does not search for the
+		file on the system PATH.  This function
+		will try to find the file on the path, or
+		use the default usr/bin if PATH environment
+		doesn't exist.
+	*/
+		
+		var
+			binName		:string;
+			pathVar		:string;
+			rtnCode		:dword;
+			numArgs		:uns32;
+			numPaths	:uns32;
+			cmds		:string[256];
+			paths		:string[256];
+		endvar;
+			
+	begin sysexec;
+		
+		pushad();
+		str.tokenize2( cmdLn, cmds, {' ', ',' } );
+		mov( eax, numArgs );
+		mov( 0, (type dword cmds[eax*4]));
+	
+		
+		linux.fork();
+		if( eax = 0 ) then
+	
+			// file not found.  look for PATH environment.
+			str.talloc (5000);
+			mov (eax, pathVar);
+			str.talloc (2000);
+			mov (eax, binName);
+			
+			str.cpy (cmds[0], binName);
+			fileio.exists (binName);
+			cmp (eax, true);
+			je _runit;
+			
+			env2.get ("PATH", pathVar);
+			if ( eax ) then
+				
+				// found PATH, tokenize the path and look through
+				// it for the executable.
+				str.tokenize2( pathVar, paths, {':'} );
+				dec (eax);
+				mov (eax, numPaths);
+				mov (eax, ecx);
+				
+				while ( (type int32 ecx) <> -1) do
+					str.cpy ( paths[ecx*4], binName);
+					str.free (paths[ecx*4]);
+					str.catc( binName, '/');
+					str.cats(binName, cmds[0]);
+					breakif ( fileio.exists (binName) );
+					dec (ecx);
+				endwhile;
+				
+				
+			else
+			
+				// no PATH envrionment, try in usr/bin
+				str.cpy ("/usr/bin/", binName);
+				str.cats (binName, cmds[0]);
+			endif;
+			
+			_runit:
+				mov (envp, ebx);
+				linux.execve( binName, cmds[0], [ebx]);
+			
+			// What the heck, try once more in /bin.
+			mov (envp, ebx);
+			str.cpy( "/bin/", binName );
+			str.cats( binName, cmds[0]);
+			linux.execve( binName, cmds[0], [ebx] );
+	
+			// couldn't find it, exit with error
+			linux._exit( 1 );		 
+	
+		endif;
+		
+		// If we get to this point, we are the parent process.
+		// Begin by freeing the storage that str.tokenize2 allocated:
+		
+		for( mov( 0, ecx ); ecx<numArgs; inc(ecx) ) do
+		
+			str.free( cmds[ ecx*4 ] );
+			
+		endfor;
+		
+		linux.waitpid( eax, rtnCode, 0 );	
+		popad();
+	
+		// Return the process' return code as the return result:
+		mov( rtnCode, eax );
+		shr (8, eax);	/* linux mangles the return code we want */
+
+	end sysexec;
+
+#endif
+	
+	
+end sysexec;

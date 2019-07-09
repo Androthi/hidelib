@@ -1,0 +1,295 @@
+unit class_buffer_cursor;
+		
+	#include ("src/hidelib.hhf")
+	#include ("strings.hhf")
+	#includeonce ("macros/macros.hhf")
+
+	?@noalignstack:= true;
+	?@nodisplay := true;
+
+
+	// cursor methods	-- all return cursor *index* (not address)
+	
+	// note on depricated cursor methods, the new methods return
+	// error condition in carry and cursor pointer in eax
+	// not the cursor *index*...keep in mind if converting to
+	// super methods.
+	
+	// depricated, use method eof
+	method tBuffer.cursorToEOF; @noframe;
+	begin cursorToEOF;
+
+		mov (this.data, eax);
+		add (this.length, eax);
+		mov (eax, this.cursor);
+		sub (this.data, eax);
+		ret();	
+	end cursorToEOF;
+
+	// depricated, use method bof
+	method tBuffer.cursorToBOF; @noframe;
+	begin cursorToBOF;
+		mov (this.data, eax);
+		mov (eax, this.cursor);
+		xor (eax, eax);
+		ret();
+	end cursorToBOF;
+
+	// depricated, use moveTo
+	method tBuffer.cursorTo (index:uns32);
+	begin cursorTo;
+		mov (this.length, eax);
+		if (index > eax) then
+			mov (eax, index);
+		endif;
+		
+		mov (this.data, eax);
+		add (index, eax);
+		mov (eax, this.cursor);
+		mov (index, eax);
+	end cursorTo;
+
+	// depricated, use method right
+	method tBuffer.cursorRight ( num:uns32);
+	begin cursorRight;
+	USE (ECX);	
+		mov (this.cursor, eax);
+		add (num, eax);
+		mov (this.data, ecx);
+		add (this.length, ecx);
+		if (eax > ecx) then
+			mov (ecx, eax);
+		endif;
+		mov (eax, this.cursor);
+		sub (this.data, eax);
+	ENDUSE;
+	end cursorRight;
+
+	// depricated, use method left
+	method tBuffer.cursorLeft (num:uns32);
+	begin cursorLeft;
+		mov (this.cursor, eax);
+		sub (num, eax);
+		if ( (type uns32 eax) < this.data) then
+			mov (this.data, eax);
+		endif;
+		mov (eax, this.cursor);
+		sub (this.data, eax);
+	end cursorLeft;
+
+	method tBuffer.cursorLeftLines (num:uns32);
+	
+		// try to maintain relative cursor position within line
+		var
+			lineStartIndex	:uns32;
+			offset			:uns32;
+		endvar;
+	
+	begin cursorLeftLines;
+	USE (EBX, ECX, EDX);	
+		// get offset of current cursor position
+		if (num > 0) then
+			this.getIndex();
+			mov (eax, offset);
+			push (this.cursor);
+			this.cursorToBOL();
+			pop (this.cursor);
+			sub (eax, offset);
+						
+			// go num lines left
+			mov (this.data, edx);
+			mov (this.cursor, ebx);
+			mov (num, ecx);
+			if ( (type byte [ebx]) = $a) then
+				dec (ebx);		// don't count current line if at EOL (linux)
+			endif;
+			while (ebx >= edx) do
+				mov ([ebx], al);
+				if (al = $a) then
+					dec (ecx);
+					if(@z) then
+						xor (eax, eax);
+						break;
+					endif;
+				endif;
+				dec (ebx);
+			welse
+				mov (1, eax);	// we're at bof
+			endwhile;
+			dec (ebx);
+			add (eax, ebx);
+			
+			mov (ebx, this.cursor);
+			this.cursorToBOL();
+			mov (this.cursor, ebx);
+			
+			// add the offset, if possible
+			mov (offset, ecx);
+			while (ecx) do
+				inc (ebx);
+				mov ([ebx], al);
+				breakif ( al in hide.nlCset);
+				dec (ecx);
+			endwhile;
+			
+			mov (ebx, this.cursor);
+			
+			// update cursor position and return index
+			this.getIndex();
+		endif;
+	ENDUSE;		
+	end cursorLeftLines;
+
+
+	method tBuffer.cursorRightLines (num:uns32);
+		
+		// try to maintain relative cursor position within line
+		var
+			offset			:uns32;
+		endvar;
+	begin cursorRightLines;
+	USE (EBX, ECX, EDX);	
+		if (num > 0) then
+			// get offset of current cursor position
+			this.getIndex();
+			mov (eax, offset);
+			push (this.cursor);
+			this.cursorToBOL();
+			pop (this.cursor);
+			sub (eax, offset);
+			
+			// mov num lines right
+			mov (this.data, edx);
+			add (this.length, edx);
+			mov (this.cursor, ebx);
+			mov (num, ecx);
+			while (ebx < edx) do
+				mov ([ebx], al);
+				if (al = $a) then
+					dec (ecx);
+					if (! ecx) then
+						mov (1, eax);
+						break;
+					endif;
+				endif;
+				inc (ebx);
+			welse
+				xor (eax, eax);
+			endwhile;
+			add (eax, ebx);
+			
+			// add the offset, if possible
+			mov (offset, ecx);
+			while (ecx) do
+				inc (ebx);
+				mov ([ebx], al);			
+				breakif ( al in hide.nlCset || ebx >=edx);
+				dec (ecx);
+			endwhile;
+			
+			mov (ebx, this.cursor);
+			this.getIndex();
+		endif;
+	ENDUSE;		
+	end cursorRightLines;
+
+
+
+	method tBuffer.cursorToEOL; @noframe;
+	begin cursorToEOL;
+	USE (EBX, ECX);
+		mov (this.data, ebx);
+		add (this.length, ebx);
+		mov (ebx, ecx);		// ecx = EOF
+		mov (this.cursor, ebx);
+		
+		while (ebx < ecx) do
+			mov ([ebx], al);
+			breakif (al in hide.nlCset );
+			inc (ebx);
+		endwhile;
+//		dec (ebx);
+		mov (ebx, this.cursor);
+		mov (ebx, eax);
+		sub (this.data, eax);
+	ENDUSE;	
+	ret();	
+	end cursorToEOL;
+
+	method tBuffer.cursorToBOL; @noframe;
+	begin cursorToBOL;
+	USE (EBX, ECX);
+		mov (this.data, ecx);
+		mov (this.cursor, ebx);
+		
+		// if cursor is already at EOL, don't count it.
+		if ( (type byte [ebx]) = $a) then
+			dec (ebx);
+		endif;
+		if ( (type byte [ebx]) = $d) then
+			dec (ebx);
+		endif;
+		if ( ebx < ecx) then
+			mov (ecx, ebx);
+		endif;
+		
+		while (ebx >= ecx) do
+			mov ([ebx], al);
+			breakif ( al in hide.nlCset);
+			dec (ebx);
+		endwhile;
+		if (al = $d) then
+			add (2, ebx);
+		else
+			inc (ebx);
+		endif;
+		mov (ebx, this.cursor);
+		mov (ebx, eax);
+		sub (this.data, eax);
+	ENDUSE;
+	ret();
+	end cursorToBOL;
+
+	method tBuffer.cursorToBOW; @noframe;
+	begin cursorToBOW;
+	USE (EBX, ECX);
+		mov (this.data, ecx);
+		mov (this.cursor, ebx);
+		while (ebx >= ecx) do
+			mov ([ebx], al);
+			breakif (al in hide.whiteSpaceCset);
+			dec (ebx);
+		endwhile;
+		inc (ebx);
+		mov (ebx, this.cursor);
+		mov (ebx, eax);
+		sub (this.data, eax);
+	ENDUSE;
+	ret();
+	end cursorToBOW;
+
+	method tBuffer.cursorToEOW; @noframe;
+		// cursor to end of word
+	begin cursorToEOW;
+	USE (EBX, ECX);
+		mov (this.data, ebx);
+		add (this.length, ebx);
+		mov (ebx, ecx);		// ecx = EOF
+		mov (this.cursor, ebx);
+		
+		while (ebx < ecx) do
+			mov ([ebx], al);
+			breakif (al in hide.whiteSpaceCset);
+			inc (ebx);
+		endwhile;
+		
+		mov (ebx, this.cursor);
+		mov (ebx, eax);
+		sub (this.data, eax);
+	ENDUSE;
+	RET();
+	end cursorToEOW;
+
+
+
+end class_buffer_cursor;

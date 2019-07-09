@@ -1,0 +1,312 @@
+unit config_class_sections;
+	
+	//#includeonce ("stdlib.hhf")
+	#include ("src/hidelib.hhf")
+	#includeonce ("macros/extensions.hhf")
+	
+	#include("stdlib.hhf")
+	//#include("hide/dbgwin.hhf")
+	
+	?@nodisplay := true;
+	?@noalignstack := true;
+	
+	method tConfig._readSection (sec:string; dest:string);
+	begin _readSection;
+		USE (EDX);
+		if (this.getSectionBounds(sec)) then
+			
+			if ( testz ( tConfig.binsection, this.flags)) then
+			
+				if (testnz (tConfig.textsection, this.flags)) then
+					// text section, adjust indexi
+					mov (this.indexB, edx);
+				else
+					mov (this.sectionTail, edx);
+				endif;
+				mov (this.indexA, eax);
+				if (eax = edx) then
+					if (dest <>0) then
+						str.cpy ("", dest);
+						mov (dest, eax);
+					else
+						// return zero length string
+						str.alloc(4);
+					endif;
+				else
+					
+					if (dest <> 0) then
+						sub( eax, edx );
+						this.subString (eax, edx, dest);
+						mov (1, eax);
+					else
+						this.a_extract (eax, edx);
+					endif;
+				endif;
+				
+			else
+				// binary section not supported here
+				xor (eax, eax);
+			endif;
+		else
+			xor (eax, eax);
+		endif;
+		ENDUSE;
+	end _readSection;
+
+	method tConfig.a_readSection (sec:string);
+	begin a_readSection;
+		this._readSection (sec, NULL);
+	end a_readSection;
+
+
+	method tConfig.readBinSection (sec:string; var dest:tBuffer);
+		var
+			dst		:pointer to tBuffer;
+		
+		
+	begin readBinSection;
+	USE (EDX, EBX, ECX);
+		if (this.getSectionBounds(sec) ) then
+			if (testnz ( tConfig.binsection, this.flags)) then
+				
+				move (dest, dst);
+				
+				this.cursorTo ( this.indexA );
+				this.getCursor();
+				mov (eax, ebx);
+				this.cursorTo ( this.indexB );
+				this.getCursor();
+				mov (eax, edx);
+				
+				push( esi );
+				dst.erase();
+				str.cpy ("00", hide.strbuf);
+				mov (hide.strbuf, ecx);
+				while (ebx < edx) do
+					mov ([ebx], ax);
+					if (! al) then
+						xor (eax, eax);
+						break;
+					elseif (al in hide.whiteSpaceCset)  then
+						inc (ebx);
+					elseif (al in hide.binCset  && ah in hide.binCset) then
+						mov (ax, (type word[ecx]));
+						conv.strToh8( (type string ecx),0);
+						dst.insertc (al);
+						add (2, ebx);
+						mov (1, eax);
+					else
+						xor (eax, eax);
+						break;
+					endif;
+				welse
+					mov (1, eax);
+				endwhile;
+				
+				pop( esi );
+			else
+				xor (eax, eax);
+			endif;
+		else
+			xor (eax, eax);
+		endif;
+	ENDUSE;
+	end readBinSection;
+
+
+	method tConfig._writeSection (sec:string; src:string);
+		var
+			buf	:pointer to tConfig;
+
+	begin _writeSection;
+		USE (EAX, EDX);
+		if ( this.getSectionBounds(sec)  ) then
+			
+			// overwrite section
+			//this.findSectionA (sec);
+			//mov (this.indexA, eax);
+			mov( this.sectionBody, eax );
+			mov (this.sectionTail, edx);
+			this.setBlock (eax, edx);
+			this.replaceBlockString (src);
+			
+			if (this.isEof()) then
+				this.puts( nl );
+			else
+				this.getChar();
+				if (al = '[') then
+					this.puts (nl nl);
+				endif;
+				
+			endif;
+		else
+			
+			// new section
+			mov( esi, buf );
+			buf.append (nl, '[', sec, ']', nl, src, nl);
+			
+		endif;
+		ENDUSE;
+	end _writeSection;
+
+	method tConfig.writeBufSection (sec:string; var src:tBuffer);
+		var
+			buf	:pointer to tBuffer;
+		
+	begin writeBufSection;
+		USE (EAX, EDX);
+		//dbg.put("writeBufSection");
+		if ( this.getSectionBounds(sec) ) then
+			
+			// overwrite section
+			
+			mov( this.sectionBody, eax );
+			mov( this.sectionTail, edx );
+			
+			this.setBlock( eax, edx );
+			this.replaceBlockBuffer( src );
+			
+			
+			mov( esi, buf );
+			if (buf.isEof()) then
+				this.puts (nl);
+			else
+				this.getChar();
+				if (al = '[') then
+					this.puts (nl nl);
+				endif;
+				
+			endif;
+			
+		else
+			
+			// new section
+			mov( esi, buf );
+			buf.append (nl, '[', sec, ']', nl, src, nl);
+			
+		endif;
+		//dbg.put("/writeBufSection");
+	ENDUSE;
+	end writeBufSection;
+
+	method tConfig.readBufSection (sec:string; var dest:tBuffer);
+			
+	begin readBufSection;
+	USE (EDX);
+		if (this.getSectionBounds(sec) ) then
+			
+			push (esi);
+			mov (dest, esi);
+			(type tBuffer[esi]).erase();
+			pop (esi);
+			
+			if (testnz (tConfig.binsection, this.flags)) then
+			
+				this.readBinSection (sec, dest);
+			
+			else
+				if (testnz (tConfig.textsection, this.flags)) then
+					// text section, adjust indexi
+					mov (this.indexB, edx);
+				else
+					mov (this.sectionTail, edx);
+				endif;
+				mov (this.indexA, eax);
+				if (eax = edx) then
+					mov (1, eax);
+				else
+					sub( eax, edx );
+					this.subBuf(eax, edx, dest);
+					
+					push( esi );
+					mov (dest, esi);
+					// terminate with zero so this can be used
+					// like a zstring
+					(type tBuffer [esi]).getEOF();
+					mov (#0, (type byte[eax]));
+					mov (#0, (type tBuffer[esi]).cursor );
+					mov (1, eax);
+					pop( esi );
+				endif;
+			endif;
+		else
+			xor (eax, eax);
+		endif;			
+	ENDUSE;
+	end readBufSection;
+
+	method tConfig.readSections; @noframe;
+	begin readSections;
+	USE (EBX, ECX);
+		USE (ESI);
+			lea (ebx, this.sections);
+			if ((type dword [ebx]) <> 0) then
+				(type tList[ebx]).getHead();
+				mov (eax, ecx);
+				while (ecx) do
+					str.free ( (type listNode_t[ecx]).value);
+					mov ( (type listNode_t[ecx]).next, ecx);
+				endwhile;
+				(type tList[ebx]).destroy();
+			endif;
+		ENDUSE;
+		
+		push( esi );
+		this.sections.create();
+		pop( esi );
+
+		this.bof();
+		forever
+			breakif (this.isEof());
+			this.readByte();
+			if (al = '[') then
+				this.getIndex();
+				mov (eax, ecx);
+				this.searchf ("]");
+				this.a_extract (ecx, eax);
+				USE (ESI, EDI);
+					(type tList[ebx]).appendValue (eax);
+				ENDUSE;
+			elseif (al = '<') then
+				// if this is a <text> section, skip over it
+				this.match ("text>");
+				if (eax != -1) then
+					search_again:
+					this.searchf ("</text>");
+					this.getCursor();
+					if ( (type byte[eax-1]) != $a) then
+						this.nextLine();
+						jne search_again;	// this is not the real </text>
+					endif;
+				endif;
+			endif;
+			this.nextLine();
+		endfor;
+		ENDUSE;
+		ret();
+	end readSections;
+
+
+	method tConfig.getSectionList; @noframe;
+	begin getSectionList;
+		USE (ESI, EDI);
+		this.readSections();
+		this.sections.getHead();
+		ENDUSE;
+		ret();
+	end getSectionList;
+
+
+	// make this an iterator
+	method tConfig.getSectionCount; @noframe;
+	begin getSectionCount;
+		USE (ESI, EDI);
+		this.readSections();
+		lea (esi, this.sections);
+		(type tList[esi]).getCount();
+		ENDUSE;
+	ret();
+	end getSectionCount;
+
+	
+end config_class_sections;

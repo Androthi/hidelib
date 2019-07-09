@@ -1,0 +1,49 @@
+unit putzunit;
+
+#includeonce("stdout.hhf")
+#includeonce("excepts.hhf")
+#includeonce("src/hidefunc.hhf")
+
+
+procedure hide.putz(var src:dword);
+	@nodisplay; @noalignstack; @noframe;
+
+	// output a zero terminated string to standard output
+
+begin putz;
+
+	push( ebp );
+	mov( esp, ebp );
+	
+	push( eax );
+	push( ebx );
+	
+	mov( src, ebx );
+	test( ebx, ebx );
+	jz raiseDerefNULL;
+	
+	sub( 1, ebx );
+	_putz:
+
+		add( 1, ebx );
+		mov( [ebx], al );
+		test( al, al );
+		jz _xputz;
+		stdout.putc( al );
+		jmp _putz;
+		
+	_xputz:
+
+	pop( ebx );
+	pop( eax );
+	
+	pop( ebp );
+	ret( _parms_ );
+	
+	raiseDerefNULL:
+		raise( ex.AttemptToDerefNULL );
+		
+end putz;
+
+
+end putzunit;

@@ -1,0 +1,42 @@
+#IF ( ! @defined ( class_tStrBuffer_hhf ) )
+	?class_tStrBuffer_hhf := true;	
+
+type
+	tStrBuffer: class inherits (tBuffer);
+		
+		var
+			count		:uns32;		// total number of strings in strdata
+			align(4);
+			
+		const
+			header_size	:uns32 := 12;
+			count_offset:uns32 := 8;
+			
+		// *** PUBLIC METHODS ***
+		// object maintenence and initialization
+		override procedure create_size; @external;
+		override procedure create_default; @external;
+		override procedure create_file; @external;
+		
+		// information methods
+		method getCount;
+			@returns ("EAX"); @external;
+		
+		// data entry methods	
+		method putStr (strptr:string);
+			@returns ("EAX"); @external;
+		method putStrz (strptr:dword);
+			@returns ("EAX"); @external;
+		method putStrBytes (mem_start:dword; length:dword);
+			@returns ("EAX"); @external;
+		
+		// data retreival methods
+		method getStr (index:uns32);
+			@returns ("EAX"); @external;
+		iterator stringInBuffer;
+			@external;
+		
+	endclass;
+endtype;
+
+#ENDIF

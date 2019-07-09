@@ -1,0 +1,126 @@
+unit class_baselist_unit;
+
+	#includeonce ("src/hidelib.hhf")
+	#includeonce("memory.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	readonly
+		//tBaseListVMT	:VMT(tBaseList);
+		vmt( tBaseList );
+
+	const
+		listebx	:text := "(type baseNode_t[ebx])";
+		listeax	:text := "(type baseNode_t[eax])";
+		
+	procedure tBaseList.create; @noframe;
+	begin create;
+	USE (EAX);
+		if (! esi) then
+			mem.zalloc (@size (tBaseList));
+			mov (eax, esi);
+		else
+			mem2.fillMem ([esi], @size(tBaseList), 0);
+		endif;
+		move (&tBaseList._VMT_, this._pVMT_);
+	ENDUSE;
+	ret();
+	end create;
+
+	method tBaseList.destroy; @noframe;
+	begin destroy;
+		// go through list freeing all items.
+	USE (EDX, EAX, EBX);
+		mov (this.head, ebx);
+		while (ebx) do
+			mov (listebx.next, edx);
+			mem.free (ebx);
+			mov (edx, ebx);
+		endwhile;
+		
+		if (mem.isInHeap (esi)) then
+			mem.free (esi);
+		endif;
+	ENDUSE;
+	ret();
+	end destroy;
+
+	method tBaseList.getCount; @noframe;
+	begin getCount;
+		mov (this.count, eax);
+		ret();
+	end getCount;
+
+	method tBaseList.getHead; @noframe;
+	begin getHead;
+		mov (this.head, eax);
+		clc();
+		if (! eax) then
+			stc();
+		endif;
+		ret();
+	end getHead;
+
+	method tBaseList.getTail; @noframe;
+	begin getTail;
+		mov (this.tail, eax);
+		if (! eax) then
+			// no tail, head = tail
+			mov (this.head, eax);
+			if (! eax) then
+				// no head, no tail ... error... empty list
+				stc();
+			endif;
+			clc();
+		else
+			clc();
+		endif;
+		ret();
+	end getTail;
+
+	method tBaseList.getNodeIndex (index:uns32);
+	begin getNodeIndex;
+		mov (index, eax);
+		if (eax <= this.count) then
+			if (! eax) then
+				mov (this.head, eax);
+			elseif (eax = this.count) then
+				mov (this.tail, eax);
+			else
+				USE (ECX);
+					mov (this.head, eax);
+					mov (index, ecx);
+					while (ecx) do
+						mov (listeax.next, eax);
+						dec (ecx);
+					endwhile;
+				ENDUSE;
+			endif;
+		else
+			xor (eax, eax);
+			stc();		// return carry set for error
+		endif;
+	end getNodeIndex;
+
+	method tBaseList.getIndexNode (var lNode:baseNode_t);
+	begin getIndexNode;
+	USE (EBX, ECX);
+		mov (lNode, ebx);
+		xor (ecx, ecx);
+		while (ebx) do
+			breakif (ebx = lNode);
+			mov (listebx.next, ebx);
+			inc (ecx);
+		welse
+			mov (-1, eax);
+			stc();
+			jmp done;
+		endwhile;
+		mov (ecx, eax);
+		clc();
+	done:
+	ENDUSE;
+	end getIndexNode;
+
+end class_baselist_unit;

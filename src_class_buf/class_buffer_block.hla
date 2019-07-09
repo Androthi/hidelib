@@ -1,0 +1,107 @@
+unit class_buffer_block;
+		
+	#include ("src/hidelib.hhf")
+	#include ("strings.hhf")
+	#includeonce ("macros/macros.hhf")
+	#includeonce ("macros/extensions.hhf")
+
+	?@noalignstack:= true;
+	?@nodisplay := true;
+
+
+	method tBuffer.setBlock ( start_index:uns32; end_index:uns32 );
+	begin setBlock;
+	USE (EAX, ECX);
+		
+		// make sure start_index and end_index are in bounds.
+		mov (this.length, ecx);
+		if (start_index >= ecx) then
+			mov (ecx, start_index);
+		endif;
+		if (end_index >= ecx) then
+			mov (ecx, end_index);
+		endif;
+		mov (start_index, eax);
+		if (end_index < eax) then
+			mov (eax, end_index);
+		endif;
+		
+		mov (this.data, ecx);
+		mov (ecx, eax);
+		add (start_index, ecx);
+		mov (ecx, this.blockstart);
+//		stdout.put ("blockstart = ", this.blockstart,nl);
+		add (end_index, eax);
+		mov (eax, this.cursor);
+//		stdout.put ("block end = ", this.cursor,nl);
+		or (tBuffer.block_active, this.flags);
+	ENDUSE;
+	end setBlock;
+
+	method tBuffer.getBlockStart; @noframe;
+	
+		// returns index of block start
+	
+	begin getBlockStart;
+		if (testnz (tBuffer.block_active, this.flags)) then
+			mov (this.blockstart, eax);
+			sub (this.data, eax);
+		else
+			mov (-1, eax);	
+		endif;
+		ret();
+	end getBlockStart;
+ 
+	method tBuffer.getBlockText	(dest:string);
+	begin getBlockText;
+	USE (EAX, ECX);
+		if (testnz (tBuffer.block_active, this.flags)) then
+			mov (this.blockstart, eax);
+			sub (this.data, eax);
+			mov (this.cursor, ecx);
+			sub (this.data, ecx);
+			sub( eax, ecx );
+			this.subString (eax, ecx, dest);
+		endif;
+	ENDUSE;
+	end getBlockText;
+
+	method tBuffer.deleteBlock;
+	
+		// deletes block and cancels block mode
+	
+	begin deleteBlock;
+	USE (EAX, ECX);
+		if (testnz (tBuffer.block_active, this.flags)) then
+			mov (this.blockstart, eax);
+			sub (this.data, eax);		// index
+			mov (this.cursor, ecx);
+			sub (this.data, ecx);
+			this.deleteIndex (eax, ecx);
+			and (! tBuffer.block_active, this.flags);
+		endif;
+	ENDUSE;
+	end deleteBlock;
+
+	method tBuffer.replaceBlockString (s:string);
+	begin replaceBlockString;
+		if (testnz (tBuffer.block_active, this.flags)) then
+			this.deleteBlock();
+			this.inserts (s);
+			and (! tBuffer.block_active, this.flags);
+		endif;
+	end replaceBlockString;
+
+	method tBuffer.replaceBlockBuffer (var buf:tBuffer);
+	begin replaceBlockBuffer;
+		if (testnz (tBuffer.block_active, this.flags)) then
+			this.deleteBlock();
+			mov( buf, eax );
+			this.putBuffer( [eax] );
+			and (! tBuffer.block_active, this.flags);
+		endif;
+	end replaceBlockBuffer;
+
+
+
+end class_buffer_block;

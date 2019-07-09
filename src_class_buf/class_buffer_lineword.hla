@@ -1,0 +1,151 @@
+unit class_buffer_lineword;
+	
+		
+	#include ("src/hidelib.hhf")
+	#include ("strings.hhf")
+	#includeonce ("macros/macros.hhf")
+	#includeonce("excepts.hhf")
+
+	?@noalignstack:= true;
+	?@nodisplay := true;
+
+
+
+	method tBuffer.getCursorWord (dest:string);
+	
+		// get the word under the cursor
+		// if cursor is under white-space, return -1
+		// otherwise, return index of start of word
+		var
+			start	:uns32;
+		endvar;
+	begin getCursorWord;
+	USE (EBX);
+		mov (dest, ebx);
+		if (! ebx) then
+			raise (ex.AttemptToDerefNULL);
+		endif;
+		
+		// see if current cursor position is non-white space
+		mov (this.cursor, ebx);
+		mov ([ebx], al);
+		if (al not in hide.whiteSpaceCset) then
+			
+			push (this.cursor);	// save it since this doesn't alter cursor pos
+			this.cursorToBOW();	// rewind to beginning of word.
+			mov (eax, start);
+			this.cursorToEOW();	// forward to end of word.
+			sub( start, eax );
+			this.subString( start, eax, dest );
+			pop (this.cursor);
+			mov (start, eax);	// return index of word
+		else
+			or (-1, eax);
+		endif;
+		
+	ENDUSE;
+	end getCursorWord;
+
+	method tBuffer.getWordFromCursor (dest:string);
+	begin getWordFromCursor;
+	USE (EBX);
+		mov (dest, ebx);
+		if (! ebx) then
+			raise (ex.AttemptToDerefNULL);
+		endif;
+		
+		// see if current cursor position is non-white space
+		mov (this.cursor, ebx);
+		mov ([ebx], al);
+		if (al not in hide.whiteSpaceCset) then
+			
+			push (this.cursor);	// save it since this doesn't alter cursor pos
+			this.cursorToEOW();	// forward to end of word.
+			mov (eax, ebx);
+			pop (this.cursor);
+			this.getIndex();
+			push (eax);
+			sub( eax, ebx );
+			this.subString(eax, ebx, dest );
+			pop (eax);
+		else
+			or (-1, eax);
+		endif;
+		
+	ENDUSE;
+	end getWordFromCursor;
+
+
+	method tBuffer.getCursorLine (dest:string);
+	
+		// returns index of start of line
+		var
+			start	:uns32;
+		endvar;
+	begin getCursorLine;
+	USE (EBX);
+		mov (dest, ebx);
+		if (! ebx) then
+			raise (ex.AttemptToDerefNULL);
+		endif;
+		
+		push (this.cursor);
+		mov (this.cursor, ebx);
+		if ( (type byte [ebx]) = $a) then
+			dec (ebx);
+		endif;
+		if ( (type byte [ebx]) = $d) then
+			dec (ebx);
+		endif;
+		mov (ebx, this.cursor);
+		this.cursorToBOL();
+		mov (eax, start);
+		this.cursorToEOL();
+		sub( start, eax );
+		this.subString (start, eax, dest);
+		pop (this.cursor);
+		mov (start, eax);
+	ENDUSE;
+	end getCursorLine;
+
+	method tBuffer.getLineFromCursor (dest:string);
+	begin getLineFromCursor;
+	USE (EBX);
+		mov (dest, ebx);
+		if (! ebx) then
+			raise (ex.AttemptToDerefNULL);
+		endif;
+		
+		if (this.isEof() ) then
+			str.cpy ("", dest);
+			or (-2, eax);
+		else
+			push (this.cursor);
+			this.cursorToEOL();
+			mov (eax, ebx);
+			pop (this.cursor);
+			this.getIndex();
+			push (eax);
+			sub( eax, ebx );
+			this.subString ( eax, ebx, dest);
+			pop (eax);			
+		endif;
+		
+	ENDUSE;
+	end getLineFromCursor;
+
+	method tBuffer.a_getLineFromCursor; @noframe;
+	begin a_getLineFromCursor;
+	USE (EBX);
+		push (this.cursor);
+		this.cursorToEOL();
+		mov (eax, ebx);
+		pop (this.cursor);
+		this.getIndex();
+		this.a_extract ( eax, ebx);
+	ENDUSE;
+	ret();		
+	end a_getLineFromCursor;
+
+
+end class_buffer_lineword;

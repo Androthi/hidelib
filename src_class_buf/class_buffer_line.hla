@@ -1,0 +1,47 @@
+unit class_buffer_line;
+	#include ("src/hidelib.hhf")
+	#include ("strings.hhf")
+	#includeonce ("macros/macros.hhf")
+
+	method tBuffer.nextLine; @noframe;
+	
+		// moves cursor to beginning of next line
+		// returns cursor index in eax
+	
+	begin nextLine;
+		
+		this.brk ( hide.nlCset);
+		if (eax <> -1) then
+			mov (this.cursor, eax);
+			if ( (type byte [eax]) = $0d) then
+				this.cursorRight (2);
+			else
+				this.cursorRight (1);
+			endif;
+		else
+			this.getIndex();
+		endif;
+		ret();
+	end nextLine;
+
+	method tBuffer.prevLine; @noframe;
+	
+		// moves cursor to beginning of previous line
+		// returns cursor index in eax
+	
+	begin prevLine;
+		
+		this.cursorToBOL();
+		this.cursorLeft (1);
+		mov (this.cursor, eax);
+		if ( (type byte[eax-1]) = $d) then
+			this.cursorLeft (2);
+		else
+			this.cursorLeft (1);
+		endif;
+		this.cursorToBOL();
+		ret();
+	end prevLine;
+
+
+end class_buffer_line;

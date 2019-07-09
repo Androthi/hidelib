@@ -1,0 +1,23 @@
+unit class_buf_putword_unit;
+
+	#includeonce ("hide/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	proc
+
+		tBuf.putWord		:method( w:word );
+		begin putWord;
+			USE( ECX );
+			this.adjustForInsert( 2 );
+			mov( w, cx );
+			mov( this.cursor, eax );
+			mov( cx, [eax] );
+			add( 2, eax );
+			mov( eax, this.cursor );
+			ENDUSE;
+		end putWord;
+		
+
+end class_buf_putword_unit;

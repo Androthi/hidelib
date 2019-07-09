@@ -1,0 +1,49 @@
+unit hide_stricmp;
+	
+#includeonce("src/hidefunc.hhf")
+#include ("strings.hhf")
+#include ("stdout.hhf")
+
+?@display := false;
+
+	
+procedure hide.stricmp( src1:dword; src2:dword ); 
+	// compare 2 zero terminated strings
+	// address in zsrc1 and zsrc2
+begin stricmp;
+	push (ebx);
+	push (eax);
+	push (esi);
+	push (edi);
+	
+	mov(src1, esi);
+	mov(src2, edi);
+	
+	cmpLoop:
+        mov( [esi], al );
+        mov( [edi], ah );
+        add( 1, esi );
+        add( 1, edi );
+        cmp( al, 0 );
+        je notAlpha;
+        cmp( al, ah );
+        je cmpLoop;
+        mov( ax, bx );
+        and( $dfdf, bx );
+        cmp( bl, 'A' );
+        jb notAlpha;
+        cmp( bl, 'Z' );
+        ja notAlpha;
+        cmp( bl, bh );
+        je cmpLoop;
+
+    notAlpha:
+		cmp( al, ah );
+
+	pop (edi);
+	pop (esi);
+	pop (eax);
+	pop (ebx);
+end stricmp;
+
+end hide_stricmp;

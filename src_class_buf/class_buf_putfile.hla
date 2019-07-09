@@ -1,0 +1,34 @@
+unit class_buf_putfile_unit;
+
+	#includeonce ("hide/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	proc
+
+		tBuf.putFile	:method( fileName:string );
+		
+			var
+				hfile	:dword;
+				size	:uns32;
+				
+		
+		begin putFile;
+			
+			fileio.open (fileName, fileio.r);
+			mov( eax, hfile );
+			filesys.size( eax );
+			mov( eax, size );
+			this.adjustForInsert( eax );
+			mov( this.cursor, eax );
+			fileio.read( hfile, [eax], size );
+			fileio.close( hfile );
+			mov( size, eax );
+			add( eax, this.cursor );
+			mov( this.cursor, eax );
+			
+		end putFile;
+	
+	
+end class_buf_putfile_unit;

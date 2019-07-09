@@ -1,0 +1,51 @@
+unit scan_findc_unit;
+
+	#includeonce ("hide/hidefunc.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	procedure scan.findc( toFind:char ); @noframe;
+	
+		// source = esi
+		// searches for char starting from esi, returns
+		// pointer in edi
+		// returns:
+		//	carry set = operation success, EDI points to char
+		//	carry clear= operation failure, EDI undefined
+	
+	begin findc;
+		
+		push( ebp );
+		mov( esp, ebp );
+		
+		push( eax );
+		
+		mov( toFind, ah );
+		mov( esi, edi );
+		sub( 1, edi );
+		scan:
+			add( 1, edi );
+			mov( [edi], al );
+			test( al, al );
+			jz returnFalse;
+			cmp( al, ah );
+			je returnTrue;
+			jmp scan;
+			
+		returnFalse:
+			clc();
+			jmp done;
+			
+		returnTrue:
+			stc();
+		
+		done:
+			pop( eax );
+			pop( ebp );
+			ret( _parms_ );
+		
+	end findc;
+
+
+end scan_findc_unit;

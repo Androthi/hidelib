@@ -1,0 +1,36 @@
+unit sysexitunit;
+
+	#include ("src/hidefunc.hhf")
+	#include ("os.hhf")
+	
+	#if (os.win32)
+		
+		static
+			ExitProcess: procedure(returnCode:dword);
+			@stdcall;
+			@external( "__imp__ExitProcess@4" );
+		endstatic;
+	
+	#elseif (os.linux)
+		#include ("linux.hhf")
+	#endif
+	
+	procedure os2.sysexit (returnCode:dword);
+		
+	begin sysexit;
+		
+		// no need to preserve registers...
+		
+		#if (os.win32)
+			
+			ExitProcess (returnCode);
+			
+		#elseif (os.linux)
+		
+			linux._exit (returnCode);
+			
+		#endif
+	end sysexit;
+
+	
+end sysexitunit;

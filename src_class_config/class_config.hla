@@ -1,0 +1,321 @@
+unit config_class_util;
+	
+	#include ("src/hidelib.hhf")
+	#includeonce("strings.hhf")
+	#includeonce("memory.hhf")
+	
+	#include("stdlib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+	
+	readonly
+		vmt( tConfig );
+	
+	proc	
+		tConfig.create_default	:procedure { @noframe };
+		begin create_default;
+			push( eax );
+			if (! esi) then
+				mem.zalloc (@size (tConfig));
+				mov (eax, esi);
+			else
+				// initialize static/automatic instance to 0
+				mem2.fillMem ([esi], @size(tConfig), 0);
+			endif;
+			
+			(type tBuffer[esi]).create_default();
+			mov (&tConfig._VMT_, this._pVMT_);
+			
+			pop( eax );
+			ret();
+		end create_default;
+
+		tConfig.create_file		:procedure( fileName:string );
+		begin create_file;
+			push( eax );
+			
+			if (! esi) then
+				mem.zalloc (@size (tConfig));
+				mov (eax, esi);
+			else
+				// initialize static/automatic instance to 0
+				mem2.fillMem ([esi], @size(tConfig), 0);
+			endif;
+			
+			(type tBuffer[esi]).create_file( fileName );
+			mov (&tConfig._VMT_, this._pVMT_);
+
+			pop( eax );		
+		end create_file;
+
+
+	method tConfig.write (fileName:string);
+	
+		// depricated, use method writeFileName
+		// or writeFile
+	
+	begin write;
+		
+		this.writeFileName( fileName );
+		
+	end write;
+
+
+	method tConfig.findSectionA (sec:string);
+		
+		// returns true in EAX if section exists.
+		
+	begin findSectionA;
+		
+		this.bof();
+		str.put( hide.strbuf, '[', sec, ']' );
+		this.searchf( hide.strbuf );
+		if( eax = -1 ) then
+		
+			xor (eax, eax);
+		
+		else
+			
+			this.nextLine();
+			mov( eax, this.indexA );
+		
+		endif;
+
+	end findSectionA;
+	
+	method tConfig.getSectionBounds (sec:string);
+	begin getSectionBounds;
+		
+		// reset flags
+		and (! tConfig.textsection, this.flags);
+		and (! tConfig.binsection, this.flags);
+		
+		this.bof();
+		str.put( hide.strbuf, '[', sec, ']' );
+		if( this.searchf( hide.strbuf ) ) then
+		
+			mov( eax, this.sectionHead );
+			this.nextLine();
+			mov( eax, this.sectionBody );
+			mov( eax, this.indexA );	// this may change if <text> or <bin> is found later
+
+			this.getChar();			
+			if( al = '[' ) then
+
+				// empty section
+				mov( this.indexA, eax );
+				dec( eax );
+				mov( eax, this.indexA );
+				mov( eax, this.indexB );
+				mov( eax, this.sectionTail );
+				
+				stc();
+				jmp _endbounds;
+				
+			else
+			
+				if( this.imatch( "<text>" ) ) then
+					
+					// text section
+					this.nextLine();
+					mov( eax, this.indexA );
+					
+					// find matching "</text>", which must be at the beginning of a new line
+					
+					again:
+					if( this.isearchf ("</text>") ) then
+						dec( eax );
+						this.moveTo( eax );
+						this.getChar();
+						if( al = $a || al = $d ) then
+							
+							if (this.getChar() = $a) then
+								this.cursorLeft (1);
+							endif;
+							mov( eax, this.indexB);
+							or (tConfig.textsection, this.flags);
+							
+						else
+							
+							this.cursorRight (7);
+							jmp again;
+							
+						endif;
+						
+					else
+						
+						clc();
+						jmp _endbounds;
+				
+					endif;
+					
+				elseif( this.imatch ("<bin>") ) then
+					
+					// binary section
+					add( 5, eax );
+					mov( eax, this.indexA );
+					
+					// find matching "</bin>", which must be at the beginning of a new line
+					binagain:
+					if( this.isearchf ("</bin>") ) then
+						dec( eax );
+						mov( eax, this.indexB );
+						this.moveTo( eax );
+						this.getChar();
+						if (al = $a || al = $d) then
+						
+							or (tConfig.binsection, this.flags);
+						
+						else
+							
+							
+							clc();
+							jmp _endbounds;
+							
+						endif;
+						
+					else
+						
+
+						clc();
+						jmp _endbounds;
+						
+					endif;
+				
+				endif;
+				
+
+				findEnd:
+				this.right(1);
+				if( this.searchf( "[" ) ) then
+					
+					// are we at beginning of next section?
+					this.cursorLeft(1);
+					mov( eax, this.sectionTail );
+					
+					this.getChar();
+					
+					if ( al = $a) then
+						
+						// found it;
+						this.cursorRight(1);
+					 	mov (eax, this.sectionTail);
+						
+					else
+						// just a lbracket somewhere... ignore it
+						this.cursorRight (1);
+						jmp findEnd;
+						
+					endif;
+				else
+					
+					mov( this.length, eax );
+					mov( eax, this.sectionTail );
+					
+				endif;
+			
+			endif;
+			
+
+			stc();
+			
+		else
+			
+			clc();	
+		
+		endif;
+	
+		_endbounds:
+	end getSectionBounds;
+
+	
+	method tConfig.findKeyA (key:string);
+		
+		// gha! this code is ugly
+		
+		var
+			EOF				:dword;
+			lineStartIndex	:uns32;
+			s				:string;
+
+	begin findKeyA;
+		USE (ECX);
+		
+		mov( this.data, ecx);
+		add( this.length, ecx);
+		mov (ecx, EOF);
+		
+		searchLines:
+			mov( this.cursor, eax );
+			cmp (eax, EOF);
+			jae no_key;
+			
+			mov( [eax], al );
+			cmp( al, '[' );
+			je no_key;	// reached next section
+			
+			cmp( al, ';' );
+			jne get_str;
+			
+			// ignore commented line
+			this.nextLine();
+			jmp searchLines;
+			
+			get_str:
+			this.a_getLineFromCursor();
+			mov( eax, s );	
+			
+			if( str.index2( s, "=" ) ) then
+				
+				// found a key, see if it's the one we want.
+				// eax = index of cursor
+				mov( eax, ecx );
+				this.getIndex();
+				mov( eax, lineStartIndex );
+				this.subString( eax, ecx, s );
+				str.trim( s );
+				if( str.eq( s, key ) ) then
+					// found out key
+					inc( ecx );
+					this.right( ecx );	// move cursor beyond equal.
+					str.free( s );
+					jmp good;
+					
+				endif;
+			endif;
+			
+			// if dropped here, line no good, try next line
+			str.free( s );
+			this.nextLine();
+			jmp searchLines;
+			
+		no_key:
+		
+			// key not found in this section
+			xor (eax, eax);
+			
+		good:
+		ENDUSE;
+	end findKeyA;
+
+	method tConfig.isSectionDefined (sec:string);
+	begin isSectionDefined;
+		xor (eax, eax);
+		if ( this.findSectionA (sec)) then
+			mov (1, eax);
+		endif;
+	end isSectionDefined;
+
+	method tConfig.isKeyDefined (sec:string; key:string);
+	begin isKeyDefined;
+		xor (eax, eax);
+		if (this.findSectionA (sec)) then
+			if (this.findKeyA (key)) then
+				mov (1, eax);
+			endif;
+		endif;
+	end isKeyDefined;
+
+
+end config_class_util;

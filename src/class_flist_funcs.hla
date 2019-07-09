@@ -1,0 +1,38 @@
+unit class_flist_funcs_unit;
+
+	#includeonce ("src/hidelib.hhf")
+	#includeonce("filesys.hhf")
+	
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	method tFileList.isExtended ( var lNode:fileNode_t);
+	begin isExtended;
+		mov (lNode, eax);
+		movzx ( (type fileNode_t[eax]).extended, eax);
+	end isExtended;
+
+	method tFileList.isExtension (var lNode:fileNode_t; ext:string);
+	begin isExtension;
+		push( ebx );
+		push( ecx );
+		mov (lNode, ebx);
+		if( (type fileNode_t[ebx]).extended ) then
+			filesys.a_extractExt( (type fileNode_t[ebx]).fname );
+			mov( eax, ecx );
+			if( str.eq( ecx, ext ) ) then
+				mov( true, eax );
+			else
+				mov( false, eax );
+			endif;
+			str.free( ecx );
+		else
+			mov( false, eax );
+		endif;
+		
+		pop( ecx );
+		pop( ebx );
+		
+	end isExtension;
+
+end class_flist_funcs_unit;

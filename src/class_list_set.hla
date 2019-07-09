@@ -1,0 +1,20 @@
+unit class_list_set_unit;
+
+	#includeonce ("hide/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	const
+		listeax	:text := "(type listNode_t[eax])";
+
+	method tList.setValue ( var lNode:listNode_t; value:dword);
+	begin setValue;
+	USE (EAX);
+		mov (lNode, eax);
+		move (value, listeax.value);
+	ENDUSE;
+	end setValue;
+
+
+end class_list_set_unit;

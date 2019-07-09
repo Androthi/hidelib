@@ -1,0 +1,46 @@
+unit scan_match_unit;
+
+	#includeonce ("hide/hidefunc.hhf")
+	#includeonce ("strings.hhf")
+	#includeonce ("excepts.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	procedure scan.match( toMatch:string ); @noframe;
+		
+		// matches string starting from ESI
+		
+		// returns
+		//		carry = set, true, EDI = pointer to 1 char beyond matched string
+		//		carry = clear, false, EDI = undefined
+		
+	begin match;
+		
+		push( ebp );
+		mov( esp, ebp );
+		push( eax );
+		push( ecx );
+		
+		mov( toMatch, edi );
+		mov( (type str.strRec[edi]).length, ecx );
+		repe.cmpsb();
+		jne returnFalse;
+		
+		returnTrue:
+			stc();
+			jmp done;
+		
+		returnFalse:
+			clc();
+			
+		done:
+			pop( ecx );
+			pop( eax );
+			pop( ebp );
+			ret( _parms_ );
+		
+	end match;
+
+
+end scan_match_unit;

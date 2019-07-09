@@ -1,0 +1,50 @@
+unit class_buffer_extract;
+				
+	#include ("src/hidelib.hhf")
+	#include ("strings.hhf")
+	#includeonce ("macros/macros.hhf")
+	#includeonce("excepts.hhf")
+	#includeonce("memory.hhf")
+
+	?@noalignstack:= true;
+	?@nodisplay := true;
+
+	
+	// extraction methods
+	// these are all depricated,
+	// use subBuf, a_subBuf, subString, a_subString
+	
+	method tBuffer.extractToBuffer( start_index:uns32; end_index:uns32; var dest:tBuffer );
+	begin extractToBuffer;
+		
+		push( eax );
+		mov( end_index, eax );
+		sub( start_index, eax );
+		this.subBuf( start_index, eax, dest );
+		pop( eax );
+		
+	end extractToBuffer;
+
+	
+	method tBuffer.extract ( start_index:uns32; end_index:uns32; dest:string );
+	begin extract;
+		
+		push( eax );
+		mov( end_index, eax );
+		sub( start_index, eax );
+		this.subString( start_index, eax, dest );
+		pop( eax );
+
+	end extract;
+
+	method tBuffer.a_extract ( start_index:uns32; end_index:uns32 );
+	begin a_extract;
+
+		mov( end_index, eax );
+		sub( start_index, eax );
+		this.a_subString( start_index, eax );
+
+	end a_extract;
+
+
+end class_buffer_extract;

@@ -1,0 +1,59 @@
+unit class_list_unit;
+
+	#includeonce ("src/hidelib.hhf")
+	#includeonce( "memory.hhf" )
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	const
+		listedx	:text := "(type listNode_t[edx])";
+		listeax	:text := "(type listNode_t[eax])";
+		listebx	:text := "(type listNode_t[ebx])";
+
+	readonly
+		//tListVMT	:VMT(tList);
+		vmt( tList );
+
+
+	procedure tList.create; @noframe;
+	begin create;
+	USE (EAX);
+		if (! esi) then
+			mem.zalloc (@size (tList));
+			mov (eax, esi);
+		else
+			mem2.fillMem ([esi], @size(tList), 0);
+		endif;
+		(type tBaseList[esi]).create();	// call subclass
+		move (&tList._VMT_, this._pVMT_);
+	ENDUSE;
+	ret();
+	end create;
+
+	method tList.newNode; @noframe;
+	begin newNode;
+		mem.zalloc (@size (listNode_t));
+		mov (tList.listNodeID,  (type listNode_t[eax]).nodeID );
+		ret();
+	end newNode;
+
+
+	method tList.appendValue (value:dword);
+		// add a node to the list-tail
+		// returns inserted node in EAX
+	begin appendValue;
+	USE (EDX);
+		this.newNode();
+		mov (eax, edx);
+		move (value, listedx.value);
+		this.append ([edx]);
+		
+		//return added item
+		mov (edx, eax);
+	
+	ENDUSE;
+	end appendValue;
+
+
+end class_list_unit;

@@ -1,0 +1,35 @@
+unit class_config_bool_unit;
+
+	#includeonce ("src/hidelib.hhf")
+
+	?@nodisplay := true;
+
+	method tConfig.readBool (sec:string; key:string);
+		var
+			s	:string;
+			
+	begin readBool;
+		
+		mov (str.talloc (128), s);
+		if (this._readString (sec, key, s)) then
+			if (str.eq (s, "true")) then
+				mov (true, eax);
+			else
+				mov (false, eax);
+			endif;
+		endif;
+		
+	end readBool;
+
+	method tConfig.writeBool (sec:string; key:string; state:boolean);
+	begin writeBool;
+		if (state) then
+			this.writeString (sec, key, "true");
+		else
+			this.writeString (sec, key, "false");
+		endif;
+	end writeBool;
+
+
+
+end class_config_bool_unit;

@@ -1,0 +1,132 @@
+// extensions.hhf
+// a series of instruction extending macros
+
+#IF ( ! @defined ( extensions_hhf ) )
+	?extensions_hhf := true;
+
+#macro setBit( src, dest );
+	or( src, dest );
+#endmacro
+#macro setFlag( src, dest );
+	or( src, dest );
+#endmacro
+
+#macro clearBit( src, dest );
+	and( ! src, dest );
+#endmacro;
+#macro clearFlag( src, dest );
+	and( ! src, dest );
+#endmacro;
+
+#macro testnz (src, dest);
+	returns ( { test (src, dest); }, "@nz" )
+#endmacro
+
+// alias of testnz
+#macro flagSet (src, dest );
+	returns ( { test (src, dest); }, "@nz" )
+#endmacro
+
+#macro bitSet (src, dest );
+	returns ( { test (src, dest); }, "@nz" )
+#endmacro
+
+#macro testz (src, dest);
+	returns ( { test (src, dest); }, "@z" )
+#endmacro
+
+// alias of testz
+#macro flagClear( src, dest );
+	returns ( { test (src, dest); }, "@z" )
+#endmacro
+
+#macro bitClear( src, dest );
+	returns ( { test (src, dest); }, "@z" )
+#endmacro
+
+#macro cmpe (src, dest);
+	returns ( { cmp (src, dest); }, "@e" )
+#endmacro
+
+#macro cmpne (src, dest);
+	returns ( { cmp (src, dest); }, "@ne" )
+#endmacro
+
+#macro cmpa (src, dest);
+	returns ( { cmp (src, dest); }, "@a" )
+#endmacro
+
+#macro cmpna (src, dest);
+	returns ( { cmp (src, dest); }, "@na" )
+#endmacro
+
+static		// keep bison happy
+
+#macro cmpae (src, dest);
+	returns ( { cmp (src, dest); }, "@ae" )
+#endmacro
+
+#macro cmpnae (src, dest);
+	returns ( { cmp (src, dest); }, "@nae" )
+#endmacro
+
+#macro cmpg (src, dest);
+	returns ( { cmp (src, dest); }, "@g" )
+#endmacro
+
+#macro cmpng (src, dest);
+	returns ( { cmp (src, dest); }, "@ng" )
+#endmacro
+
+#macro cmpge (src, dest);
+	returns ( { cmp (src, dest); }, "@ge" )
+#endmacro
+
+#macro cmpnge (src, dest);
+	returns ( { cmp (src, dest)' }, "@nge" )
+#endmacro
+
+#macro cmpl (src, dest);
+	returns ( { cmp (src, dest); }, "@l" )
+#endmacro
+
+#macro cmpnl (src, dest);
+	returns ( { cmp (src, dest); }, "@nl" )
+#endmacro
+
+#macro cmple (src, dest);
+	returns ( { cmp (src, dest); }, "@le" )
+#endmacro
+
+#macro cmpnle (src, dest);
+	returns ( { cmp (src, dest); }, "@nle" )
+#endmacro
+
+#macro cmpz (src, dest);
+	returns ( { cmp (src, dest); }, "@z" )
+#endmacro
+
+#macro cmpnz (src, dest);
+	returns ( { cmp (src, dest); }, "@nz" )
+#endmacro
+
+#macro cmpb (src, dest);
+	returns ( { cmp (src, dest); }, "@b" )
+#endmacro
+
+static		// keep bison happy
+
+#macro cmpnb (src, dest);
+	returns ( { cmp (src, dest); }, "@nb" )
+#endmacro
+
+#macro cmpbe (src, dest);
+	returns ( { cmp (src, dest); }, "@be" )
+#endmacro
+
+#macro cmpnbe (src, dest);
+	returns ( { cmp (src, dest); }, "@nbe" )
+#endmacro
+
+
+#ENDIF

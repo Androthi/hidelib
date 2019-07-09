@@ -1,0 +1,40 @@
+unit class_buffer_cmp;
+		
+	#include ("src/hidelib.hhf")
+	#include ("strings.hhf")
+	#includeonce ("macros/macros.hhf")
+
+	?@noalignstack:= true;
+	?@nodisplay := true;
+
+	// depricated, use method eq
+	method tBuffer.cmpBuffer (var buffer:tBuffer);
+	begin cmpBuffer;
+		
+		if( this.eq( buffer ) ) then
+			xor( eax, eax );	// return @e
+		
+		else
+			xor( eax, eax );
+			or( 1, edi );
+			xor( eax, edi );	// return @ne
+		endif;
+		
+	end cmpBuffer;
+
+	// depricated, use ieq
+	method tBuffer.icmpBuffer (var buffer:tBuffer);
+	begin icmpBuffer;
+		
+		if( this.ieq( buffer ) ) then
+			xor( eax, eax );	// return @e
+		
+		else
+			xor( eax, eax );
+			or( 1, edi );
+			xor( eax, edi );	// return @ne
+		endif;
+
+	end icmpBuffer;
+	
+end class_buffer_cmp;

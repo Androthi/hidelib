@@ -1,0 +1,21 @@
+unit class_buf_getindex_unit;
+
+	#includeonce ("hide/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	proc
+		
+		tBuf.getIndex	:method {@noframe};
+		begin getIndex;
+			
+			mov( this.cursor, eax );
+			sub( this.data, eax );
+			ret();
+			
+		end getIndex;
+
+		
+
+end class_buf_getindex_unit;

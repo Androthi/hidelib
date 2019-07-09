@@ -1,0 +1,56 @@
+unit class_buffer_replace;
+	
+	#include ("src/hidelib.hhf")
+	#include ("strings.hhf")
+	#includeonce ("macros/macros.hhf")
+
+	?@noalignstack:= true;
+	?@nodisplay := true;
+
+
+	method tBuffer.replaceCursor ( s:string);
+	begin replaceCursor;
+	USE (EAX, EBX, ECX, EDI);	
+		str.length (s);
+		mov (eax, ecx);
+		mov (this.data, ebx);
+		add (this.length, ebx);
+		sub (this.cursor, ebx);
+		if (eax > ebx) then
+			push (eax);
+			if (eax > this.vSize) then
+				shl (1, eax);
+				add (this.vSize, eax);
+				this.sizeBuffer (eax);
+			endif;
+			pop (eax);
+			sub (ebx, eax);
+			add (eax, this.length);
+		endif;
+		
+		USE (ESI);
+			mov (this.cursor, edi);
+			mov (s, esi);
+			rep.movsb();
+		ENDUSE;
+		mov (edi, this.cursor);
+	ENDUSE;
+	end replaceCursor;
+
+	method tBuffer.replaceIndex ( index:uns32; s:string);
+	begin replaceIndex;
+	USE (EAX);
+		mov (index, eax);
+		if (eax < this.length) then
+			mov (this.data, eax);
+			add (index, eax);
+			mov (eax, this.cursor);
+		else
+			this.eof();
+		endif;
+		this.replaceCursor (s);
+	ENDUSE;
+	end replaceIndex;
+
+	
+end class_buffer_replace;

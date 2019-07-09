@@ -1,0 +1,4579 @@
+[kHelp Header]
+Author=Sevag Krikorian
+Version=1.71.77
+Created=Nov 18, 2006
+Updated=Nov 23, 2010
+Licence=Public Domain
+
+Latest Version Notes (see update log for more):
+1.71.76
+-added macro library and descriptions.
+
+[kHelp Contents]
+Usage
+.Update Log
+.Functions List
+Environment Functions
+.env2.getstrings
+.env2_get = env2.get
+.env2_get = env2.a_get
+.env2.put
+Memory Functions
+.mem2.size
+.mem2.fillMem
+OS Functions
+.os2.sysexec
+.os2.getmodulepath
+hide namespace
+.Shared Data
+.hide.version
+.hide.stricmp
+.hide.putz
+.hide.putn
+.hide.putMem
+..hide.putMem0
+..hide.putMem1
+Scanning Functions
+.Searching Functions
+..scan.find
+..scan.ifind
+..scan.rfind
+..scan.irfind
+..scan.pfind
+..scan.findc
+..scan.match
+..scan.imatch
+..scan.matchWord
+..scan.imatchWord
+..scan.skipws
+..scan.skipan
+.Line Functions
+..scan.findEOLN
+..scan.getLine
+..scan.a_getLine
+.Tokenizing Functions
+..scan.setFieldMode
+..scan.setDelimiters
+..scan.getTokenLexeme
+..scan.getToken
+..scan.a_getToken
+.Data Extraction Functions
+..scan.extract
+..scan.a_extract
+Class Library
+.tClone
+..clone
+..isClone
+.tStack
+..tStack Macros = Macros
+..tStack.dpush = dpush
+..tStack.wpush = wpush
+..tStack.bpush = bpush
+..tStack.npush = npush
+..tStack.dpop = dpop
+..tStack.wpop = wpop
+..tStack.bpop = bpop
+..tStack.npop = npop
+..tStack.pop8 = pop8
+..tStack.pop16 = pop16
+..tStack.pop32 = pop32
+..tStack.getnumobjects = getnumobjects
+.Buffer Class
+..tBufferBase
+...tBufferBase.create = create
+...tBufferBase.destroy = destroy
+...tBufferBase.erase = erase
+...tBufferBase.resize = resize
+...tBufferBase.private = Private Methods
+..tBuf
+...tBufferBase.create = create
+...tBufferBase.destroy = destroy
+...tBufferBase.erase = erase
+...tBufferBase.resize = resize
+...tBuf Macros = Macros
+...tBuf.putByte = putByte
+...tBuf.putBytes = putBytes
+...tBuf.putWord = putWord
+...tBuf.putDword = putDword
+...tBuf.putQword = putQword
+...tBuf.putLword = putLword
+...tBuf.puts = puts
+...tBuf.putz = putz
+...tBuf.putBuffer = putBuffer
+...tBuf.putFile = putFile
+...tBuf.delete = delete
+...tBuf.iseof = isEof
+...tBuf.eq = eq
+...tBuf.eq = ieq
+...tBuf.subbuf = subBuf
+...tBuf.subbuf = a_subBuf
+...tBuf.substr = subString
+...tBuf.substr = a_subString
+...tBuf.left = left
+...tBuf.right = right
+...tBuf.moveto = moveTo
+...tBuf.eof = eof
+...tBuf.bof = bof
+...tBuf.getindex = getIndex
+...tBuf.writeStdout = writeStdout
+...tBuf.writeFile = writeFile
+...tBuf.writeFileName = writeFileName
+...tBuf.writeString = writeString
+..tBuffer
+...tBufferBase.create = create
+...tBufferBase.destroy = destroy
+...tBufferBase.erase = erase
+...tBufferBase.resize = resize
+...tBuffer Macros = Macros
+...tBuf.putByte = putByte
+...tBuf.putBytes = putBytes
+...tBuf.putWord = putWord
+...tBuf.putDword = putDword
+...tBuf.putQword = putQword
+...tBuf.putLword = putLword
+...tBuf.puts = puts
+...tBuf.putz = putz
+...tBuf.putBuffer = putBuffer
+...tBuf.putFile = putFile
+...tBuf.delete = delete
+...tBuf.iseof = isEof
+...tBuf.eq = eq
+...tBuf.eq = ieq
+...tBuf.subbuf = subBuf
+...tBuf.subbuf = a_subBuf
+...tBuf.substr = subString
+...tBuf.substr = a_subString
+...tBuf.left = left
+...tBuf.right = right
+...tBuf.moveto = moveTo
+...tBuf.eof = eof
+...tBuf.bof = bof
+...tBuf.writeStdout = writeStdout
+...tBuf.writeFile = writeFile
+...tBuf.writeFileName = writeFileName
+...tBuf.writeString = writeString
+...tBuffer Macros = Macros
+...tBuffer Data Insertion = Data Insertion
+...tBuffer Editing = Editing
+...tBuffer Blocks = Block Mode
+...tBuffer Cursor = Cursor Methods
+...tBuffer Data Reading = Data Reading
+...tBuffer Scanning = Data Scanning
+...tBuffer Tokenizer = Tokenizer
+...tBuffer Information = Information
+.tConfig
+..tConfig.create = create
+..tBufferBase.destroy = destroy
+..tBuf.writeFile = writeFile
+..tBuf.writeFileName = writeFileName
+..tConfigSections = Sections
+..tConfig.writeSection = writeSection
+..tConfig.writeString = writeString
+..tConfig.writeHex = writeHex
+..tConfig.writeBin = writeBin
+..tConfig.writeInt = writeInt
+..tConfig.writeUns = writeUns
+..tConfig.writeBool = writeBool
+..tConfig.writeSection = writeSection
+..tConfig.writeItem = writeItem
+..tConfig.insertItem = insertItem
+..tConfig.readSection = readSection
+..tConfig.copySection = copySection
+..tConfig.copySection = a_copySection
+..tConfig.copyBufSection = copyBufSection
+..tConfig.copyBufSection = a_copyBufSection
+..tConfig.readBinSection = readBinSection
+..tConfig.readString = readString
+..tConfig.readString = a_readString
+..tConfig.readString = readBufString
+..tConfig.readHex = readHex
+..tConfig.readBin = readBin
+..tConfig.readInt = readInt
+..tConfig.readUns = readUns
+..tConfig.readBool = readBool
+..tConfig.readItem = readItem
+..tConfig.readBufItem = readBufItem
+..tConfig.readItemToken= readItemToken
+..tConfig.deleteKey = deleteKey
+..tConfig.deleteItem = deleteItem
+..tConfig.deleteSection = deleteSection
+..tConfig.getSectionList = getSectionList
+..tConfig.getSectionCount = getSectionCount
+..tConfig.getItemCount = getItemCount
+..tConfig.isSectionDefined = isSectionDefined
+..tConfig.isKeyDefined = isKeyDefined
+..tConfig.findItem = findItem
+..tConfig.setItemTokens = setItemTokens
+..tConfig.renameSection = renameSection
+..tConfig.renameKey = renameKey
+..tConfig_private = Private Methods
+.tStrBuffer
+.tBaseList
+.tList
+.tFileList
+Macro Library
+.push5
+.pop5
+.pushabi
+.popabi
+.typeConsts
+.RGB
+.move
+.enumX
+.enumBT
+.USE
+.auxreg
+.str.strvar2
+.assign
+.setBit = setBit
+.setBit = setFlag
+.clearBit = clearBit
+.clearBit = clearFlag
+.testnz = testnz
+.testnz = flagSet
+.testnz = bitSet
+.testz = testz
+.testz = flagClear
+.testz = bitClear
+.cmpe
+.cmpne
+.cmpa
+.cmpna
+.cmpae
+.cmpnae
+.cmpg
+.cmpng
+.cmpge
+.cmpnge
+.cmpl
+.cmpnl
+.cmple
+.cmpnle
+.cmpz
+.cmpnz
+.cmpb
+.cmpnb
+.cmpbe
+.cmpnbe
+
+
+
+
+[hide namespace]
+
+This namespace contains a few utility functions and shared data.
+
+[Shared Data]
+
+	static
+		whiteSpaceCset	:cset; @external;
+		alphanumCset		:cset; @external;
+		nlCset			:cset; @external;
+
+		versionStr		:string; @external;
+		versionNote		:string; @external;
+
+	static
+
+		hide.versionStr		:string := "1.70.10";
+	 	hide.versionNote	:string := "Built with HLA 2.9, stdlib v7";
+		
+		hide.whiteSpaceCset	:cset := { ' ', #$0A, #$0D, #$09 };
+		
+		hide.alphanumCset	:cset := { 'a'..'z', 'A'..'Z', '0'..'9' };
+		
+		hide.nlCset			:cset := { #$0A, #$0D };
+		
+		hide.binCset		:cset := { '0'..'9', 'a'..'f', 'A'..'F'};
+
+
+Note: the versions listed above won't be updated in this document so they do not reflect current version.
+
+[tConfig]
+<text>
+
+This class is for creating and editing text based initialization and configuration files, which traditionally have a .ini extension.
+
+tConfig Class inherits tBuffer.  As such, all the methods of tBufferBase, tBuf and tBuffer are available, though they should be considered 'private'for all intensive purposes with the exception of methods that do not modify the data or move the cursor.  For example, the writeFile and writeFileName are the prefered way of saving the configuration files to disk.
+
+ 
+Example of a configuration file:
+
+[header]
+key1= value
+key2= value
+
+[header2]
+key1= value
+key2= value
+
+tConfig objects load the file into memory.  Changes must be written to file to save them for future use.
+
+
+</text>
+
+[tConfig.create]
+
+USE
+	
+	<obj>.create();
+	<obj>.create( fileName:string );
+	
+	create is an overloaded procedure:
+	
+	create	:overloads create_default
+			( "@text( @curObject + "".create_default"" )" );
+	create	:overloads create_file
+			( "@text( @curObject + "".create_file"" )" );
+
+DESCRIPTION
+
+	Creates a tConfig object and initializes the buffer.
+	
+These procedures are inherited from tBufferBase.  tConfig supports the use of two out of three creation procedures.
+
+SOURCES
+
+	<obj>	= a pointer to a config object
+
+RETURNS
+	
+	ESI = pointer to initialized config object.
+
+
+	
+[tConfig.writeSection]
+
+Overloaded method
+
+	writeSection( sec:string; src:string );
+	writeSection( sec:string; var src:tBuffer );
+
+For methods _writeSection and writebufSection
+
+Stores the contents of a string or buffer as is into a section.
+
+
+[tConfig.readSection]
+
+Overloaded method
+
+	readSection( sec:string; dest:string );
+	readSection( sec:string; var dest:tBuffer );
+	
+For methods _readSection and readBufSection
+
+Copies a section contents as-is into destination.
+
+
+Returns:
+	EAX	= true, section found and copied to dest
+	EAX = false, section does not exist.
+
+
+[tConfig.copySection]
+
+	copySection			:method( sec:string; dest:string )
+						{ @returns( "@c") }; @external;  // and eax
+	a_copySection		:method( sec:string )
+						{ @returns( "@c") }; @external;  // and eax
+
+
+Copies an entire section to a string, including any body headers such as <text> </text> and <bin> </bin>.
+a_copySection creates a new string on the heap.  User is responsible for freeing the string.
+	
+Returns:
+	@c	= success, EAX is pointer to dest or a new string
+	@nc	= fail, section not found
+
+
+[tConfig.copyBufSection]
+
+
+	copyBufSection		:method( sec:string; var dest:tBuffer )
+						{ @returns( "@c") }; @external;  // and eax
+	a_copyBufSection	:method( sec:string )
+						{ @returns( "@c") }; @external;  // and eax
+
+
+Copies an entire section to a buffer object, including any body headers such as <text> </text> and <bin> </bin>.
+a_copyBufSection creates a new buffer object on the heap.  User is responsible for destroying the object.
+
+Returns:
+	@c	= success, EAX is pointer to dest or a new object.
+	@nc	= fail, section not found
+
+
+[tConfig.readBinSection]
+<text>
+
+	method readBinSection (sec:string; var dest:tBuffer);
+	
+Copies a special binary section into destination buffer.  A binary section is one that is enclosed in a <bin> </bin> pair.  Both of these must appear at the beginning of a new lines, everything else in the section is ignored.
+
+Binary sections can have any number of blank spaces, tabs, and lines as long as it is written as pairs of ASCII characters.  Only hexadicimal values are legal in a binary section.
+
+Eg:
+
+[a binary section]
+<bin>
+	00	01	02
+AF 7B 8C
+</bin>
+
+</text>
+	
+
+[tConfigSections]
+<text>
+
+tConfig library supports various kinds of sections for different ways of processing the data.
+
+The traditional section has the section header with a series of key labels.
+
+[Section Header]
+key 1=value
+key 2=value
+key 3=value
+...
+
+In the methods, these are represented as:
+
+	sec	a string containing a section label
+	key a string containing a key label
+
+All values in the sections are represented as strings.  How those strings are written or retreived and processed depends on which read and write methods are used.
+
+Strings are represented as is
+
+Unsigned are represented as a string of digits
+
+Integers are represented as a string of digits with a minus sign at the front if negative
+
+Hex is represented as a string of 8 hexadecimal digits, each pair representing a byte of data.
+
+Bin is represented as a string of hexadecimal digits with each pair representing a byte of real data.
+
+
+To write data, use one of the write methods.
+Write methods search for the desired section label.  If it is not found, a new section is created.  If a section is found, further searches are processed in that section.  If a key is being written and it does not exist, a new key is created.  If a desired key exists, the contents are overwritten with the new data.
+
+
+tConfig also supports non-traditional sections.
+
+Item sections are treated as a lines of data indexed by line number rather than key.
+
+[Item Header]
+Item 1
+Item 2
+Item 3
+...
+
+Token sections is an extension of item sections, but each line is tokenized and methods hunt for line/token index
+
+[Token Header]
+token1,token2,token3
+token4,token5,token6
+...
+
+Entire sections can be copied and stored as text.  If the '[' character appears in the text, it can break the configuration file, in such a case, enclose the entire section in a <text> </text> pair.  These must appear at the beginning of new lines. 
+
+Finally, tConfig also supports binary sections.  This can be used to store binary files as text in the configuration.  For these, the binary section is read in as pairs of hexadecimal notation and the entire section is englosed in a <bin> </bin> pair.  These must appear at the beginning of new lines.
+
+</text>
+
+
+
+[tConfig.writeString]
+
+	method writeString ( sec:string; key:string; src:string);
+
+Write a string as is and store the result at the appropriate section/key.
+
+
+[tConfig.writeHex]
+
+	method writeHex (sec:string; key:string; value:dword);
+
+Convert a number to a hexadecimal notation string and store the result at the appropriate section/key.
+
+
+[tConfig.writeBin]
+
+	method writeBin (sec:string; key:string; var addr:dword; size:uns32);
+
+Convert size bytes of specified address to hexadecimal paris and store the result in the appropriate section/key.
+
+Useful for storing hla records whole, eg:
+
+	<obj>.writeBin( "myRecord", "1st Record", someRecord, @size( someRecord ) );
+
+[tConfig.writeInt]
+
+	method writeInt (sec:string; key:string; value:int32);
+	
+Convert a number to an integer string and store the result in the appropriate section/key.
+
+
+[tConfig.writeUns]
+
+	method writeUns (sec:string; key:string; value:uns32);
+	
+Convert a number to an unsigned string and store the result in the appropriate sectoin/key.
+
+
+[tConfig.writeBool]
+
+	method writeBool( sec:string; key:string; value:boolean );
+	
+Convert a boolean to a string of "true" or "false" and store the result at the appropriate section/key
+
+
+[tConfig.writeItem]
+
+	method writeItem (sec:string; index:dword; item:string);
+
+Write a string as is and store the result at appropriate line index.  This overwrites any existing line.
+
+Passing -1 for index guarantees that the item will be appended at the bottom of the list as a new line.
+
+[tConfig.insertItem]
+
+	method insertItem (sec:string; index:dword; item:string);
+
+Write a string as is at appropriate index.  This does not overwrite existing line at index, instead it pushes existing line down.
+
+Passing -1 for index guarantees that the item will be appended at the bottom of the list as a new line.
+
+
+[tConfig.readString]
+
+	method readString (sec:string; key:string; dest:string); @returns ("EAX");
+
+	method readBufString (sec:string; key:string; var dest:tBuffer); @returns ("EAX");
+	
+	method a_readString (sec:string; key:string; dest:string); @returns ("EAX");
+		
+Searches the configuration for a section label sec and key label key.  If found, copies the string to dest string, dest buffer or creates a new string on heap depending on which method is called.
+
+Returns
+	EAX		= true, section and key found and copied to dest
+			= pointer to string for a_readString
+	EAX		= false, section and or key does not exist.
+
+
+[tConfig.readHex]
+
+	method readHex (sec:string; key:string); @returns ("EAX"); @external;
+
+Searches the configuration for a section label sec and a key label key.  If found, reads in hexadecimal notation number and converts to dword.  Returns this in EAX.
+
+Returns:
+	@c	= section and key found, EAX contains valid data
+	@nc	= section and or key not found, EAX = 0
+	
+	EAX	= converted value if @c
+
+
+[tConfig.readBin]
+
+	method readBin (sec:string; key:string; var addr:dword; size:uns32); @returns ("EAX");
+
+Search configuration for section label sec and key label key.  If found, convert the value to a series of dwords and copy they to destination address.
+
+	addr	= destination address
+	size	= number of bytes that will be copied to destination address.
+
+Returns
+	@c	= true, value found and copies
+	@nc	= fale, section and or key not found	
+
+
+[tConfig.readInt]
+
+	method readInt (sec:string; key:string); @returns ("(type int32 EAX)");
+
+Searches configuration for section label sec and key label key.  If found, converts the value to an integer and returns result in EAX
+
+Returns:
+	@c	= true, EAX contains integer value
+	@nc	= false, section and or key not found
+
+
+
+[tConfig.readUns]
+
+	method readUns (sec:string; key:string); @returns ("(type uns32 EAX)");
+	
+Searches configuration for section label sec and key label key.  If found, converts the value to an unsigned and returns result in EAX
+
+Returns:
+	@c	= true, EAX contains unsigned value
+	@nc	= false, section and or key not found
+
+[tConfig.readItem]
+
+	method readItem (sec:string; index:dword; dest:string); @returns ("EAX");
+
+Searches configuration for section label and line index.  If found, result is copied to dest.
+
+Returns:
+	EAX	= 0, section or line index not found.
+	EAX > 0, section and line index found, EAX is pointer to dest.
+
+[tConfig.readBufItem]
+
+	method readBufItem (sec:string; index:dword; var dest:tBuffer);
+		@returns ("EAX");
+		
+Searches configuration for section label and line index.  If found, result is copied to dest buffer.
+
+Returns:
+	EAX	= 0, section or line index not found.
+	EAX = 1, section and line index found and copied to dest buffer.
+
+
+[tConfig.readItemToken]
+<text>
+
+	method readItemToken (sec:string; itemIndex:dword; tokenIndex:dword; dest:string);
+		@returns( "EAX" );
+
+Searches configuration for section label sec and line index itemIndex and token index tokenIndex.  If found, the result token is copied to dest.
+
+eg:
+
+[Item Tokens]
+set1,token1,token2,token2
+set2,token1,token2,token3
+set3,token2,,token3
+
+	readItemToken ("Item Tokens", 0, 1, dest);
+copies the token a line 0, index 1 to dest, in this case: "token1"
+
+	reatItemToken ("Item Tokens", 2, 2, dest);
+copies the token at line 2, index 2 to dest, in this case: ""
+
+
+Returns:
+	EAX	= 0, failure.  section or line index or token index does not exist.
+	EAX > 0, success, EAX is pointer to dest
+	
+</text>
+
+
+[tConfig.deleteKey]
+
+	method deleteKey (sec:string; key:string);
+	
+Deletes a single key from a section.
+
+[tConfig.deleteSection]
+
+	method deleteSection (sec:string);
+
+Deletes an entire section, including all keys.
+
+[tConfig.deleteItem]
+
+	method deleteItem (sec:string; index:dword);
+
+Deletes a line at specified index of section.
+
+
+[tConfig.getSectionList]
+
+	method getSectionList;
+
+Creates a linked list of sections and returns pointer to a tList object in EAX.  The strings are stored in (type listNode_t[EAX]).value and must be cast as strings.
+
+See tList for more details on list objects.  The list object should be destroyed when no longer needed.
+
+Returns:
+	EAX = pointer to linked list tList object.
+	
+[tConfig.getSectionCount]
+	
+	method getSectionCount;
+
+Returns the number of sections in the configuration in EAX.
+
+Returns
+	EAX = number of sections
+
+[tConfig.isSectionDefined]
+
+	method isSectionDefined (sec:string); @returns ("EAX");
+
+Returns true in EAX if section is defined in the configuration.
+
+[tConfig.isKeyDefined]
+
+	method isKeyDefined (sec:string; key:string); @returns ("EAX");
+
+Returns true in EAX if key is found in section.
+
+[tConfig.getItemCount]
+
+	method getItemCount (sec:string); @returns ("EAX");
+
+Returns the total number of lines in a specific section.
+
+[tConfig.findItem]
+
+	method findItem (sec:string; item:string); @returns ("EAX");
+
+Searches section for a line containing string 'item'
+
+Returns:
+	EAX > 0, success, EAX is index of line
+	EAX = -1, fail, section or item does not exist.
+
+
+[tConfig.setItemTokens]
+
+	method setItemTokens (tokens:cset);
+
+Sets the character set which will be used by the item tokenizer as delimiters.  This sets the tokens for the whole class, not just the current object.
+
+
+There is a defautlt character set used for delimeters:
+itemTokens	:cset := { #0, ',', ' ', #$09, #$0A, #$0D };
+
+[tConfig.renameSection]
+
+	method renameSection( currentsec:string; newsec:string );
+
+Renames currentsec to newsec.
+
+[tConfig.renameKey]
+
+	method renameKey (sec:string; currentkey:string; newkey:string);
+	
+Renames key 'currentkey' in section 'sec' to 'newkey.'
+
+[tConfig_private]
+
+These methods are used for internal maintainence but may be used for debugging and custom work with the tConfig objects.  Use with caution.
+
+
+	method readSections;
+
+Sets up a sections list.
+
+	method findSectionA (sec:string);
+		@returns ("EAX");
+
+Finds the section header and returns true/false result in EAX.  Buffer cursor is advanced to line directly below section header.
+
+	method findKeyA (key:string);
+		@returns ("EAX");
+
+Only useful directly after a successful findSectionA call.  Finds key and returns true/false in EAX.  Buffer cursor is advanced to just beyond the '=' equal sign.
+
+	method getSectionBounds (sec:string);
+		@returns ("EAX"); @external;
+
+Fills in section information:
+  section head
+  section tail
+  section body head
+  section body tail
+ 
+Where the section body is either the entire section or a section enclosed in <text> </text> pair or a <bin> </bin> pair.
+
+binsection flag is set if the section body is a binary section (has <bin> </bin>).
+textsection flag is set if the section body is a text section (has <text> </text>).
+
+
+[Buffer Class]
+
+Buffer class is a dynamically growing memory object that automatically resizes as its needs grow.
+It is set up in varisous classes depending on needed functionality.  The most basic one is tBufferBase, from which the buffer classes are built.
+
+
+[tBufferBase]
+
+tBufferBase provides the low level features, allocating of buffer memory, resizing, adjusting for insert and delete and emptying.  Any class that wants to make use of buffers should at the very least, inherit this class.
+
+	tBufferBase : class
+		
+		var
+			absSize		:uns32;
+			vSize		:uns32;
+			data		:dword;
+			length		:uns32;
+			cursor		:dword;
+			flags		:dword;
+			
+			fileName	:string;
+			
+		const
+			default_size		:uns32 := 4094;
+			
+			inHeap		:= @{0};
+
+
+absSize is the absolute size of the data buffer
+
+vSize is the virtual size of the buffer, it is always smaller than the absSize to facilitate fast move instructions.
+
+data is the pointer to the buffer memory, this is an hla memory pointer.
+
+length is the current in use bytes of the buffer.
+
+cursor is the current insertion point in the buffer memory.
+
+flags keeps track of internal settings.
+
+fileName keeps track of the last filename used to save or load the contents of the buffer.
+
+default_size is the size used to create default buffers.
+
+inHeap is the flag bit that indicates if the object is created on the heap.
+
+
+[tBufferBase.create]
+
+USE
+	
+	<obj>.create();
+	<obj>.create( initialSize:uns32 );
+	<obj>.create( fileName:string );
+	
+	create is an overloaded procedure:
+	
+	create	:overloads create_default
+			( "@text( @curObject + "".create_default"" )" );
+	create	:overloads create_size
+			( "@text( @curObject + "".create_size"" )" );
+	create	:overloads create_file
+			( "@text( @curObject + "".create_file"" )" );
+
+DESCRIPTION
+
+	Creates a buffer object and initializes the buffer.
+	
+create without arguments or create_default initializes a buffer with the default size of tBufferBase.default_size
+Provide an unsigned value or call create_size to create a buffer of specific size.
+To initialize a buffer with an existing file, pass a string filename, or use the create_file procedure.
+if the file does not exist, a default buffer size will be created and set with a file name.
+
+SOURCES
+
+	<obj>	= a pointer to a buffer object
+
+RETURNS
+	
+	ESI = pointer to initialized buffer object.
+
+
+[tBufferBase.destroy]
+
+USE
+
+	<obj>.destroy();
+	
+	
+DESCRIPTION
+
+	Destroys a buffer object and frees memory associated with it.
+	
+	
+SOURCE
+
+	<obj>	= a pointer to a buffer object.
+	
+	
+RETURNS
+
+	n/a
+
+
+[tBufferBase.erase]
+
+USE
+
+	<obj>.erase();
+	
+DESCRIPTION
+
+	Resets the data in a buffer object.  Note that this does not actually erase the contents of the buffer, rather it resets the memory pointers and size.
+	
+SOURCES
+
+	<obj>	= a pointer to a buffer object
+
+RETURNS
+
+	n/a
+	
+[tBufferBase.resize]
+
+USE
+
+	<obj>.size( size:uns32 );
+	
+
+DESCRIPTION
+
+	Resize the buffer memory and maintain the contents if possible.  If the buffer is resized smaller than the current data, data is lost.
+
+SOURCES
+
+	<obj>	= pointer to buffer object
+
+RETURNS
+
+	@c	= success, no data lost
+	@nc	= success, data was lost
+
+[tBufferBase.private]
+
+	<obj>.sizeBuffer		:method( sizeTo:uns32 );
+	<obj>.adjustForInsert	:method( size:uns32 );
+	<obj>.adjustForDelete	:method( size:uns32 );
+	
+These methods provide for the internal workings and maintainence of the buffers.  They are not designed to be called by the user and doing so may corrupt the object.  A brief description of what they do follows.
+
+	sizeBuffer
+
+Creates a new buffer, copies the data from old buffer to new buffer.  Do NOT use this to resize the buffer, call the resize method instead if this is desired.
+
+	adjustForInsert
+	
+Makes room for inserting size bytes at the cursor position.  Data is moved and buffer is resized if necessary.
+
+	adjustForDelete
+	
+Deletes size bytes from cursor position by moving data.  Adjusts length data.
+
+[tBuf]
+
+The tBuf class expands on the tBufferBase by providing a minimal of useful data handling. 
+
+	tBuf: class inherits( tBufferBase );
+		
+
+[tBuf Macros]
+
+	#macro put (_args_[])
+
+a macro that calls appropriate insert methods for a series of hla strings and zstrings.
+
+
+	#macro _put_ ( _object_, _arg_ )
+		
+macro for internal use only.
+
+
+[tBuf.putByte]
+
+USE
+
+	<obj>.putByte( b:byte );
+	
+DESCRIPTION
+
+Inserts a byte at the current cursor position adjusting size and data as needed.
+Cursor is advanced to beyond inserted byte.
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	b		= byte to insert
+	
+RETURNS
+
+	EAX	= cursor pointer.
+	
+[tBuf.putBytes]
+
+USE
+
+	<obj>.putBytes( startAddr:dword; length:uns32 );
+	
+DESCRIPTION
+
+Inserts length bytes from startAddr into buffer at cursor position, adjusting length and data as needed.
+Cursor is advanced to beyond inserted bytes.
+
+SOURCES
+
+	<obj>		= pointer to an initialized buffer object.
+	startAddr	= pointer to memory address
+	length		= number of bytes to copy
+	
+RETURNS
+
+	EAX	= cursor pointer
+	
+[tBuf.putWord]
+
+USE
+
+	<obj>.putWord( w:word );
+	
+DESCRIPTION
+
+Inserts a word at the current cursor position adjusting size and data as needed.
+Cursor is advanced to beyond inserted bytes.
+
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	w		= word to insert
+	
+RETURNS
+
+	EAX	= cursor pointer
+
+[tBuf.putDword]
+
+USE
+
+	<obj>.putDword( d:word );
+	
+DESCRIPTION
+
+Inserts a dword at the current cursor position adjusting size and data as needed.
+Cursor is advanced to beyond inserted bytes.
+
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	d		= dword to insert
+	
+RETURNS
+
+	EAX	= cursor pointer
+
+[tBuf.putQword]
+
+USE
+
+	<obj>.putQword( q:qword );
+	
+DESCRIPTION
+
+Inserts a qword at the current cursor position adjusting size and data as needed.
+Cursor is advanced to beyond inserted bytes.
+
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	q		= qword to insert
+	
+RETURNS
+
+	EAX	= cursor pointer
+
+
+[tBuf.putLword]
+
+USE
+
+	<obj>.putLword( l:word );
+	
+DESCRIPTION
+
+Inserts an lword at the current cursor position adjusting size and data as needed.
+Cursor is advanced to beyond inserted bytes.
+
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	l		= lword to insert
+	
+RETURNS
+
+	EAX	= cursor pointer
+
+
+[tBuf.puts]
+
+USE
+
+	<obj>.puts( s:string );
+	
+DESCRIPTION
+
+Inserts a string at the current cursor position adjusting size and data as needed.
+Cursor is advanced to beyond inserted string.
+
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	s		= hla string to insert
+	
+RETURNS
+
+	EAX	= cursor pointer
+
+[tBuf.putz]
+
+USE
+
+	<obj>.putz( z:string );
+	
+DESCRIPTION
+
+Inserts a zstring at the current cursor position adjusting size and data as needed.
+Cursor is advanced to beyond inserted zstring.
+
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	z		= hla zstring to insert
+	
+RETURNS
+
+	EAX	= cursor pointer
+
+[tBuf.putBuffer]
+
+USE
+
+	<obj>.putBuffer( var buffer:tBufferBase );
+	
+DESCRIPTION
+
+Inserts a buffer object at the current cursor position adjusting size and data as needed.
+Cursor is advanced to beyond inserted buffer.
+
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	buffer	= initialized buffer object
+	
+RETURNS
+
+	EAX	= cursor pointer
+
+[tBuf.putFile]
+
+USE
+
+	<obj>.putFile( fileName:string );
+	
+DESCRIPTION
+
+Inserts a file at the current cursor position adjusting size and data as needed.
+Cursor is advanced to beyond inserted file.
+The buffer objects filename is not changed or adjusted in any way.
+
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	fileName= hla string loaded with a file name
+	
+RETURNS
+
+	EAX	= cursor pointer
+
+
+[tBuf.delete]
+
+USE
+	
+	<obj>delete( length:uns32 );
+	
+DESCRIPTION
+
+Deletes length bytes from cursor, adjusting data to fill in deleted space.
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	length	= length bytes to remove from cursor position
+
+RETURNS
+
+	EAX	= cursor pointer
+
+
+
+[tBuf.iseof]
+
+USE
+
+	<obj>.isEof();
+	
+DESCRIPTION
+
+	Returns true if cursor is at end of file.
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+
+RETURNS
+
+	@c	= true, cursor at end of file
+	@nc	= false, cursor not at end of file
+	EDI	= eof position
+
+[tBuf.eq]
+
+USE
+
+	<obj>.eq( var buf:var );
+	
+	<obj>.ieq( var buf:var );
+	
+DESCRIPTION
+
+	eq makes a case sensitive comparisson with buffer passed as buf.
+	
+	ieq makes a case insensitive comparisson.
+	
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	buf		= buffer with which to compare current buffer
+
+RETURNS
+	
+	@c	= contents match
+	@nc	= contents do not match
+
+
+
+[tBuf.subbuf]
+
+USE
+	
+	<obj>.subBuf( startIndex:uns32; length:uns32; var dest:var );
+	
+	<obj>.a_subBuf( startIndex:uns32; length:uns32 );
+	
+
+DESCRIPTION
+
+	Extracts a sub buffer from the current buffer from specified start index up to lenght.
+If length is greater than buffer being copied, the contents are extracted to end of file.
+
+a_subBuf creates a new buffer object and returns in EAX
+
+SOURCES
+
+	<obj>		= pointer to an initialized buffer object.
+	startIndex	= index to start extraction
+	length		= number of bytes to extract
+	dest		= initialized buffer in which to extract contents
+
+RETURNS
+
+	@c	= success, buffer extracted
+		= EAX is pointer to buffer if a_subBuf was used.
+	
+	@nc	= failure, startIndex is likely bigger than length of buffer.
+	
+
+[tBuf.substr]
+
+USE
+	
+	<obj>.subString( startIndex:uns32; length:uns32; dest:string );
+	
+	<obj>.a_subString( startIndex:uns32; length:uns32 );
+	
+
+DESCRIPTION
+
+	Extracts a sub string from the current buffer from specified start index up to lenght.
+If length is greater than buffer being copied, the contents are extracted to end of file.
+
+a_subString creates a new buffer object and returns in EAX
+
+SOURCES
+
+	<obj>		= pointer to an initialized buffer object.
+	startIndex	= index to start extraction
+	length		= number of bytes to extract
+	dest		= initialized string in which to extract contents
+
+RETURNS
+
+	@c	= success, buffer extracted
+		= EAX is pointer to string if a_subString was used.
+	
+	@nc	= failure, startIndex is likely bigger than length of buffer.
+	
+
+
+[tBuf.left]
+
+USE
+
+	<obj>.left( n:uns32 );
+
+DESCRIPTION
+
+	Attempts to move the cursor n bytes to the left (towards start of file).  If n exceeds the start of file, the cursor is moved to the start of file.
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	n		= number of bytes to move towards start of file.
+
+RETURNS
+
+	@c	= success
+	@nc	= fail, cursor is already at start of file. 
+
+
+
+[tBuf.right]
+
+USE
+
+	<obj>.right( n:uns32 );
+
+DESCRIPTION
+
+	Attempts to move the cursor n bytes to the right (towards end of file).  If n exceeds the end of file, the cursor is moved to the end of file.
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	n		= number of bytes to move towards end of file.
+
+RETURNS
+
+	@c	= success
+	@nc	= fail, cursor is already at end of file. 
+
+
+[tBuf.moveto]
+
+USE
+
+	<obj>.moveTo( index:uns32 );
+	
+DESCRIPTION
+
+	Attempts to move the cursor to index position.
+
+SOURCES
+
+
+	<obj>	= pointer to an initialized buffer object.
+	index	= desired index for cursor
+
+RETURNS
+
+	@c	= success, cursor at specified index
+		= EAX = cursor pointer
+	
+	@nc = failure, desired index out of bounds.
+
+
+[tBuf.eof]
+
+USE
+	
+	<obj>.eof();
+	
+
+DESCRIPTION
+
+	Moves the cursor to the end of file
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+
+RETURNS
+
+	n/a
+
+[tBuf.bof]
+
+USE
+	
+	<obj>.bof();
+	
+
+DESCRIPTION
+
+	Moves the cursor to the beginning of file
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+
+RETURNS
+
+	n/a
+
+
+[tBuf.getIndex]
+
+USE
+
+	<obj>.getIndex();
+	
+DESCRIPTION
+
+	Returns the index of the cursor relative to the start of the buffer.
+	
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+
+RETURNS
+
+	EAX	= zero-based index of cursor
+
+
+[tBuf.writeStdout]
+
+USE
+
+	<obj>.writeStdout();
+	
+DESCRIPTION
+
+Writes the contents of the buffer to standard output.
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	
+RETURNS
+
+	n/a
+	
+[tBuf.writeFile]
+
+USE
+
+	<obj>.writeFile();
+	
+DESCRIPTION
+
+Writes the contents of the buffer to a previously declared filename.  If the buffer does not have a filename associated with it, use the method writeFileName instead.
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	
+RETURNS
+
+	@c	= success
+	@nc	= failure, no previously declared filename.
+
+[tBuf.writeFileName]
+
+USE
+
+	<obj>.writeFileName( fileName:string );
+	
+DESCRIPTION
+
+Writes the contents of the buffer to a file with name fileName.  The object will now use that file name for further activities.
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	fileName	= a file name to create
+	
+RETURNS
+
+	n/a
+	
+[tBuf.writeString]
+
+USE
+	<obj>.writeString( 0 );
+	<obj>.writeString( s:string );
+	
+DESCRIPTION
+
+Writes the contents of the buffer to an hla string.  Pass 0 (zero) as an argument to create a new string on the heap.
+
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	s		= hla string
+	
+RETURNS
+
+	EAX	= pointer to string
+
+[tBuf.delete]
+
+USE
+
+	<obj>.delete( length:uns32 );
+	
+DESCRIPTION
+
+Deletes length bytes from cursor to eof.  Adjusts buffer length and positions.
+
+SOURCES
+
+	<obj>	= pointer to an initialized buffer object.
+	length	= number of bytes to delete
+	
+RETURNS
+
+	EAX	= cursor pointer
+	
+
+[tBuffer]
+
+tBuffer Class expands upon tBuf and adds more insertion functions, block data functions,  reading functions, extraction functions, scanning functions and advanced cursor functions.
+
+	tBuffer: class inherits( tBuf );
+		
+		var
+			blockstart	:dword; 
+			delimiters	:cset;
+			decimal		:byte;
+
+		const
+			default_delimCset	:cset := { #0, ' ', #9, ',', '<', '>', '|', '\', '/', '-','_', #$D, #$A};
+			
+			// flags
+			block_active	:= @{2};
+			delims_skip		:= @{3};
+
+
+blockstart is an extra cursor position that keeps track of block start for block functions
+
+delimiters is the character set used for the tokenizer
+
+decimal indicates how many decimal places to use for real numbers, or if zero to use scientific notation. 
+
+default_delimCset is the default character set used.
+
+block_active is a flag that indicates if the buffer is in block mode
+
+delims_skip is a flag that indicates how the tokenizer should treat blank tokens
+
+
+
+[tBuffer Macros]
+
+
+	#macro put (_args_[])
+
+This is inherited from the parent class.
+a macro that calls appropriate insert methods for a series of hla strings and zstrings.
+
+
+These macros are not very reliable as they don't work with every type of object allocation.  Currently, they work for static/var objects.
+
+	#macro append (_args_[])
+	
+a list of items to append to the end of the buffer.  Supports most insertion types.
+
+	#macro appendFiles ( _args_[])
+
+a list of files to append to the end of the buffer.
+
+	#macro insert (_args_[])
+
+a list of items to insert at the current cursor position.  Supports most insertion types.
+
+	#macro replaceBlock ( _arg_ )
+
+calls the appropriate replaceBlock method.
+
+
+	#macro _put_ ( _object_, _arg_ )
+	#macro _put ( _object_, _arg_ )
+	#macro _get ( _object_, _arg_ )
+	
+macros for internal use only.
+
+
+[tBuffer Data Insertion]
+
+These methods insert text and binary data to the buffer.
+
+	
+method insertbl (b:boolean);
+	Inserts a boolean value “true” or “false” at cursor.
+
+
+These convert the data to hexadecimal, integer or real notation and write text to the buffer
+
+method insertb (b:byte);
+	Inserts a byte in hexadecimal notation at cursor.
+
+method insertw (w:word);
+	Inserts a word in hexadecimal notation at cursor.
+
+method insertd (d:dword);
+	Inserts a dword in hexadecimal notation at cursor.
+
+method insertq (q:qword);
+	Inserts a qword in hexadecimal notation at cursor.
+
+method insertl (l:lword);
+	Inserts an lword in hexadecimal notation at cursor.
+
+method insertu8 (u8:uns8);
+	Inserts unsigned byte at cursor.
+
+method insertu16 (u16:uns16);
+	Inserts unsigned word at cursor.
+
+method insertu32 (u32:uns32);
+	Inserts unsigned dword at cursor.
+
+method insertu64 (u64:uns64);
+	Inserts unsigned qword at cursor.
+
+method insertu128 (u128:uns128);
+	Inserts unsigned lword at cursor.
+
+method inserti8 (i8:int8);
+	Inserts byte sized integer at cursor.
+
+method inserti16 (i16:int16);
+	Inserts word sized integer at cursor.
+
+method inserti32 (i32:int32);
+	Inserts dword sized integer at cursor.
+
+method inserti64 (i64:int64);
+	Inserts qword sized integer at cursor.
+
+method inserti128 (i128:int128);
+	Inserts lword sized Integer at cursor.
+
+method insertr32 (r32:real32);
+	Inserts 32 bit real number at cursor.  Notation/decimal places can be indicated using decimal method (see below).
+
+method insertr64 (r64:real64);
+	Inserts 64 bit real number at cursor.  Notation/decimal places can be indicated using decimal method (see below).
+
+method insertr80 (r80:real80);
+	Inserts 80 bit real number at cursor.  Notation/decimal places can be indicated using decimal method (see below).
+
+method insertcSet (c:cset);
+	Inserts a character set at cursor.
+
+
+method openFile (fileName:string);
+	Opens file fileName and copies the contents into the buffer, destroying any previous information in the buffer.
+
+
+[tBuffer Editing]
+
+method deleteCursor ( length:uns32);
+	depricted, use delete
+
+method deleteCursorLine();
+	Deletes the line of the cursor, delete works retroactively, if cursor is in the middle of a line.
+	
+method deleteCursorToEOL();
+	Deletes from the cursor position to end of line.
+
+method deleteIndex ( start_index:uns32; end_index:uns32);
+	Deletes from start_index to end_index. 
+
+method replaceCursor ( s:string);
+	Overwrites data from cursor, replacing it with string s.
+
+method replaceIndex ( index:uns32; s:string);
+	Overwrites data from index, replacing it with string s.
+
+method setChar ( src:char; count:uns32); @external;
+	Overwrites count characters from cursor, replacing them with specified src character.
+
+method trim;
+	Trims leading and trailing blank spaces, tabs and lines from the buffer.
+
+method delspace;
+	Trims leading spaces, tabs and lines from the beginning of the buffer.
+
+method truncate (length:uns32);
+	Truncates length characters from the end of the buffer.
+
+method upper (length:uns32);
+	Converts length characters from cursor to uppercase.
+
+method lower (length:uns32);
+	Converts length characters from cursor to lowercase.
+
+method setDecimalPoints( n:byte );
+	Sets the number of decimal points to write real numbers
+	
+method setDelimiters( c:cset );
+	Sets a new delimiter set for use with scanner/tokenizer
+	
+method setDelimSkipMode( set:boolean );
+	Sets the delimiter skipping mode to true or false
+	if true, blank tokens are skipped
+	if false, blank tokens are returned as empty strings.
+	
+
+[tBuffer Blocks]
+
+method setBlock (start_index:uns32; end_index:uns32);
+	Sets up tBuffer for block operation.  Block is set between start and end indexes.  If start_index is past the end of the buffer, block is set to EOF.  If end_index is less than start_index, it is set to start_index.
+In block operation mode, the end_index is always the cursor, so this moves the cursor to end_index position.
+
+Method getBlockStart; @returns(“EAX”);
+	Returns the starting index of the block if tBuffer is in block operation mode.  Returns -1 otherwise.
+The end_index of a block operation is always the cursor.
+
+Method getBlockText (dest:string);
+	Copies the current block to the dest string.
+
+Method deleteBlock;
+	Deletes the current block if tBuffer is in block mode.  Cancels  block mode after operation is complete.
+
+method replaceBlockString (s:string);
+	You should use the replaceBlock macro instead of calling this method directly.
+If tBuffer is in block mode, replaces the current block with string s and cancels block mode.
+
+Method replaceBlockBuffer (var buf:tBuffer);
+	You should use the replaceBlock macro instead of calling this method directly.
+If tBuffer is in block mode, replaces the current block with data contents of tBuffer buf and cancels block mode.
+
+[tBuffer Cursor]
+
+Note: All cursor methods return index of cursor in EAX.
+
+
+Method cursorToBOL;
+	Moves cursor to the 1st character of the current line
+
+Method cursotToEOL;
+	Moves cursor to just beyond the last character on the current line.
+
+Method cursorToBOW;
+	Moves cursor to 1st character of current line.  Returns -1 in EAX if cursor is not currently on a word.
+	This method uses only hide.whiteSpaceCset to determine words.
+
+Method cursotToEOW;
+	Moves cursor to just beyond the last character of the current word.  Returns -1 in EAX if cursor is not currently on a word.
+	This method uses hide.whiteSpaceCset to determine words.
+
+method cursorLeftLines( num:uns32 );
+	Recedes cursor number of lines, attempts to maintain relative cursor position.
+	
+method cursorRightLines( num:uns32 );
+	Advances cursor number of lines, attempts to maintain relative cursor position.
+
+Method getCursorWord (dest:string);
+	Copies the word under the current cursor position to dest.  The cursor may be anywhere on the word.  Returns -1 in EAX if the cursor is not currently on a word.
+	This method uses hide.whiteSpaceCset to determine words.
+
+Method getWordFromCursor (dest:string);
+	Copies the word starting from the current cursor position.  Returns -1 in EAX if the cursor is not currently on a word.
+	This method uses hide.whiteSpaceCset to determine words.
+
+Method getCursorLine (dest:string);
+	Copies to line under the current cursor position to dest.  The cursor may be anywhere on the line.
+
+Method a_getLineFromCursor();
+Method getLineFromCursor (dest:string);
+	Copies the line starting from the current cursor position.  a_getLineFromCursor allocates a new string and returns pointer in EAX.
+
+Method nextLine();
+	Moves the cursor to the beginning of the next line.
+
+Method prevLine();
+	Moves the cursor to the beginning of the previous line.
+
+
+[tBuffer Data Reading]
+
+Data Reading:
+	All reading methods advance the cursor to right beyond the read data.
+Unless otherwise specified, data is returned in the supplied variable.
+Returns: @nc for sussessful operation
+@c for failed operation, most likely cursor is at EOF.
+
+method readc ( var dest:char); @returns ("@nc");
+	Copies the character at the cursor into dest, advances the cursor beyond the read character.
+
+method reads (dest:string); @returns ("@nc");
+	Copies a line from the cursor into dest, advances the cursor to the next line down.
+
+method readw (dest:string); @returns ("@nc");
+	Copies the word from the current cursor into dest, advances the cursor to the next word. 
+
+method readBuffer (var dest:tBuffer); @returns ("@nc");
+	Reads the entire buffer after cursor and copies to dest.  Advances cursor to EOF.
+
+method readbytes (destAddr:dword; length:uns32); @returns  ("@nc");
+	Reads the specified length number of bytes from cursor and copies them to dest address.  Cursor is advanced length characters.
+
+method readByte; @returns ("EAX");
+method readWord; @returns ("EAX");
+method readDword; @returns ("EAX");
+
+	The above 3 methods read 1, 2, or 4 characters respectively and return the result in EAX.  The cursor is advanced 1, 2, or 4 bytes as the siguation calls.  Data is returned in zero-externded EAX (if needed).
+
+
+[tBuffer Scanning]
+
+Scanning methods search the buffer for strings or move the cursor through spans and breaks.
+All these methods have the following return values:
+
+Returns:
+	@c	= success or string found
+		  EAX = index in buffer
+	@nc	= failure or string not found
+		  EAX = -1
+
+
+	method searchf (s:string);
+
+Make a case sensitive foreward search for s from the cursor position.
+
+
+	method isearchf (s:string);
+
+Make a case insensitive foreward search for s from the cursor position.
+
+
+	method searchr (s:string);
+
+Make a case sensitive reverse search for s from the cursor position.
+
+
+	method isearchr (s:string);
+	
+Make a case insensitive reverse search for s from the cursor position.
+
+
+	method span (var c:cset);
+	
+Advance the cursor to the next character that is not a member of character set c.
+
+
+	method rspan (var c:cset);
+
+Recede the cursor to the previous character that is not a member of the character set c.
+
+
+	method  brk (c:cset);
+
+Advance the cursor to the next character that is a member of the character set c.
+
+
+	method rbrk (c:cset);
+
+Recede the cursor to the previsous character that is a member of the character set c.
+
+
+	method match (s:string);
+
+Tries to make a case sensitive match of s at the current cursor position.
+
+
+	method imatch (s:string);
+
+Tries to make a case insensitive match of s at the current cursor position.
+
+
+	method matchWord (s:string);
+
+Tries to make a case sensitive match of a word s at the current cursor position.
+A word must be isolated by empty spaces or punctuation (see below for example).
+
+
+	method imatchWord (s:string);
+
+Tries to make a case insensitive match of a word s at the current cursor position.
+A word must be isolated by empty spaces or punctuation.
+
+
+Eg: suppose you want to match "house"
+The word at the cursor is "houses"
+
+method matchWord returns @nc and -1 in EAX; (no match)
+
+method match returns @c and index in EAX; (match)
+
+For method matchWord to return the index, the word at cursor must contain the word 'house'
+eg, assume '|' is the cursor position
+ |houses		no match
+ |house		match
+ |house!		match
+ Mill|house	no match
+
+
+[tBuffer Tokenizer]
+
+method getToken (dest:string); @returns ("EAX");
+	Gets the next token from the cursor and copies it into dest.  Dest must be large enough to hold the token.  Advances cursor beyond the next token (or to EOF).  Returns 0 in EAX if there are no more tokens, or a pointer to dest if a token was copied.
+
+method a_getToken; @returns ("EAX");
+	Same as above, but allocates a new string on the heap and returns a pointer to the string.  User must use str.free to free memory associated with the string.
+
+method skipDelimiters; @returns ("EAX");
+	Skips over leading delimiters.
+	
+
+[tBuffer Information]
+
+These methods returns various details about the state of tBuffer in EAX.
+
+method getBufferSize; @returns ("EAX");
+	Returns current virtual size of buffer.  Actual size may vary and is reserved for internal use.
+
+method getBufferLength; @returns ("EAX");
+	Returns the current amount of information inserted into the buffer.
+
+
+method getCursor; @returns ("EAX");
+	Returns the address of the current cursor position.
+
+method getBufferPtr; @returns ("EAX");
+	Returns a pointer to the buffer.
+
+Method getEOF; @returns(“EAX”);
+	Returns the end of file address in EAX.
+
+Method checkEOF(); @returns (“EAX”);
+	Returns true if the cursor is at EOF.
+
+Method getNumLines(); @returns (“EAX”);
+	Returns the number of  lines in the buffer.
+
+method getLineNum(); @returns( "EAX" );
+	Returns the current line number of the cursor.
+
+method getCursorToEOFLength; @returns ("EAX");
+	This returns the number of bytes from the current cursor position to EOF.
+
+method getChar();
+	Returns the character under the cursor.  Does not change cursor position.
+
+
+[tStrBuffer]
+
+	tStrBuffer: class inherits (tBuffer);
+		
+		var
+			count		:uns32;		// total number of strings in strdata
+
+		// *** PUBLIC METHODS ***
+		// object maintenence and initialization
+		override procedure create_size; @external;
+		override procedure create_default; @external;
+		override procedure create_file; @external;
+		
+		// information methods
+		method getCount;
+			@returns ("EAX"); @external;
+		
+		// data entry methods	
+		method putStr (strptr:string);
+			@returns ("EAX"); @external;
+		method putStrz (strptr:dword);
+			@returns ("EAX"); @external;
+		method putStrBytes (mem_start:dword; length:dword);
+			@returns ("EAX"); @external;
+		
+		// data retreival methods
+		method getStr (index:uns32);
+			@returns ("EAX"); @external;
+		iterator stringInBuffer;
+			@external;
+
+
+	This is a dynamically growing string buffer.  It is designed for storage only though some modifications to the string data can be made at user risk.
+The strings are partially compatible with HLA.  This means that the returned pointers can be used with the HLA standard library string functions that do not alter the data on strings.
+For example, you can use indexing, displaying, comparing, copying functions but not concatenating, deleting, etc.
+
+A practical use for this class is to store a large number of strings that do not need to be modified.  Using the class offers a considerable advantage over dynamic HLA string allocation due to the large overhead of HLA strings consisting of 24 bytes memory manager meta data + 8 bytes of string metadata + zero termination and alignment.
+This class removes the requirements of 24 bytes of memory manager meta data and 4 bytes from the string meta data for each string.
+
+
+The string format is 4 bytes length data, string data, zero termination, dward alignment.
+The returned values is a pointer to the string data, the length is located at [ptr-4].
+
+The actual number of bytes available in the string of any particular pointer can be computed by:
+length+4 & -4, where length is the dword at [ptr-4]
+This is useful only if you plan on modifying the string data.  Buffer overflows can corrupt the entire class so do this with caution.
+
+	Class Overview
+
+This class extends tBuffer, all the methods of tBuffer are available though it is advised to let the
+tStrBuffer methods handle editing since there is an internal format that may become corrupted. 
+
+*** PUBLIC METHODS ***
+object maintenence and initialization
+	
+	override procedure create_size; @external;
+	override procedure create_default;@external;
+	override procedure create_file; @external;
+	
+	
+information methods
+
+	method getCount; @returns ("EAX"); @external;
+	
+data entry methods	
+
+	method put (strptr:string); @returns ("EAX"); @external;
+	method putz (strptr:dword); @returns ("EAX"); @external;
+	method putBytes (mem_start:dword; length:dword); @returns ("EAX"); @external;
+	
+data retreival methods
+
+	method get (index:uns32); @returns ("EAX"); @external;
+	iterator stringInBuffer; @external;
+
+Useful methods from the superclass (tBuffer)
+
+method writeFileName ( fileName:string);
+	use this to store the strbuffer in memory to disk.
+
+
+procedure tStrBuffer.create_size	( initialSize:uns32);
+	Allocates memory for an object with an initial size.  If you have a rough idea on how large the buffer will grow, it is more efficient to start with an initial buffer size.
+	
+
+procedure tStrBuffer.create_default();
+	Allocates memory for an object using the default buffer size of 1024 bytes.  The buffer reallocates automatically as necessary so the user will not have to worry about overrunning the buffer, though this is limited to memory size of the machine.
+
+procedure tStrBuffer.create_file (fileName:string);
+	Loads a previously saved StrBuffer file into the class.  If the indicated file is not a proper string buffer, it may cause errors later.
+
+
+method tStrBuffer.getCount();
+	Returns: EAX = number of strings in buffer
+
+
+There are three ways to enter strings into the buffer:
+
+method tStrBuffer.put (strptr:string);
+	Returns: EAX = pointer to string
+
+Adds an HLA string to the buffer.
+
+method tStrBuffer.putz (strptr:dword);
+	Returns: EAX = pointer to string
+	
+Adds a zstring to the buffer.
+
+method tStrBuffer.putBytes (mem_start:dword; length:dword);
+	Returns: EAX = pointer to string
+
+Adds an array to the buffer.
+
+
+Data retreival methods
+method tStrBuffer.get (index:uns32); @returns ("EAX"); @external;
+	Returns: EAX = pointer to string at index, or zero
+	Returns: carry set = error, no string at that index
+
+Retreives the pointer of string stored at index.
+
+
+iterator tStrBuffer.stringInBuffer();
+	Returns: EAX = pointer to each string
+	
+This iterator returns a pointer to every string in the buffer.
+  
+
+[tFileList]
+
+tFileList Class
+
+	This class inherits the tList class described earlier and extends it to work with filespaths and filenames.
+
+This class uses fileNode_t as list items.
+
+type fileNode_t:
+	record inherits (listNode_t)
+		fname	:string;	// full provided path
+		iname	:string;	// isolated name (or 0 if none)
+		ipath	:string;	// isolated path (or 0 if none)
+		extended:boolean;
+	endrecord;
+
+Each supplied item is broken down into sevearl components:
+fname	: this is the full path as supplied to the append methods.
+iname	:this contains only the name of the file, detached from it's path, if any.
+ipath	:this contains only the path of the file, with filename detached, if any.
+extended:this contains true if the supplied filename has an extension.
+
+tFileList: class inherits (tList)
+
+	const
+		fileNodeID	:= -2;
+		
+
+	override procedure create; @external;
+	override method destroy; @external;
+	method findFullPath ( fname:string); @returns ("EAX"); @external;
+	
+	
+	method appendFile ( fname:string); @external;
+	override method remove; @external; 
+	method removeFullPath ( fname:string); @external;
+	
+	method isExtended ( var node:fileNode_t); @returns ("EAX"); @external;
+	method isExtension ( var node:fileNode_t; ext:string); @returns ("EAX"); @external;
+	
+	method newNode; @returns ("EAX"); @external;
+endclass;
+
+
+procedure create; @returns ("ESI");
+	Allocates memory for a new tFileList object.
+
+
+method destroy;
+	Destroys the object and all memory associated with items.
+
+
+method removeFullPath ( fname:string);
+	Searches the list for a node matching the full path specified in fname.  Returns the node in EAX, or 0 if not found.
+
+
+method appendFile ( fname:string ); 
+	Allocated memory for a new node and appends it to the list.
+The new node is initialized with the path information supplied in fname.
+
+method remove (var node:dword);
+	Removes supplied nodefrom list and frees all memory associated with it.
+
+method removeFullPath ( fname:string);
+	Searches for a node matching the full path passed in fname and removes it from the list, freeing associated memory.
+
+method isExtended ( var node:fileNode_t ); @returns ("EAX");
+	Returns true if the supplied node contains a filename with an extension.
+
+method isExtension ( var node:fileNode_t; ext:string); @returns ("EAX");
+	Returns true if the extension of the filename in the supplied node contains the string supplied in ext.
+
+method newNode;
+	Allocated memory for a new fileNode_t object and returns the pointer in EAX.
+The nodeID is set to the value in tFileList.fileNodeID
+
+[tBaseList]
+
+A base class for setting up linked lists.  This class along with the node record, baseNode_t are intended to be inheretid by other classes that add meaningful fields to the node and class.
+
+type baseNode_t:
+	record
+		next	:pointer to baseNode_t;
+		prev	:pointer to baseNode_t;
+		nodeID	:dword;
+	endrecord;
+	
+The next and prev fields create a double linked list.  nodeID is a special field that shold be filled out with a unique value by each individual object that inherits this class.
+The best place to allocate memory for the node object and fill in its nodeID is in the abstract method "newNode" 
+NodeID should be a unique value in each inherited record to distinguish list items from those of other lists that may be in use at the same time.
+
+
+tBaseList:
+class
+	
+	var
+		head	:dword;
+		tail	:dword;
+		count	:uns32;
+		
+	// utility methods, no need to override 
+	method getCount; @returns ("EAX"); @external;
+	method getHead; @returns ("EAX"); @external;
+	method getTail; @returns ("EAX"); @external;
+	method getNodeIndex (index:uns32); @returns ("EAX"); @external;
+	method getIndexNode (node:dword); @returns ("EAX"); @external;
+
+	// instertion methods, do not override
+	// these assume nodes inherit baseNode_t
+	method append (var node:dword); @external;
+	method insert (var node:dword; index:uns32); @external;
+
+	// overridable methods
+	procedure create; @returns ("ESI"); @external;
+
+	// note: when overriding this, free memory allocated for object
+	// fields first, then call superclass to free actual object memory
+	method destroy; @external;
+	method remove (var node:dword); @external;
+	method removeIndex (index:uns32); @returns ("@nc"); @external;
+
+	// use this method to allocate memory for inherited node record
+	// then call one of the insertion methods
+	method newNode;	@abstract;
+		
+endclass;
+
+
+method getCount; @returns ("EAX");
+	Returns the number of nodes in the list.
+
+method getHead; @returns ("EAX");
+	Returns the first node in the linked list.
+
+method getTail; @returns ("EAX");
+	Returns the last node in the linked list.
+
+method getNodeIndex (index:uns32); @returns ("EAX");
+	Returns the node at specified index in list, or 0
+
+method getIndexNode (node:dword); @returns ("EAX");
+	Returns the index of specified node in eax.
+
+procedure create; @returns (“ESI”);
+	Initialize the memory for a new class object
+	
+method destroy;
+	Frees memory associated with class object.
+	The subclass should free any necessary field memory before calling this.
+
+method append (var node:dword); @external;
+	Appends a node to the end of the list.  Returns a pointer to the newly allocated list item in EAX.
+
+method insert (var node:dword; index:uns32);
+	Like append, but allows the node to be inserted anywhere.
+	
+method remove (var node:dword);
+	Removes a node from the list and frees node memory.  If a node has fields that require freeing, override this method to free those fields, then call the superclass.
+
+method removeIndex (index:uns32); @returns ("@nc");
+	Like remove above, but removes by index rather than by node.
+	Returns carry clear if operation was successful or carry set if node at index was not found.
+
+method newNode; @abstract;
+	Use this method in subclasses to allocate node memory and set nodeID
+
+
+[tList]
+
+tList Class
+
+This class inherits tBaseList and expands it to include a single "value" field.  This is used a a general linked list. 
+All items on the list are of type listNode_t
+
+type listNode_t:
+	record inherits (baseNode_t)
+		value	:dword;
+	endrecord;
+
+tList: class inherits (tBaseList)
+
+	const
+		listNodeID	:= -1;
+
+	
+
+	override procedure create; @external;
+	method appendValue ( value:dword ); @external;
+	method findValue (value:dword); @returns ("EAX"); @external;
+	method setValue ( var node:listNode_t; value:dword); @external;
+	method newNode; @returns ("EAX"); @external;
+endclass;
+
+method appendValue ( value:dword );
+	Creates a new node with the supplied value and appends the node to the end of the list. 
+
+method findValue (value:dword); @returns ("EAX");
+	Searches the list for an item containing specified value.  If found, returns a pointer to the list item in EAX, otherwise, returns 0.
+
+method setValue (var node:listNode_t; value:dword);
+	Sets a new value to the supplied node.
+
+method newNode;
+	This method allocated memory to a new node and sets the nodeID field to the value specified in tList.listNodeID
+The node address is returned in EAX.  This node is not attached to the list and must done so manually using one of the insertion methods.
+
+
+[tStack]
+
+tStack Class
+
+	tStack: class inherits ( tBuf );
+		
+		var
+			regVar			:dword;
+		
+	
+		#macro mpush ( _args_[] )
+		#macro mpop ( _args_[] )
+
+		override procedure create_size; @external;
+		override procedure create_default; @external;
+		override procedure create_file; @external;
+
+		method dpush (obj:dword); external;
+		method wpush (obj:word); external;
+		method bpush (obj:byte); external;
+
+		method dpop (var dest: dword);
+			@returns("@c");	@external;
+ 		method wpop (var dest: word);
+			@returns("@c");	@external;
+		method bpop (var dest: byte);
+			@returns("@c");	@external;
+			
+		method pop32; @returns("@c");	@external;
+		method pop16; @returns("@c");	@external;
+		method pop8; @returns("@c");	@external;
+
+		method getnumobjects;
+			@returns ("EAX"); @external;
+	
+	endclass;
+
+
+tStack inherits tBuf for the buffer functions.  Its a user stack of unspecific size that allows byte, word and dword sized data to be pushed and popped in any order.  It is the users responsibility to maintian balance.
+
+A stack is considered balanced if the stack pointer (the cursor of tBuf) is on a dword boundary.
+
+It is recommended to use only the provided methods and the suggested methods from the parent class.  Following are some notes about the internal function of the stack in case it is required to access the buffer without using the suggested methods.
+
+The stack buffer of tStack grows towards higher address.  Note this difference from the typical stack which grows towards lower address.  The cursor field acts as the base pointer, but the most recent value on the stack is at the (cursor address)-4
+Also, unlike the typical stack, you can't add (or subtract) the cursor to setup some arbitrary memory to play around with unless you absolutely know that the buffer is large enough to accomodate.
+
+
+Suggested methods from parent class:
+
+Having the buffer controls inherited from tBuf, tStack never overflows (though it can use up all the system memory).  Only underflows are possible and this condition is always returned in a cleared carry flag.
+
+The cursor field from the parent class acts as the base pointer.
+
+create
+	use this to create a stack with default size, a specified initial size or open a file.
+	
+destroy
+	use this to free a tStack object memory.
+	
+writeFile
+writeFileName
+	use these to save the stack contentes as a data file for later retreival.
+	if you save to disk, to restore it, create a stack object with a file name
+	and be sure to set the cursor to eof since tStack grows 'up' and shrinks 'down'
+	
+putByte
+putWord
+putDword
+putBytes
+	these can be used in substituition to bpush, wpush, dpush and npush respectively.	
+
+	
+The use of other inherited methods are not recommended.
+
+[tStack Macros]
+
+	#macro mpush ( _args_[] )
+	#macro mpop ( _args_[] )
+
+Two macros to simplify pushing and poping of data onto the user stack.  Use comma delimited arguments of size byte, word or dword in any order.
+
+mpop also allows popping directly to supplied registers.
+
+It is user responsibility to maintain balance in the stack.  There is no test for underflow in the macros, the functions will simply fail to pop if underflow occurs.
+
+ 
+
+[tStack.getnumobjects]
+
+USE
+	
+	<obj>.getnumobjects();
+
+
+DESCRIPTION
+
+Returns the number of dword-sized objects currently on the stack.
+
+This mnethod does not return accurate results if the stack is unbalanced.
+
+
+RETURNS
+
+	EAX
+	
+[tStack.dpush]
+
+USE
+
+	<obj>.dpush( obj:dword );
+
+DESCRIPTION
+
+Push a dword sized object onto the stack.
+
+
+RETURNS
+
+	n/a
+	
+[tStack.wpush]
+
+USE
+	
+	<obj>.wpush( obj:word );
+
+
+DESCRIPTION
+
+Push a word sized object onto the stack.
+
+
+
+RETURNS
+
+	n/a
+	
+[tStack.bpush]
+
+USE
+	
+	<obj>.bpush( obj:byte );
+
+
+DESCRIPTION
+
+Push a byte sized object onto the stack.
+
+
+RETURNS
+
+	n/a
+
+
+[tStack.npush]
+
+USE
+	
+	<obj>.npush( var src:var; length:uns32 );
+
+
+DESCRIPTION
+
+
+Push length bytes from reference 'src' onto the stack.
+
+
+RETURNS
+
+	n/a
+
+
+[tStack.dpop]
+
+USE
+	
+	<obj>.dpop( var dest: dword );
+
+
+DESCRIPTION
+
+Pop a dword sized object from the stack and store in dest.
+
+
+RETURNS
+
+	@c	= success
+	@nc	= underflow
+
+	<obj>.regVar	a copy of the recently popped value
+
+[tStack.wpop]
+
+USE
+
+	<obj>.wpop( var dest: word );
+
+
+DESCRIPTION
+
+Pop a word sized object from the stack and store in dest.
+
+
+RETURNS
+
+	@c	= success
+	@nc	= underflow
+	
+	<obj>.regVar	a copy of the recently popped value
+
+[tStack.bpop]
+
+USE
+
+	<obj>.bpop( var dest: byte );
+
+
+DESCRIPTION
+
+Pop a byte sized object from the stack and store in dest.
+
+
+RETURNS
+
+	@c	= success
+	@nc	= underflow
+	
+	<obj>.regVar	a copy of the recently popped value
+
+
+[tStack.npop]
+
+USE
+
+	<obj>.mpop( var dest:var, length:uns32 );
+
+
+DESCRIPTION
+
+Pop length bytes from the stack and store in dest reference.
+
+
+RETURNS
+
+	@c	= success
+	@nc	= underflow
+	
+	<obj>.regVar	undefined
+
+	
+[tStack.pop32]
+
+USE
+	
+	<obj>.pop32();
+
+DESCRIPTION
+
+Pop a dword sized object from the stack and store in EAX.
+
+
+RETURNS
+
+	@c	= success
+		EAX = popped value
+	@nc	= underflow
+		EAX = 0
+		
+	<obj>.regVar	a copy of the recently popped value
+
+
+[tStack.pop16]
+
+USE
+
+	<obj>.pop16();
+
+
+DESCRIPTION
+
+Pop a word sized object from the stack and store in AX.
+
+
+RETURNS
+
+	@c	= success
+		EAX = popped value
+	@nc	= underflow
+		EAX = 0
+		
+	<obj>.regVar	a copy of the recently popped value
+
+
+[tStack.pop8]
+
+USE
+
+	<obj>.pop8();
+
+
+DESCRIPTION
+
+Pop a byte sized object from the stack and store in AL.
+
+
+RETURNS
+
+	@c	= success
+		EAX = popped value
+	@nc	= underflow
+		EAX = 0
+	
+	<obj>.regVar	a copy of the recently popped value
+
+
+[tClone]
+
+tClone Class
+
+This is an "abstract" class of sorts, though not a true abstract class.  It is designed to be inherited by other classes that require  the ability to "clone" themselves.  A clone is a direct memory copy of the parent class residing on a separate address, so clones should not be "destroyed" by method calls, rather they should freed directly using mem.free(classPtr).
+
+[clone]
+
+method clone; @returns ("EAX");
+
+Makes a copy of the current object and returns the pointer in EAX.
+
+[isClone]
+
+method isClone; @returns("EAX");
+
+Returns true in EAX if the current object is a clone.  Useful for determining how to free memory associated with object.
+
+[hide.stricmp]
+hide.stricmp(src1:dword; src2:dword);
+
+	Takes the address of 2 zero-terminates strings and performs a case insensitive compare.  Sets the zero flag register if the strings are identical.
+
+Returns:	eflags
+
+[hide.version]
+
+	hide.version();	@returns( "EAX" );
+
+Returns in eax the current hidelib version.
+
+
+
+[Searching Functions]
+	
+	Several functions used to search a zero terminated string for specific strings or patterns.  In general, the start and end positions of any found string is returned in ESI/EDI
+
+[scan.find]
+
+USE
+	scan.find( toFind:string );
+	
+DESCRIPTION
+	Makes a case sensitive search for indicated string.  Returns start/end pointers in ESI/EDI
+	
+SOURCES
+	ESI	= pointer in a zero terminated string
+	
+RETURNS
+	@c	= success
+		ESI = pointer to start of matched string
+		EDI = pointer to one character beyond matched string
+	@nc	= failure, match not found
+		EDI = undefined
+		ESI = unchanged
+
+
+[scan.irfind]
+
+USE
+	scan.irfind( bof:dword; toFind:string );
+	
+DESCRIPTION
+	Makes a case insensitive reverse search for indicated string.  Returns start/end pointers in ESI/EDI
+	
+SOURCES
+	ESI	= pointer in a zero terminated string
+	bof = pointer to the start of source
+	
+RETURNS
+	@c	= success
+		ESI = pointer to start of matched string
+		EDI = pointer to one character beyond matched string
+	@nc	= failure, match not found
+		EDI = undefined
+		ESI = unchanged
+
+[scan.rfind]
+
+USE
+	scan.rfind( bof:dword; toFind:string );
+	
+DESCRIPTION
+	Makes a case sensitive reverse search for indicated string.  Returns start/end pointers in ESI/EDI
+	
+SOURCES
+	ESI	= pointer to zero terminated string
+	bof	= pointer to start of source
+	
+RETURNS
+	@c	= success
+		ESI = pointer to start of matched string
+		EDI = pointer to one character beyond matched string
+	@nc	= failure, match not found
+		EDI = undefined
+		ESI = unchanged
+
+
+[scan.pfind]
+
+USE
+	scan.pfind( toFind:string; caseSensitive:boolean );
+	
+DESCRIPTION
+	Searches source for indicated string using pattern matching.  The target string may contain special characters for matching purposes.  The search may be case sensitive or insensitive.
+	
+A '*' in the target string matches zero or more characters
+A '?' in the target string matches any one character
+All other character in the string must match exactly (based on case setting)  
+
+The start and end pointers of the found string are returned in ESI/EDI
+
+Example, given the string:
+"There once was a man from kent"
+
+scan.pfind( "w?s", false);
+will find "was"
+
+scan.pfind( "on*m?n", false );
+will find "once was a man" 
+
+If case sensitive search is required, pass "true" in the caseSensitive parameter.
+
+SOURCES
+	ESI	= pointer to zero terminated string
+	
+RETURNS
+	@c	= success
+		ESI = pointer to start of matched string
+		EDI = pointer to one character beyond matched string
+	@nc	= failure, match not found
+		EDI = undefined
+		ESI = unchanged
+		
+[scan.findc]
+
+USE
+	scan.findc( toFind:char );
+	
+DESCRIPTION
+	Advances EDI to the next indicated char
+
+SOURCES
+	ESI	= pointer to zero terminated string
+	
+RETURNS
+	@c	= success
+		ESI	= unchanged
+		EDI = pointer to next indicated character in source
+	@nc	= failure, character not found
+		EDI = undefined
+
+[scan.match]
+
+USE
+	scan.match( toMatch:string );
+	
+DESCRIPTION
+	Attempts to match the string starting at ESI.  The matching is case sensitive.
+	
+SOURCES
+	ESI	= pointer to zero terminated string
+	
+RETURNS
+	@c	= true, match successful
+		EDI = pointer to just beyond matched string
+	@nc	= false, no match
+		EDI = undefined
+
+
+[scan.imatch]
+
+USE
+	scan.imatch( toMatch:string );
+	
+DESCRIPTION
+	Attempts to match the string starting at ESI.  The matching is case insensitive.
+	
+SOURCES
+	ESI	= pointer to zero terminated string
+	
+RETURNS
+	carry set 	= true, match successful
+				EDI = pointer to just beyond matched string
+	carry clear	= false, no match
+				EDI = undefined
+
+
+
+[scan.matchWord]
+
+USE
+	scan.matchWord( toMatch:string );
+	
+DESCRIPTION
+	Attempts to match the word starting at ESI.  A word is defined by any set of characters delimited by a specified character set.  matchWord uses the default character set which may be changed by scan.setDelimiters( delims:cset ); function.
+The matching is case sensitive.
+	
+SOURCES
+	ESI	= pointer to zero terminated string
+	
+RETURNS
+	carry set 	= true, match successful
+				EDI = pointer to just beyond matched word
+	carry clear	= false, no match
+				EDI = undefined
+
+
+[scan.imatchWord]
+
+USE
+	scan.imatchWord( toMatch:string );
+	
+DESCRIPTION
+	Attempts to match the word starting at ESI.  A word is defined by any set of characters delimited by a specified character set.  matchWord uses the default character set which may be changed by scan.setDelimiters( delims:cset ); function.
+The matching is case insensitive.
+	
+SOURCES
+	ESI	= pointer to zero terminated string
+	
+RETURNS
+	carry set 	= true, match successful
+				EDI = pointer to just beyond matched word
+	carry clear	= false, no match
+				EDI = undefined
+
+
+[scan.skipws]
+
+USE
+	scan.skipws();
+	
+DESCRIPTION
+	Advances ESI to the first alphanumCseteric character
+
+SOURCES
+	ESI	= pointer to zero terminated string
+	
+RETURNS
+	@c	= success
+		ESI = pointer to first alphanumCseteric character
+	@nc	= failure, source scan complete
+		ESI = undefined
+
+
+[scan.skipan]
+
+USE
+	scan.skipan();
+	
+DESCRIPTION
+	Advances ESI to the first non-alphanumCseteric character
+
+SOURCES
+	ESI	= pointer to zero terminated string
+	
+RETURNS
+	@c	= success
+		ESI = pointer to first non-alphanumCseteric character
+	@nc	= failure, source scan complete
+		ESI = undefined
+
+[Line Functions]
+
+	The following functions are used to work with individual lines from the source
+
+[scan.findEOLN]
+
+USE
+	scan.findEOLN();
+	
+DESCRIPTION
+	Utility functions.  Finds the end of line and returns a pointer in EDI
+	
+SOURCES
+	ESI	= pointer to zero terminated string
+	
+RETURNS
+	@c	= success
+		ESI = unchanged
+		EDI = pointer to end of line or at #0 byte
+	@nc	= failure, scan complete
+		ESI, EDI = undefined
+
+[scan.getLine]
+
+USE
+	scan.getLine( dest:string );
+	
+DESCRIPTION
+	Retreives a line of test and copies it to dest
+	
+SOURCES
+	ESI	= pointer to zero terminated string
+
+RETURNS
+	@c	= success, dest contains a valid string
+		ESI = pointer to next line of string or at #0
+	@nc	= failure, scan complete, EAX undefined
+
+
+[scan.a_getLine]
+
+USE
+	scan.a_getLine();
+	
+DESCRIPTION
+	Retreives a line of test and returns it in an HLA string allocated on HEAP
+	
+SOURCES
+	ESI	= pointer to zero terminated string
+
+RETURNS
+	@c	= success, EAX contains a valid string
+		ESI = pointer to next line of string or at #0
+	@nc	= failure, scan complete, EAX undefined
+
+[scan.nextLine]
+
+USE
+	scan.nextLine();
+	
+DESCRIPTION
+	Advances ESI to the start of next line.
+	
+SOURCES
+	ESI	= pointer in a zero terminated string
+
+RETURNS
+	@c	= success, ESI points to start of next line
+		
+	@nc	= scan complete, ESI at #0 byte.
+
+
+[Tokenizing Functions]
+
+	These functions are used retreive tokens and set modes of operation for the tokenizer functions.  A token is any set of characters separated by specified delimiters.  These functions use field mode (default) which can be turned off.  If field mode is active, all tokens are returned, including empty ones between two or more delimiters.  If field mode is false, excessive delimiters are ignored.
+
+
+[scan.setFieldMode]
+
+USE
+	scan.setFieldMode( mode:boolean );
+
+DESCRIPTION
+	Field mode is default operation for tokenizer functions.  If field mode is true, all tokens are returned, including empty tokens.  When false, only existing tokens are returned.
+	
+eg, given the string:
+	"one,two,,four"
+	
+If field mode is true (default) the following is returned:
+	"one"
+	"two"
+	""
+	"four"
+	
+If field mode is set to false, the following is returned:
+	"one"
+	"two"
+	"four"
+
+SOURCES
+	n/a
+		
+RETURNS
+	n/a
+
+[scan.setDelimiters]
+
+USE
+	scan.setDelimiters( delims:cset );
+
+DESCRIPTION
+	Allows changing the default delimiters used by the tokenizing and some other functions.
+	
+	Default:
+	cset {' ', #9, ',', '<', '>', '|', '\', '/', '-', #$D, #$A}, {};
+	
+SOURCES
+	n/a
+	
+RETURNS
+	n/a
+
+[scan.getTokenLexeme]
+
+USE
+	scan.getTokenLexeme();
+
+DESCRIPTION
+	Used by getToken functions, this retreives the start and end lexeme of the next token in accordance to field mode.  Text between quotes are considered single tokens
+
+SOURCES
+	ESI	= pointer to zero terminated string
+
+RETURNS
+	@c	= success
+		ESI = pointer to start of lexeme
+		EDI = pointer to one character beyond end of lexeme
+		ESI = EDI in field mode indicates an empty field.
+	@nc	= failure, source scan completed
+	
+[scan.getToken]
+
+USE
+	scan.getToken( dest:string );
+
+DESCRIPTION
+	Retreives the next token according to field mode.
+
+SOURCES
+	ESI	= pointer to zero terminated string
+
+RETURNS
+	@c	= success, dest = a valid token
+	@nc	= failure, source scan completed, dest = unchanged
+
+[scan.a_getToken]
+
+
+USE
+	scan.a_getToken();
+
+DESCRIPTION
+	Allocates storage and retreives the next token according to field mode.
+
+SOURCES
+	ESI	= pointer to zero terminated string
+
+RETURNS
+	@c	= success, EAX = an HLA string allocated on HEAP
+	@nc	= failure, source scan completed, EAX = undefined
+
+[Data Extraction Functions]
+
+	Functions used to extract HLA strings from portions of a zero terminated string
+
+[scan.extract]
+
+USE
+	scan.extract( dest:string );
+
+DESCRIPTION
+	Extracts characters from given pointers and copies to given string pointer.  These are used by several other functions in this library.  
+
+SOURCES
+	ESI	= pointer to start of extraction
+	EDI	= pointer to one character beyond desired character of extraction
+
+RETURNS
+	dest = extracted string
+
+[scan.a_extract]
+
+USE:
+	scan.a_extract();
+	
+DESCRIPTION:
+	Extracts characters from given pointers and copies to HLA string allocated on HEAP.
+	
+SOURCES:
+	ESI	= pointer to start of extraction
+	EDI	= pointer to one character beyond desired character of extraction
+
+RETURNS:
+	EAX	= pointer to string allocated on heap
+
+
+[hide.putz]
+ hide.putz( var src:dword );
+
+	Displays a zero terminated string to the standard output.
+
+[hide.putn]
+ hide.putn(  var src:dword; n:uns32 );
+ 
+	Displays a number of characters indicated by 'n', starting at src to the standard output.
+
+[hide.putMem]
+
+ hide.putMem is an overloaded function to write length of data to standard output in ascii byte pairs.
+	
+	hide.putMem( var src:dword; len:uns32 );
+		-calls hide.putMem0
+		
+	hide.putMem( var src:dword; len:uns32; cols:uns32 );
+		-calls hide.putMem1
+
+[hide.putMem0]
+
+	hide.putMem0( var src:dword; len:uns32 );
+	
+Outputs len bytes of src to standard output using ascii byte pairs to represent bytes.
+
+
+[hide.putMem1]
+
+	hide.putMem1( var src:dword; len:uns32; cols:uns32 );
+	
+Outputs len bytes of src to standard output using ascii byte paris to represent bytes.
+The output is displayed in cols number of columns.
+
+
+[Scanning Functions]
+These functions scan a zero-terminated buffer pointed at by ESI.  These functions may also be used with HLA strings by loading ESI with the string pointer.
+
+namespace: scan
+	
+Scanlib provides several functions that scan zero terminated strings at the low level.  As a general rule, ESI is always used as a pointer to source, EDI is often used as an 'end' pointer and EAX sometimes used for return values.  Do not depend on EDI and EAX being preserved.
+
+Success or failure conditions are returned in carry (when applicable), where carry set indicates true, or success while carry clear indicates false, or failure.
+Failure usually means the source scan has been completed.  For errors, exceptions are raised.
+
+
+[OS Functions]
+	These functions are designed to provide a common interface for accessing OS features.
+
+[os2.sysexec]
+
+os2.sysexec ( cmdLn: string);
+
+Returns: EAX	process exit code
+
+	This function provides an OS-independent method of executing processes from within another
+process.  This function works with the environment functions contained in this library (see "Environment Functions") so that it behaves the same way in both Linux and Windows.
+
+[os2.getmodulepath]
+
+os2.getmodulepath ( dest:string );
+
+Returns the path and name of the current process in dest.
+
+
+
+[env2.put]
+env2.put ( envStr:string; envValue:string);
+
+	This function stores envStr with a value of envValue into the environment block.  If the envStr already exists, the existing value is updated with the new value, otherwise a new key (envStr) is created with the value contained in envValue.
+
+[env2_get]
+env2.get (envVar: string; dest:string );
+env2.a_get (envVar:string);
+
+	These functions retreive the environment "envVar" and stores the value  in dest.  'dest' must be large enough to hold the environment.
+a_get allocates a new string on the heap and returns a pointer in EAX.
+
+
+[env2.getstrings]
+env2.getstrings();
+
+	Not for general use, returns a pointer to the current environment block.  Note that this block is formatted differently in Windows and in Linux.
+
+[Environment Functions]
+These functions handle environment control for a process.
+
+[Memory Functions]
+
+Some utility memory functions.  These may be depricated in the future.
+
+[mem2.size]
+
+	mem2.size( hMem );
+	
+Where hMem is a pointer to an HLA memory allocation.
+Returns the allocated size to the nearest 8-byte alignment in EAX.
+
+Note: the stdlib has a mem.size function that is similar to this, but that one seems to return the memory header size as well.
+
+
+[mem2.fillMem]
+
+	mem2.fillMem( var lpSource:dword; MemSize:dword; Value:byte );
+	
+lpSource	= pointer to allocated memory
+MemSize 	= number of bytes to overwrite
+Value		= value to overwrite memory with
+
+[Usage]
+Include “hidelib.hhf”, link with hidelib.lib (MS Windows)  or hidelib.a (Linux).
+Linux version is not officially maintained by myself.
+
+[Functions List]
+
+A brief listing of all the functions available in the library by namespace/class
+
+namespace hide;
+	
+	procedure putz(var src:dword);
+		@external("HIDE_PUTZ");
+	procedure putn(var src:dword; n:uns32);
+		@external("HIDE_PUTN");
+	procedure stricmp (src1:dword; src2:dword);
+		@returns ("@e");	@external ("HIDE_STRICMP");
+	procedure version;
+		@returns ("EAX");	@external ("HIDE_VERSION");
+	
+	static
+		whiteSpaceCset	:cset; @external;
+		alphanumCset		:cset; @external;
+		nlCset			:cset; @external;
+
+namespace scan;
+	
+	static
+		token_cset	:cset;	@external;
+		
+	procedure find( toFind:string );
+		@returns( "@c" ); @external( "SCAN_FIND" );
+	procedure ifind( toFind:string );
+		@returns( "@c" ); @external( "SCAN_IFIND" );
+	procedure rfind( bof:dword; toFind:string );
+		@returns("@c"); @external("SCAN_RFIND");
+	procedure irfind( bof:dword; toFind:string );
+		@returns("@c"); @external("SCAN_IRFIND");
+	procedure findc( toFind:char );
+		@returns( "@c" ); @external( "SCAN_FINDC" );
+	procedure pfind( toFind:string; caseSensitive:boolean );
+		@returns( "@c" ); @external( "SCAN_PFIND" );
+		
+	procedure match( toMatch:string );
+		@returns("@c"); @external( "SCAN_MATCH" );
+	procedure imatch( toMatch:string );
+		@returns("@c"); @external( "SCAN_IMATCH" );
+	procedure matchWord( toMatch:string );
+		@returns("@c"); @external( "SCAN_MATCHWORD" );
+	procedure imatchWord( toMatch:string );
+		@returns("@c" ); @external( "SCAN_IMATCHWORD" );
+		
+	procedure nextLine; @returns( "@c" );
+		@external( "SCAN_NEXTLINE" );
+	procedure findEOLN;	@returns( "@c" );
+		@external( "SCAN_FINDEOLN" );
+	procedure a_getLine; @returns( "@c" );
+		@external( "SCAN_A_GETLINE" );
+	procedure getLine( dest:string );
+		@returns( "@c" ); @external( "SCAN_GETLINE" );
+		
+	procedure skipws; @returns( "@c" );
+		@external( "SCAN_SKIPWS" );
+	procedure skipan; @returns( "@c" );
+		@external( "SCAN_SKIPalphanumCset" );
+		
+	procedure getToken( dest:string );
+		@returns( "@c" ); @external( "SCAN_GETTOKEN" );
+	procedure a_getToken; @returns( "@c" );
+		@external( "SCAN_A_GETTOKEN" );
+	procedure getTokenLexeme;
+		@returns( "@c" ); @external( "SCAN_GETTOKENLEXEME" );
+	procedure setDelimiters( delims:cset );
+		@external( "SCAN_setDelimiters" );
+	procedure setFieldMode( mode:boolean );
+		@external( "SCAN_SETFIELDMODE" );
+		
+	procedure a_extract; @returns("EAX");
+		@external ("SCAN_A_EXTRACT");
+	procedure extract( dest:string );
+		@external ("SCAN_EXTRACT");
+
+
+namespace os2;
+	procedure sysexec (cmdLn:string);
+		@returns ("EAX"); @external ("OS2_SYSEXEC");
+	procedure getmodulepath (dest:string);
+		@external ("OS2_GETMODULEPATH");
+
+
+namespace env2;
+
+	procedure getstrings;
+		@returns ("EAX"); @external ("ENV2_GETENVSTRINGS");
+	procedure get (envVar:string; dest:string);
+		@returns ("EAX"); @external ("ENV2_GET");
+	procedure a_get (envVar:string);
+		@returns ("EAX"); @external ("ENV2_AGET");
+	procedure put (envStr:string; envValue:string);
+		@external ("ENV2_PUT");
+
+
+namespace mem2;
+
+	procedure size ( pMemory:dword);
+		@returns ("EAX"); @external ("MEM2_SIZE");
+	procedure fillMem( var lpSource:dword; MemSize:dword; Value:byte );
+		@external ("MEM2_FILLMEM");
+
+
+tClone:	class
+	
+	method clone;
+		@returns ("EAX"); @external;
+	method isClone;
+		@returns ("EAX"); @external;
+		
+
+tStack: class
+
+	#macro mpush ( _args_[] ):
+	#macro mpop ( _args_[] ):
+	
+	procedure create ( size:dword);
+		@returns("ESI"); @external;
+	method destroy;
+		@external;
+		
+	method dpush (obj:dword);
+		@returns ("@nc"); @external;
+	method wpush (obj:word);
+		@returns ("@nc"); @external;
+	method bpush (obj:byte);
+		@returns ("@nc"); @external;
+		
+	method dpop (var dest: dword);
+		@external;
+	method wpop (var dest: word);
+		@external;
+	method bpop (var dest: byte);
+		@external;
+		
+	method popr32;
+		@external;
+	method popr16;
+		@external;
+	method popr8;
+		@external;
+		
+	method getsize;
+		@returns ("EAX"); @external;
+	method getnumobjects;
+		@returns ("EAX"); @external;
+	
+
+tBaseList:	class
+
+	procedure create;
+		@returns ("ESI"); @external;
+	method destroy;
+		@external;
+	method remove (var lNode:baseNode_t);
+		@external;
+	method removeIndex (index:uns32);
+		@returns ("@nc"); @external;
+	method newNode;
+		@abstract;
+
+	method getCount;
+		@returns ("EAX"); @external;
+	method getHead;
+		@returns ("EAX"); @external;
+	method getTail;
+		@returns ("EAX"); @external;
+	method getNodeIndex (index:uns32);
+		@returns ("EAX"); @external;
+	method getIndexNode (var lNode:baseNode_t);
+		@returns ("EAX"); @external;
+		
+	method append (var lNode:baseNode_t);
+		@external;
+	method insert (var lNode:baseNode_t; index:uns32);
+		@external;
+		
+		
+	baseNode_t:
+		record
+			next	:dword;
+			prev	:dword;
+			nodeID	:dword;
+		endrecord;
+		
+
+tList: class inherits (tBaseList)
+
+
+	override procedure create;
+		@external;
+	method appendValue ( value:dword );
+		@external;
+	method findValue (value:dword);
+		@returns ("EAX"); @external;
+	method setValue ( var lNode:listNode_t; value:dword);
+		@external;
+	method newNode;
+		@returns ("EAX"); @external;
+		
+	listNode_t:
+		record inherits (baseNode_t)
+			value	:dword;
+		endrecord;
+
+
+tFileList: class inherits (tList)
+
+
+	override procedure create;
+		@external;
+	override method destroy;
+		@external;
+	method findFullPath ( fname:string);
+		@returns ("EAX"); @external;
+	method appendFile ( fname:string);
+		@external;
+	override method remove;
+		@external;
+		 
+	method removeFullPath ( fname:string);
+		@external;
+	method isExtended ( var lNode:fileNode_t);
+		@returns ("EAX"); @external;
+	method isExtension ( var lNode:fileNode_t; ext:string);
+		@returns ("EAX"); @external;
+	method newNode; @returns ("EAX");
+		@external;
+
+
+	fileNode_t:
+		record inherits (listNode_t)
+			fname	:string;
+			iname	:string;
+			ipath	:string;
+			extended:boolean;
+		endrecord;
+
+
+tBufferBase		:class
+
+	create_size		:procedure( initialSize:uns32 )
+					{ @returns ("ESI")}; @external;
+	create_default	:procedure
+					{ @returns ("ESI")}; @external;
+	create_file		:procedure( fileName:string )
+					{ @returns("ESI")}; @external;
+
+	create			:overloads create_default
+					( "@text( @curObject + "".create_default"" )" );
+	create			:overloads create_size
+					( "@text( @curObject + "".create_size"" )" );
+	create			:overloads create_file
+					( "@text( @curObject + "".create_file"" )" );
+	
+	destroy			:method; @external;
+	erase			:method; @external;
+	resize			:method( size:uns32 )
+					{ @returns("@c") }; @external;
+	
+	sizeBuffer		:method( sizeTo:uns32 ); @external;
+	adjustForInsert	:method( size:uns32 ); @external;
+	adjustForDelete	:method( size:uns32 ); @external;
+
+
+tBuf: class inherits( tBufferBase );
+
+	override procedure create_size; @external;
+	override procedure create_default; @external;
+	override procedure create_file; @external;
+	override method destroy; @external;
+
+	#macro put (_args_[]):
+	#macro _put_ ( _object_, _arg_ ):
+
+
+	putByte			:method( b:byte ) {@returns("EAX")}; @external;
+	putBytes		:method( startAddr:dword; length:uns32 )
+					{@returns("EAX")}; @external;
+	
+	putWord			:method( w:word ) {@returns("EAX") }; @external;
+	putDword		:method( d:dword ) {@returns("EAX")}; @external;
+	putQword		:method( q:qword ) {@returns("EAX")}; @external;
+	putLword		:method( l:lword ) {@returns("EAX")}; @external;
+	
+	puts			:method( s:string ) {@returns("EAX")}; @external;
+	putz			:method( z:zstring ) {@returns("EAX")};	@external;
+
+	putBuffer		:method( var buf:tBufferBase )
+					{ @returns("EAX") }; @external;
+
+	putFile			:method( fileName:string )
+					{ @returns("EAX") }; @external;
+
+	delete			:method( length:uns32 )
+					{ @returns("EAX") }; @external;
+
+
+	isEof			:method { @returns("@c") }; @external;
+	eq				:method (var buf:var)
+					{ @returns( "@c" ) }; @external;
+	
+	ieq				:method (var buf:var)
+					{ @returns( "@c" ) }; @external;
+
+	subBuf			:method( startIndex:uns32; length:uns32; var dest:var )
+					{ @returns( "@c" ) }; @external;
+	
+	a_subBuf		:method( startIndex:uns32; length:uns32 )
+					{ @returns( "@c" ) }; @external;  // and eax
+	
+	subString		:method( startIndex:uns32; length:uns32; dest:string )
+					{ @returns( "@c" ) }; @external;
+					
+	a_subString		:method( startIndex:uns32; length:uns32 )
+					{ @returns( "@c" ) }; @external;  // and eax
+					
+
+	left			:method( n:uns32 ) { @returns( "@c" ) }; @external;  // and eax
+	right			:method( n:uns32 ) { @returns( "@c" ) }; @external;	// and eax
+	moveTo			:method( index:uns32 )
+					{ @returns( "@c" ) }; @external; // and eax
+	eof				:method{ @returns( "EAX" ) }; @external;
+	bof				:method{ @returns( "EAX" ) }; @external;
+	
+	getIndex		:method{ @returns( "EAX" ) }; @external;
+
+
+	writeStdout		:method; @external;
+	writeFile		:method {@returns("@c")}; @external;
+	writeFileName	:method( fileName:string );	@external;
+	writeString		:method( s:string ); @external;
+
+
+tBuffer: class inherits( tBuf );
+
+	#macro append (_args_[])
+	#macro appendFiles ( _args_[])
+	#macro insert (_args_[])
+	#macro replaceBlock ( _arg_ )
+	#macro toString ( _arg_[] );
+	
+	#macro _put ( _object_, _arg_ )
+	#macro _get ( _object_, _arg_ )
+
+	override procedure create_size; @external;
+	override procedure create_default; @external;
+	override procedure create_file; @external;			
+
+
+	method getToken (dest:string);
+		@returns ("EAX"); @external;
+	method a_getToken;
+		@returns ("EAX"); @external;
+	method skipDelimiters;
+		@returns ("EAX"); @external;
+
+	method inserts (source:string); @external;
+	method insertbl (b:boolean); @external;
+	method insertb (b:byte); @external;
+	method insertw (w:word); @external;
+	method insertd (d:dword); @external;
+	method insertq (q:qword); @external;
+	method insertl (l:lword); @external;
+	method insertu8 (u8:uns8); @external;
+	method insertu16 (u16:uns16); @external;
+	method insertu32 (u32:uns32); @external;
+	method insertu64 (u64:uns64); @external;
+	method insertu128 (u128:uns128); @external;
+	method inserti8 (i8:int8); @external;
+	method inserti16 (i16:int16); @external;
+	method inserti32 (i32:int32); @external;
+	method inserti64 (i64:int64); @external;
+	method inserti128 (i128:int128); @external;
+	method insertr32 (r32:real32); @external;
+	method insertr64 (r64:real64); @external;
+	method insertr80 (r80:real80); @external;
+	method insertcSet (c:cset); @external;
+	method insertSet( c:char; count:uns32); @external;
+
+	method openFile (fileName:string); @external;
+
+	method reads (dest:string);
+		@returns ("@nc"); @external;
+	method readc (var dest:char);
+		@returns ("@nc"); @external;
+	method readw (dest:string);
+		@returns ("@nc"); @external;
+
+	method readBuffer ( var dest:tBuffer);
+		@returns ("@nc"); @external;
+	method readbytes (destAddr:dword; length:uns32);
+		@returns ("@nc"); @external;
+	method readByte;
+		@returns ("EAX"); @external;
+	method readWord;
+		@returns ("EAX"); @external;
+	method readDword;
+		@returns ("EAX"); @external;
+
+	method deleteCursorLine; @external;
+	method deleteCursorToEOL; @external;
+	method deleteIndex ( start_index:uns32; end_index:uns32); @external; 
+	method replaceCursor ( s:string); @external;
+	method replaceIndex ( index:uns32; s:string); @external;
+	method setChar ( src:char; count:uns32); @external;
+	method trim; @external;
+	method delspace; @external;
+	method truncate (length:uns32); @external;
+	method upper (length:uns32); @external;
+	method lower (length:uns32); @external;
+
+	method setBlock (start_index:uns32; end_index:uns32); @external;
+	method getBlockStart;
+		@returns("EAX"); @external; 
+	method getBlockText	(dest:string); @external;
+	method deleteBlock; @external;
+	method replaceBlockString (s:string); @external;
+	method replaceBlockBuffer (var buf:tBuffer); @external;
+
+	method searchf (s:string);
+		@returns ("EAX"); @external;
+	method isearchf (s:string);
+		@returns ("EAX"); @external;
+	method searchr (s:string);
+		@returns ("EAX"); @external;
+	method isearchr (s:string);
+		@returns ("EAX"); @external;
+
+	method match (s:string);
+		@returns ("EAX"); @external;
+	method imatch (s:string);
+		@returns ("EAX"); @external;
+	method matchWord (s:string);
+		@returns ("EAX"); @external;
+	method imatchWord (s:string);
+		@returns ("EAX"); @external;
+
+	method span (var c:cset);
+		@returns ("EAX"); @external;
+	method rspan (var c:cset);
+		@returns ("EAX"); @external;
+	method brk (var c:cset); @external;
+	method rbrk (var c:cset); @external;
+
+	method cursorToBOL;
+		@returns("EAX"); @external;
+	method cursorToEOL;
+		@returns("EAX"); @external;
+	method cursorToBOW;
+		@returns("EAX"); @external;
+	method cursorToEOW;
+		@returns("EAX"); @external;
+	method cursorLeftLines (num:uns32);
+		@returns ("EAX"); @external;
+	method cursorRightLines (num:uns32);
+		@returns ("EAX"); @external;
+	method getCursorWord (dest:string);
+		@returns("EAX"); @external;
+	method getCursorLine (dest:string);
+		@returns("EAX"); @external;
+	method getLineFromCursor (dest:string);
+		@returns ("EAX"); @external;
+	method a_getLineFromCursor;
+		@returns ("EAX"); @external;
+	method getWordFromCursor (dest:string);
+		@returns ("EAX"); @external;
+
+	method nextLine;
+		@returns ("EAX"); @external;
+	method prevLine;
+		@returns ("EAX"); @external;
+
+	method setDecimalPoints (n:byte); @external;
+	method setDelimiters (c:cset); @external;
+	method setDelimSkipMode (set:boolean); @external;
+
+	method getBufferSize;
+		@returns ("EAX"); @external;
+	method getBufferLength;
+		@returns ("EAX"); @external;
+	method getCursor;
+		@returns ("EAX"); @external;
+	method getChar;
+		@returns ("AL"); @external;
+	method getBufferPtr;
+		@returns ("EAX"); @external;
+	method getEOF;
+		@returns ("EAX"); @external;
+	method getNumLines;
+		@returns ("EAX"); @external;
+	method getLineNum;
+		@returns ("EAX"); @external;
+	method getCursorToEOFLength;
+		@returns ("EAX"); @external;
+	method put32cs; @external;
+
+	// the following are depricated, use similar functions in super class
+	
+	method extract ( start_index:uns32; end_index:uns32; dest:string );
+		@external;
+	method a_extract ( start_index:uns32; end_index:uns32 );
+		@returns ("EAX"); @external;
+	method extractToBuffer ( start_index:uns32; end_index:uns32; var dest:tBuffer);
+		@external;
+
+
+	method insertbytes ( startAddr:dword; length:uns32 ); @external;
+	
+	// depricated, use putByte from parent class
+	method insertc (c:char); @external;
+	method insertByte (b:byte); @external;
+	
+	// depricated, use putWord from parent class
+	method insertWord (w:word); @external;
+	
+	// depricated, use putDword from parent class
+	method insertDword (d:dword); @external;
+		
+	method insertBuffer (var buffer:tBuffer); @external;
+	method insertFile (fileName:string); @external;
+	method deleteCursor ( length:uns32); @external;
+
+	// depricated, use methods eq and ieq
+	method cmpBuffer (var buffer:tBuffer);
+		@returns ("@E"); @external;
+	method icmpBuffer (var buffer:tBuffer);
+		@returns ("@E"); @external;
+
+	// depricated, use methods eof and bof
+	method cursorToEOF;
+		@returns("EAX"); @external;
+	method cursorToBOF;
+		@returns("EAX"); @external;
+	
+	// depricated, use methods moveTo, left and right
+	method cursorTo (index:uns32);
+		@returns("EAX"); @external;
+	method cursorLeft ( num:uns32);
+		@returns("EAX"); @external;
+	method cursorRight (num:uns32);
+		@returns("EAX"); @external;
+
+	// depricated, use writeStdout, writeFile, writeFileName and writeString
+	method toOut; @external;
+	method toFile (fileName:string); @external;
+	method _toString (dst:string);
+		@returns ("EAX"); @external;
+
+	// depricated, use getIndex
+	method getCursorIndex;
+		@returns ("EAX"); @external;
+
+	// depricated, use method isEof
+	method checkEOF;
+		@returns ("EAX"); @external;
+
+tConfig	:	class
+
+	#macro create ( _arg_[] );
+	#macro readSection ( _section_, _dest_ )
+	#macro writeSection (_section_, _dest_ )
+	
+	procedure create_default;
+		@returns ("ESI"); @external;
+	procedure create_file (fileName:string); @returns ("ESI"); @external;
+	method destroy; @external;
+	method write (fileName:string); @external;
+
+	method writeString ( sec:string; key:string; src:string);
+		@external;
+	method readString (sec:string; key:string; dest:string);
+		@returns ("EAX"); @external;
+	method a_readString (sec:string; key:string);
+		@returns("EAX"); @external;
+	method readBufString (sec:string; key:string; var dest:tBuffer);
+		@returns ("EAX"); @external;
+
+	method readBool (sec:string; key:string);
+		@returns ("@c"); @external;
+	method writeBool (sec:string; key:string; state:boolean);
+		@external;
+	
+	method writeHex (sec:string; key:string; value:dword);
+		@external;
+	method readHex (sec:string; key:string);
+		@returns ("@c"); @external;
+	method writeBin (sec:string; key:string; var addr:dword; size:uns32);
+		@external;
+	method readBin (sec:string; key:string; var addr:dword; size:uns32); @returns ("EAX");
+		@external;
+
+	method writeInt (sec:string; key:string; value:int32);
+		@external;
+	method readInt (sec:string; key:string);
+		@returns ("@c"); @external;
+	
+	method writeUns (sec:string; key:string; value:uns32);
+		@external;
+	method readUns (sec:string; key:string);
+		@returns ("@c"); @external;
+
+	method deleteKey (sec:string; key:string);
+		@external;
+	method deleteSection (sec:string);
+		@external;
+	method deleteItem (sec:string; index:dword);
+		@external;
+	method renameKey (sec:string; currentkey:string; newkey:string);
+		@returns ("EAX"); @external;
+	method renameSection (currentsec:string; newsec:string); @returns ("EAX");
+		@external;
+
+	method _readSection (sec:string; dest:string);
+		@returns ("EAX"); @external;
+	method a_readSection (sec:string);
+		@returns ("EAX"); @external;
+	method readBufSection (sec:string; var dest:tBuffer);
+		@external;
+	method getSectionList; @external;
+	method getSectionCount; @external;
+
+	method _writeSection (sec:string; src:string);
+		@external;
+	method readBinSection (sec:string; var dest:tBuffer);
+		@returns ("EAX"); @external;
+	method writeBufSection (sec:string; var src:tBuffer);
+		@external;
+
+	method writeItem (sec:string; index:dword; item:string);
+		@external;
+	method insertItem (sec:string; index:dword; item:string);
+		@external;
+	method readItem (sec:string; index:dword; dest:string);
+		@returns ("EAX"); @external;
+	method setItemTokens (tokens:cset);
+		@external;
+	method readItemToken (sec:string; itemIndex:dword; tokenIndex:dword; dest:string);
+		@returns ("EAX"); @external;
+		
+	method readBufItem (sec:string; index:dword; var dest:tBuffer);
+		@returns ("EAX"); @external;
+	method findItem (sec:string; src:string);
+		@returns ("EAX"); @external;
+
+	method isSectionDefined (sec:string);
+		@returns ("EAX"); @external;
+	method isKeyDefined (sec:string; key:string);
+		@returns ("EAX"); @external;
+	method getItemCount (sec:string);
+		@returns ("EAX"); @external;
+
+	method readSections; @external;
+	method findSectionA (sec:string);
+		@returns ("EAX"); @external;
+	method getSectionBounds (sec:string);
+		@returns ("EAX"); @external;
+	method findKeyA (key:string);
+		@returns ("EAX"); @external;
+
+tStrBuffer: class inherits (tBuffer);
+
+	override procedure create_size; @external;
+	override procedure create_default; @external;
+	override procedure create_file; @external;
+
+	method getCount;
+		@returns ("EAX"); @external;
+	method putStr (strptr:string);
+		@returns ("EAX"); @external;
+	method putStrz (strptr:dword);
+		@returns ("EAX"); @external;
+	method putStrBytes (mem_start:dword; length:dword);
+		@returns ("EAX"); @external;
+	method getStr (index:uns32);
+		@returns ("EAX"); @external;
+	iterator stringInBuffer;
+		@external;
+	
+
+
+[Update Log]
+
+v1.71.76
+	-added [Macro Library] section and descriptions.
+
+v1.71.70
+	-added functions hide.putMem - hide.putMem0, hide.putMem1
+
+v1.71.65
+	-fixed header files 
+
+v 1.71.61
+	-fixed _writeSection and writeBufSection
+	 to replace entire section.  before it was
+	 skipping initial <text> label, if present.
+	 
+v 1.71.60
+	-added npush and npop to tStack
+	
+v 1.71.xx
+	-current subversion 50
+	-recompiled with hla 2.11/ hlalib 8
+	-changed tStack to inherit tBuf
+	 and is now an open ended stack limited
+	 only by memory.  See tStack manual for
+	 more details.
+	 
+v 1.70.xx
+	-recompiled with hla 2.9 / hlalib 7
+	-moved rbtree, heapsort classes to oldlib
+	-moved all func namespace functions to oldlib
+	-moved config namespace functions to oldlib
+	-moved depricated hide.xxx scan functions to oldlib
+	-reconfigured tBuffer class.  basic functions moved
+	to new tBufferBase class, simple functions moved to
+	new tBuf class, tBuffer retains all its functionality
+	-many methods depricated in tBuffer, but they have
+	 similar functions in the parent class.  depricated
+	 methods are retained for compatibility.
+	-reconfigured tConfig to directly inherit tBuffer
+	-updated this documentation
+	
+
+v 1.63.01
+	cleaned up some code
+	rebuild with latest HLA and hlalib
+	
+v 1.57.00
+	converted for use with hlalib.lib v3+
+	removed func namespace functions
+	func.FillMemory renamed to mem2.fillMem
+	all other func functions removed: use similar functions in stdlib
+	
+	
+v 1.56.00
+	-added scan namespace with scanlib functions
+	Following functions added:
+	find..........ifind
+	pfind.........findc
+	match.........imatch
+	matchWord.....imatchWord
+	nextLine......findEOLN
+	getLine.......a_getLine
+	skipws........skipan
+	getToken......a_getToken
+	getTokenLexeme
+	setDelimiters
+	setFieldMode
+	extract.......a_extract
+
+
+v 1.55.00
+	-removed hide.putzstr, use hide.putz instead
+	-tConfig.readBufSection now terminates the buffer
+	 with zero for convenience.
+	-fixed list tail not working properly when there
+	 is only 1 item in the list.
+	
+	 
+v 1.54.00
+	tBuffer.readw method added
+	tBuffer.span, rspan, brk, rbrk modified:
+	 -they now return carry = set (as well as EAX = -1) when at EOF
+	 -they now return carry = clear (as well as EAX = index) on success
+	 -all now take a cset as a reference instead of copied on stack
+	  
+v 1.53.00
+	Redesign tStrBuffer - now extends tBuffer
+	added loading and saving of string buffers as binary files
+	string buffers use a header "SBUF", $0A, $00
+	
+v 1.52.00
+	Added tStrBuffer to library
+	Fixed tBuffer.insertByte
+	Added hide.version function which returns a pointer to a string
+	containing version info.
+	Updated hidelib manual (hidelib.khelp)
+		
+v.1.51.00
+	Fixed tConfig.getSectionList() to compensate for <text> sections
+
+v 1.50.04
+	Added method imatchWord to tBuffer
+	Fixed macro tBuffer.insert and tBuffer.append to use
+		proper data types.
+
+v.1.50.00
+	Added tBaseList - modified tList and tFileList to inherit tBaseList 
+	Small fixes, added token lists to tConfig class.
+
+v.1.4.024
+	Fixes to:
+		tConfig.cmpBuffer, tConfig.a_readSection,
+		tConfig.readUns,	tConfig.deleteKey
+
+	New tBuffer methods: readc, reads, readBuffer, readbytes,
+		readbyte, readWord, readDword, getBufferToEOFLength,
+		insertWord, insertDword, matchWord,
+		macro insertByte alias to insertc
+	
+	New tConfig methods: writeBufSection
+
+	Deleted: os2.sysexit (use os.exitProcess instead)
+
+v.1.4.007
+	Added tBuffer class descriptions
+	Added tConfig (deptrcated configuration module)
+	Added tList
+	Added tFileList
+
+[Macro Library]
+
+	This section contains a description of the macros in "Macros/maclib.hhf"
+	
+[push5]
+
+Syntax:
+	push5;
+	
+Description:
+	pushes the following registers to the stack:
+	EBX, ECX, EDX, ESI, EDI
+
+Notes:
+	Used in conjunction with pop5
+	
+[pop5]
+
+Syntax:
+	pop5;
+	
+Description:
+	pops the following registers from the stack:
+	EBX, ECX, EDX, ESI, EDI
+	
+Notes:
+	Used in conjunction with push5
+	
+[pushabi]
+
+Syntax:
+	pushabi;
+	
+Description:
+	pushes the following registers to the stack:
+	EBX, ESI, EDI
+	
+Notes:
+	Used in conjunction with popabi
+
+[popabi]
+
+Syntax:
+	popabi;
+	
+Description:
+	pops the following registers from the stack:
+	EBX, ESI, EDI
+	
+Notes:
+	Used in conjunction with pushabi
+
+[typeConsts]
+
+Syntax:
+	typeConsts( prefix, const_type, registers[] );
+	
+Description:
+	Generates a series of text constants based on the prefix and registers in the following form:
+	
+	prefixregister := "(type const_type[register])";
+
+Notes:
+	Valid only in a const sectoin.
+	
+Example of use:
+	typeConsts( list, List, eax, ebx, ecx );
+	
+generates the following text constants:
+
+	listeax := "(type List[eax])";
+	listebx := "(type List[ebx])";
+	listecx := "(type List[ecx])";
+
+[RGB]
+	
+Syntax:
+	RGB( reg, green, blue );
+	
+Description:
+	Combines the 3 arguments to form a Win32 RGB color constant.
+	
+Notes:
+	In Linux platforms, the arguments should be reversed to
+	RGB( blue, green, red );
+
+[move]
+
+	Synonymous with hla 'mov' when both arguments are addresses.
+
+[enumX]
+
+Syntax:
+	enumX( startfrom, enumerations[] );
+	
+Description:
+	creates enumerated constants starting from the value
+	passed as the first argument.
+
+Notes:
+	Valid only in a const section.
+	
+Example of Use:
+
+	enumX( 10, ten, eleven, twelve );
+	
+creates the following constants:
+
+	ten := 10;
+	eleven := 11;
+	twelve := 12;
+	
+[enumBT]
+
+Syntax:
+	enumBT( flags[] );
+	
+Description:
+	creates enumerated bit constants starting from bit 0.
+	
+Notes:
+	valid only in const section.
+	
+Example of Use:
+
+	EnumBT( flag0, flag1, flag2 );
+	
+Creates the following constants:
+
+	flag0 := @{0};
+	flag1 := @{1};
+	flag2 := @{2};
+	
+[USE]
+
+Syntax:
+	USE( registers[] );
+	...
+	ENDUSE;
+	
+	USEINTEGRITY;
+	
+Description:
+	pushes the registers passed as arguments.
+	the registers are popped in the correct order at ENDUSE;
+	
+	Use the USEINTEGRITY macro to detect unmatched pairs of USE/ENDUSE.
+	
+	This macro may be nested.
+	
+	
+Notes:
+	legal in text section.
+	
+Example of use:
+	USE( EAX, ECX, EBX );
+	...other code here
+	ENDUSE;
+	
+
+[auxreg]
+
+Syntax:
+	f..z :auxreg;
+	
+Description:
+	when passed a symbol from f to z, auxreg creates an auxillary "register" which is a regular variable which can be addressed like a register in multiple parts.	
+
+	
+Notes:
+	static
+		j	:auxreg;
+	
+	the example above will create the variable "ejx" of dword size and various symbols to address the different parts of ejx:
+
+	jl byte 0 (LO byte)
+	jh byte 1 (HO byte of LO word)
+	jx byte 0-1 (LO word)
+	ejx byte 0-3 (entire dword)
+	ej byte 2-3 (HO word)
+	ejh byte 3 (HO byte)
+	ejl byte 2 (LO byte of HO word) 
+
+	since HLA allows memory-memory moves using
+	the 'mov' instruction, it's perfectly legal
+	to write:
+	mov (jx, ej);
+
+[str.strvar2]
+
+Syntax:
+	symbol :str.strvar2( size, [init string] );
+	
+Description:
+	works like the hla standard library str.strvar macro with the optional 2nd argument to initialize the string.
+
+Notes:
+	this is valid in static section.
+	though also valid in readonly section, it would be pointless to use it there.
+
+	myString :str.strvar2( 1000, "Hello world" );
+
+creates myString with 1000 bytes storage and initializes it with the string "Hello world"
+
+If size is smaller than initialization string, the string will be created with enough storage to contain the initialization string.
+
+	myString :str.strvar2( 0, "Hello world" );
+	
+will create myString with 11 bytes storage.
+
+[assign]
+
+Syntax:
+ 	assign( a = b [,] );
+ 	
+Description:
+	Combines blocks of mov() statements.
+
+Notes:
+	Examples of usage:
+		assign ( eax = 0 )
+
+		assign ( testvar = ecx = xor(eax, eax) returns eax,
+				 ebx = 33)
+
+		assign ( ecx 	 = 323, eax =  34,  
+				testvar =  77 )
+
+		Set up the window class (wc) object:
+		assign( wc.cbSize = @size( w.WNDCLASSEX ),
+	    	wc.style = w.CS_HREDRAW | w.CS_VREDRAW,
+	    	wc.lpfnWndProc = &WndProc,	
+			wc.cbClsExtra = NULL,	     
+			wc.cbWndExtra = NULL,
+			wc.hbrBackground = w.COLOR_WINDOW+1,
+			wc.lpszMenuName = ID_MAINMENU,
+			wc.lpszClassName = ClassName,
+		 
+			// Get this process' handle:
+			hInstance = w.GetModuleHandle( NULL ),
+			wc.hInstance = eax,
+			wc.hIcon   = w.LoadIcon( ID_ICONLOGO2, hInstance),
+			wc.hIconSm = w.LoadIcon(hInstance, val ID_ICONSMALL ),
+			wc.hCursor = w.LoadCursor( NULL, val w.IDC_ARROW )
+		)
+
+[setBit]
+
+Syntax:
+	setBit( src, dest );
+	setFlag( src, dest );
+	
+Description:
+	equivalent to:
+	or( src, dest );
+
+Notes:
+	the "or" instruction can be ambiguous, when setting bits or flags, use setBit or setFlag for better readability.
+	
+[clearBit]
+
+Syntax:
+	clearBit( src, dest );
+	clearFlag( src, dest );
+	
+Description:
+	equivalent to:
+	and( ! src, dest );
+	
+Notes:
+	the "and" instruction can be ambiguous, when clearing bits or flags, use clearBit or clearFlag for better readability.
+	
+[testnz]
+
+Syntax:
+	testnz( src, dest );
+	flagSet( src, dest );
+	bitSet( src, dest );
+	
+Description:
+	equivalent to:
+	test( src, dest );
+	
+Notes:
+	returns "@nz"
+	
+	the "test" instruction can be ambiguous, when appropriate, use one of the replacement macros for better readability.
+
+[testz]
+
+Syntax:
+	testz( src, dest );
+	flagClear( src, dest );
+	bitClear( src, dest );
+	
+Description:
+	equivalent to:
+	test( src, dest );
+	
+Notes:
+	returns "@z"
+
+	the "test" instruction can be ambiguous, when appropriate, use one of the replacement macros for better readability.
+
+
+[cmpe]
+
+Syntax:
+	cmpe (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+	
+Notes:
+	returns "@e"
+
+	use when appropriate for better readability
+
+[cmpne]
+Syntax:
+	cmpne (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@ne"
+	
+	use when appropriate for better readability
+
+[cmpa]
+
+Syntax:
+	cmpa (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@a"
+	
+	use when appropriate for better readability
+	
+[cmpna]
+	
+Syntax:
+	cmpna (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@na"
+	
+	use when appropriate for better readability
+	
+[cmpae]
+
+Syntax:
+	cmpae (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@ae"
+	
+	use when appropriate for better readability
+
+[cmpnae]
+	
+Syntax:
+	cmpnae (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@nae"
+	
+	use when appropriate for better readability
+	
+[cmpg]
+	
+Syntax:
+	cmpg (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@g"
+	
+	use when appropriate for better readability
+	
+[cmpng]
+	
+Syntax:
+	cmpng (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@ng"
+	
+	use when appropriate for better readability
+	
+[cmpge]
+	
+Syntax:
+	cmpge (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@ge"
+	use when appropriate for better readability
+	
+[cmpnge]
+	
+Syntax:
+	cmpnge (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@nge"
+	use when appropriate for better readability
+	
+[cmpl]
+	
+Syntax:
+	cmpl (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@l"
+	use when appropriate for better readability
+	
+[cmpnl]
+	
+Syntax:
+	cmpnl (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@nl"
+	use when appropriate for better readability
+	
+[cmple]
+	
+Syntax:
+	cmple (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@le"
+	use when appropriate for better readability
+	
+[cmpnle]
+	
+Syntax:
+	cmpnle (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@nle"
+	use when appropriate for better readability
+	
+[cmpz]
+	
+Syntax:
+	cmpz (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@z"
+	use when appropriate for better readability
+	
+[cmpnz]
+
+Syntax:
+	cmpnz (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@nz"
+	use when appropriate for better readability
+	
+[cmpb]
+	
+Syntax:
+	cmpb (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@b"
+	use when appropriate for better readability
+	
+[cmpnb]
+	
+Syntax:
+	cmpnb (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@nb"
+	use when appropriate for better readability
+	
+[cmpbe]
+	
+Syntax:
+	cmpbe (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@be"
+	use when appropriate for better readability
+	
+[cmpnbe]
+	
+Syntax:
+	cmpnbe (src, dest);
+	
+Description:
+	equivalent to:
+	cmp( src, dest );
+
+Notes:
+	returns "@nbe"
+	use when appropriate for better readability
+	

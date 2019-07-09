@@ -1,0 +1,149 @@
+unit class_buffer_token;
+		
+	#include ("src/hidelib.hhf")
+	#include ("strings.hhf")
+	#includeonce ("macros/macros.hhf")
+	#includeonce("memory.hhf")
+	#includeonce("excepts.hhf")
+	
+	?@noalignstack:= true;
+	?@nodisplay := true;
+
+	method tBuffer.skipDelimiters; @noframe;
+	begin skipDelimiters;
+	USE (EBX, EDX, EAX);
+		this.getEOF();
+		mov (eax, edx);
+		mov (this.cursor, ebx);
+		xor (eax, eax);
+		dec (ebx);
+		while (ebx < edx) do
+			inc (ebx);
+			mov ([ebx], al);
+			and ($7f, al);
+			bt (eax, this.delimiters);
+			breakif (@nc);
+		endwhile;
+		mov (ebx, this.cursor);
+		sub (this.data, ebx);
+		mov (ebx, eax);		// return index
+	ENDUSE;
+	ret();
+	end skipDelimiters;
+	
+	method tBuffer.setDelimSkipMode (set:boolean);
+	begin setDelimSkipMode;
+		if (set) then
+			or (tBuffer.delims_skip, this.flags);
+		else
+			and (! tBuffer.delims_skip, this.flags);
+		endif;
+	end setDelimSkipMode;
+
+
+
+	method tBuffer.getToken (dest:string);
+		var
+			tkn_start :dword;
+
+	begin getToken;
+	
+	USE (EBX, EDX);
+
+		mov (dest, edx);
+		if (! edx) then
+			raise (ex.AttemptToDerefNULL);
+		endif;
+		
+		if (testnz (tBuffer.delims_skip, this.flags)) then
+			this.skipDelimiters();
+		endif; 
+	
+		this.getEOF();
+		mov (eax, edx);		// edx = EOF
+		mov (this.cursor, ebx);
+		movzx ((type byte[ebx]), eax);
+
+		// if this is a delimiter, skip over it
+		and ($7f, al);
+		bt (eax, this.delimiters);
+		if (@c) then
+			inc (ebx);
+		endif;
+		
+		mov (ebx, tkn_start);
+		if (ebx >= edx) then
+			jmp extract;
+		endif;
+		
+		movzx ((type byte [ebx]), eax);
+		and ($7f, al);
+		bt (eax, this.delimiters);
+		if (@c) then
+			// encountered 2 delimiters in a row, send back empty string
+			mov (ebx, this.cursor);
+			str.cpy ("", dest);
+			mov (dest, eax);
+			jmp done;
+		endif;
+
+		movzx ((type byte [ebx]), eax);
+
+		// skip over quotes
+		if ( al = '"' || al = '''' ) then
+			
+			inc (tkn_start);
+			mov (al, ah);
+			while ( ebx < edx) do
+				inc (ebx);
+				mov ([ebx], al);
+				breakif (al = ah);
+			endwhile;
+		else
+			while (ebx < edx) do
+				inc	(ebx);
+				mov	([ebx], al);
+				and	($7f, al);
+				bt	(eax, this.delimiters);
+				breakif (@c);
+			endwhile;
+		endif;
+		
+		// extract the string
+		extract:
+		mov (ebx, this.cursor);
+		if (ah = '"' || ah = '''') then
+			inc (this.cursor);
+		endif;
+
+		if (ebx > tkn_start) then
+			mov (this.data, eax);
+			sub (eax, tkn_start);
+			sub (eax, ebx);
+			sub( tkn_start, ebx );
+			this.subString( tkn_start, ebx, dest );
+			mov (dest, eax);
+		else
+			str.cpy ("", dest);
+			xor (eax, eax);		
+		endif;
+		done:
+	ENDUSE;
+	end getToken;
+
+
+	method tBuffer.a_getToken;
+		var
+			s	:string;
+
+	begin a_getToken;
+	
+		mov (str.talloc (4096), s);
+		this.getToken (s);
+		if (eax) then
+			str.a_cpy (s);
+		endif;
+		
+	end a_getToken;
+	
+end class_buffer_token;

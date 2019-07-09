@@ -1,0 +1,41 @@
+unit class_flist_remove_unit;
+
+	#includeonce ("src/hidelib.hhf")
+	#include("stdlib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+
+	const
+		listebx	:text := "(type fileNode_t[ebx])";
+
+		
+	method tFileList.remove ( var lNode:baseNode_t);
+	begin remove;
+	USE (EAX, EBX);
+		mov (lNode, ebx);
+		str.free (listebx.fname);
+		if (listebx.iname <> 0) then
+			str.free (listebx.iname);
+		endif;
+		if (listebx.ipath <> 0) then
+			str.free (listebx.ipath);
+		endif;
+		//push (lNode);
+		//call ( tListVMT [@offset ( tList.remove)]);
+		super.remove( lNode );
+	ENDUSE;
+	end remove;
+
+	method tFileList.removeFullPath ( fname:string );
+	begin removeFullPath;
+	USE (EAX);
+		if (this.findFullPath (fname)) then
+			this.remove ([eax]);
+		endif;
+	ENDUSE;
+	end removeFullPath;
+
+
+end class_flist_remove_unit;

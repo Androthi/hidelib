@@ -1,0 +1,208 @@
+unit config_class_item;
+	#include ("src/hidelib.hhf")
+	?@nodisplay := true;
+	?@noalignstack := true;
+	
+		
+	method tConfig.insertItem (sec:string; index:dword; item:string);
+		
+		var
+			buf	:pointer to tBuffer;
+		
+	begin insertItem;
+		USE (EAX, ECX);
+		mov( esi, buf );
+		if (this.findSectionA (sec)) then
+			xor (ecx, ecx);	
+			while (ecx < index) do
+				// skip lines until we get to insertion point
+				if (this.getChar() = '[' || this.isEof() ) then
+					this.left( 1 );
+					this.rspan(hide.whiteSpaceCset );
+					this.cursorToBOL();
+					this.cursorRightLines (1);
+					break;
+				endif;
+
+				this.cursorRightLines(1);
+				inc (ecx);
+			
+			endwhile;
+			
+			buf.insert ( item, nl);
+			
+		else
+	
+			this.eof();
+			buf.insert (nl, '[', sec, ']', nl, item, nl);
+			
+		endif;
+	ENDUSE;
+	end insertItem;
+
+	method tConfig.writeItem (sec:string; index:dword; item:string);
+		var
+			buf	:pointer to tBuffer;
+
+	begin writeItem;
+		USE (EAX, ECX);
+		mov( esi, buf );
+		if (this.findSectionA (sec)) then
+			xor (ecx, ecx);
+			while (ecx < index) do
+				// skip lines until we get to insertion point
+				if (this.getChar() = '[' || this.isEof() ) then
+					this.left( 1 );
+					this.rspan( hide.whiteSpaceCset );
+					this.cursorToBOL();
+					this.cursorRightLines (1);
+					break;
+				endif;
+
+				this.cursorRightLines(1);
+				inc (ecx);
+			welse
+				this.deleteCursorLine();
+			endwhile;
+			
+			buf.insert ( item, nl);
+			if (this.getChar() = '[') then
+				this.puts( nl );
+			endif;
+			
+		else
+
+			buf.append (nl, '[', sec, ']', nl, item, nl);
+			
+		endif;
+	ENDUSE;
+	end writeItem;
+
+	procedure checkEndCond; @returns ("EAX"); @noframe;
+	begin checkEndCond;
+		(type tConfig[esi]).getChar();
+		if (al = '[' || al = $d || al = $a) then
+			xor (eax, eax);
+			ret();
+		endif;
+		if ( (type tConfig[esi]).isEof() ) then
+			xor (eax, eax);
+			ret();
+		endif;
+		mov (1, eax);
+		ret();
+	end checkEndCond;
+	
+	method tConfig.readBufItem (sec:string; index:dword; var dest:tBuffer);
+	begin readBufItem;
+		USE (ECX);
+		if (this.findSectionA (sec)) then		
+			xor (ecx, ecx);
+			while (ecx < index) do
+				breakif (! checkEndCond());
+				this.cursorRightLines (1);
+				inc (ecx);
+			welse
+				// found index
+				// check section end at last line
+				if ( checkEndCond()) then
+					this.a_getLineFromCursor();
+					mov (eax, ecx);
+					push( esi );
+					mov (dest, esi);
+					(type tBuffer[esi]).erase();
+					(type tBuffer[esi]).puts( (type string ecx) );
+					str.free (ecx);
+					mov (1, eax);
+					pop( esi );
+				endif;
+			endwhile;
+		else
+			xor (eax, eax);
+		endif;
+		ENDUSE;
+
+	end readBufItem;
+
+	
+	method tConfig.readItem (sec:string; index:dword; dest:string);
+	begin readItem;
+		USE (ECX);
+		if (this.findSectionA (sec)) then		
+			xor (ecx, ecx);
+			while (ecx < index) do
+				breakif (! checkEndCond());
+				this.cursorRightLines (1);
+				inc (ecx);
+			welse
+				// found index
+				// check section end at last line
+				if ( checkEndCond()) then
+					this.getCursorLine (dest);
+					mov (1, eax);		
+				endif;
+			endwhile;
+		else
+			xor (eax, eax);
+		endif;
+	ENDUSE;
+	end readItem;
+
+	method tConfig.getItemCount (sec:string); 
+	begin getItemCount;
+		USE (ECX);
+		if (this.findSectionA (sec)) then		
+			xor (ecx, ecx);
+			forever
+				this.getChar();
+				breakif (al in { '[', #$a, #$d} );
+				breakif (this.isEof());
+				this.cursorRightLines (1);
+				inc (ecx);				
+			endfor;
+			mov (ecx, eax);
+		else
+			xor (eax, eax);
+		endif;
+		ENDUSE;
+	end getItemCount;
+
+	method tConfig.findItem (sec:string; src:string);
+		var
+			dest	:string;
+			found	:dword;
+
+	begin findItem;
+		USE (ECX);
+		if (this.findSectionA (sec)) then
+			
+			xor (ecx, ecx);
+			mov (false, found);
+			
+			forever
+				this.getChar();
+				breakif (al in { '[', #$a, #$d} );
+				breakif (this.isEof());
+				this.a_getLineFromCursor();
+				mov (eax, dest);
+				if (str.ieq (src, dest)) then
+					mov (true, found);
+					break;
+				endif;
+				str.free (dest);
+				this.cursorRightLines (1);
+				inc (ecx);
+			endfor;
+			if (found) then
+				mov (ecx, eax);
+			else
+				or (-1, eax);
+			endif;
+		else
+			or (-1, eax);
+		endif;
+	ENDUSE;
+	end findItem;
+
+
+end config_class_item;

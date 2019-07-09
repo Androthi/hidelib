@@ -1,0 +1,64 @@
+unit class_buf_unit;
+
+	#includeonce ("hide/hidelib.hhf")
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	readonly
+		vmt( tBuf );
+
+
+	proc
+		
+		tBuf.create_size 	:procedure( initialSize:uns32);
+		begin create_size;
+			USE (EAX);
+			if( ! esi ) then
+				mem.zalloc( @size(tBuf) );
+				mov( eax, esi );
+			else
+				mem2.fillMem ([esi], @size(tBuf), 0);
+			endif;
+			
+			(type tBufferBase[esi]).create_size( initialSize );
+			mov (&tBuf._VMT_, (type tBuf[esi])._pVMT_);	
+			ENDUSE;
+		end create_size;
+
+		tBuf.create_default	:procedure { @noframe };
+		begin create_default;
+			USE (EAX);
+			if( ! esi ) then
+				mem.zalloc( @size(tBuf) );
+				mov( eax, esi );
+			else
+				mem2.fillMem ([esi], @size(tBuf), 0);
+			endif;
+			
+			(type tBufferBase[esi]).create_default();
+			mov (&tBuf._VMT_, (type tBuf[esi])._pVMT_);	
+			ENDUSE;
+			ret();
+		end create_default;
+
+		tBuf.create_file 	:procedure(fileName:string);
+			var
+				hfile	:dword;
+				
+		begin create_file;
+			USE (EAX);
+			if( ! esi ) then
+				mem.zalloc( @size(tBuf) );
+				mov( eax, esi );
+			else
+				mem2.fillMem ([esi], @size(tBuf), 0);
+			endif;
+			
+			(type tBufferBase[esi]).create_file( fileName );
+			mov (&tBuf._VMT_, (type tBuf[esi])._pVMT_);
+			
+			ENDUSE;
+		end create_file;
+
+
+end class_buf_unit;

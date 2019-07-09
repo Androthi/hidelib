@@ -1,0 +1,152 @@
+unit class_buffer;
+
+	#include ("src/hidelib.hhf")
+	#include ("memory.hhf")
+	#include ("fileio.hhf")
+	#include ("excepts.hhf")
+	#include ("strings.hhf")
+	#include ("conv.hhf")
+	#include ("cset.hhf")
+	#include ("excepts.hhf")
+	
+	#includeonce ("macros/macros.hhf")
+	#includeonce ("macros/extensions.hhf")
+//	#include ("hide/dbgwin.hhf")	
+	
+	?@noalignstack:= true;
+	?@nodisplay := true;
+	
+	readonly
+		vmt( tBuffer );
+	
+	procedure tBuffer.create_size ( initialSize:uns32);
+	begin create_size;
+		USE (EAX);
+		if( ! esi ) then
+			mem.zalloc( @size(tBuffer) );
+			mov( eax, esi );
+		else
+			mem2.fillMem ([esi], @size(tBuffer), 0);
+		endif;
+		
+		(type tBufferBase[esi]).create_size( initialSize );
+		mov (&tBuffer._VMT_, (type tBuffer[esi])._pVMT_);
+		(type tBuffer[esi]).setDelimiters ( tBuffer.default_delimCset);
+
+		ENDUSE;
+	end create_size;
+
+	procedure tBuffer.create_default; @noframe;
+	begin create_default;
+		USE (EAX);
+		if( ! esi ) then
+			mem.zalloc( @size(tBuffer) );
+			mov( eax, esi );
+		else
+			mem2.fillMem ([esi], @size(tBuffer), 0);
+		endif;
+		
+		(type tBufferBase[esi]).create_default();
+		mov (&tBuffer._VMT_, (type tBuffer[esi])._pVMT_);
+		(type tBuffer[esi]).setDelimiters ( tBuffer.default_delimCset);
+
+		ENDUSE;
+		ret();
+	end create_default;
+
+	procedure tBuffer.create_file (fileName:string);
+		var
+			hfile	:dword;
+			
+	begin create_file;
+		USE (EAX);
+		if( ! esi ) then
+			mem.zalloc( @size(tBuffer) );
+			mov( eax, esi );
+		else
+			mem2.fillMem ([esi], @size(tBuffer), 0);
+		endif;
+		
+		(type tBuf[esi]).create_file( fileName );
+		mov (&tBuffer._VMT_, (type tBuffer[esi])._pVMT_);
+		(type tBuffer[esi]).setDelimiters ( tBuffer.default_delimCset);
+		ENDUSE;
+	end create_file;
+
+
+
+
+
+	// private methods
+
+
+	method tBuffer.put32cs; @noframe;
+	
+		// PRIVATE METHOD.... for internal use only, 
+		// lifted from hlalib
+	begin put32cs;
+		mov( ch, cl );
+		add( 32, cl );
+		repeat
+		
+			if
+			(#{
+				shr( 1, edx );
+				jnc false;
+			}#) then
+				if( ch <= ' ' ) then
+					this.inserts ("#$");
+					this.insertb (ch);
+					this.insertc (' ');
+				else
+					this.insertc (ch);
+				endif;
+			endif;
+			inc( ch );
+		until( ch = cl );
+		ret();
+	end put32cs;
+
+
+	// option setting methods
+	method tBuffer.setDecimalPoints (n:byte);
+	begin setDecimalPoints;
+	USE (EAX);
+		mov (n, al);
+		mov (al, this.decimal); 
+	ENDUSE;
+	end setDecimalPoints;
+
+	method tBuffer.setDelimiters (c:cset);
+	begin setDelimiters;
+		cs.cpy (c, this.delimiters);
+	end setDelimiters;
+	
+	// input methods
+	method tBuffer.openFile (fileName:string);
+
+		var
+			hfile	:dword;
+			size	:dword;
+		endvar;
+	begin openFile;
+	USE (EAX);
+		fileio.open (fileName, fileio.r);
+		mov (eax, hfile);
+		filesys.size (hfile);
+		mov (eax, size);
+		if (eax > this.vSize) then
+			add (4, eax);
+			this.sizeBuffer (eax);			
+		endif;
+		move (size, this.length);
+		mov (this.data, eax);
+		mov (eax, this.cursor);
+		fileio.read ( hfile, [eax], this.length);
+		fileio.close (hfile);
+	ENDUSE;	
+	end openFile;
+
+
+end class_buffer;
+

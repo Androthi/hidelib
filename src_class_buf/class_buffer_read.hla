@@ -1,0 +1,208 @@
+unit class_buffer_read_unit;
+
+	#includeonce ("src/hidelib.hhf")
+	#includeonce ("strings.hhf")
+	#includeonce ("macros/macros.hhf")
+	#includeonce ("hide/dbgwin.hhf")
+	#includeonce ("stdout.hhf")
+	#includeonce ("conv.hhf")
+	#includeonce("excepts.hhf")
+	
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	// text based reading methods
+
+	method tBuffer.reads (dest:string);
+		// reads a line from cursor to EOL from buffer and stores 
+		// it into dest
+		// advance cursor to next line
+		// returns carry set if cursor is at EOF.
+	begin reads;
+	USE (EAX, EBX);
+		mov (dest, ebx);
+		if (! ebx) then
+			raise (ex.AttemptToDerefNULL);
+		endif;
+		
+		// are we at EOF?  if so, return carry
+		if (this.isEof()) then
+			str.cpy ("", dest);
+			stc();
+		else
+			this.getIndex();
+			mov (eax, ebx);
+			this.cursorToEOL();
+			sub( ebx, eax );
+			this.subString (ebx, eax, dest);	// extract from cursor to EOL
+			this.nextLine();	// move cursor down to next line
+			clc();	// clear carry for success
+		endif;
+	ENDUSE;
+	end reads;
+
+	method tBuffer.readw (dest:string);
+	begin readw;
+	USE (EAX, EBX);
+		mov (dest, ebx);
+		if (! ebx) then
+			raise (ex.AttemptToDerefNULL);
+		endif;
+		
+		// are we at EOF?  if so, return carry
+		if (this.isEof()) then
+			str.cpy ("", dest);
+			stc();
+		else
+			this.getIndex();
+			this.span( hide.whiteSpaceCset );
+			mov (eax, ebx);
+			this.cursorToEOW();
+			sub( ebx, eax );
+			this.subString (ebx, eax, dest);	// extract from cursor to EOL
+			clc();	// clear carry for success
+		endif;
+	ENDUSE;
+	end readw;
+
+
+	method tBuffer.readc (var dest:char);
+		// read a character from current cursor position
+		// and copy into dest.  advnace cursor to next char
+		// return carry set if cursor is at EOF
+		// carry clear if char contains useful data
+	begin readc;
+	USE (EAX, ECX);
+		this.getChar();
+		if (@nc ) then
+			mov (dest, ecx);
+			mov (al, [ecx]);
+			inc (this.cursor);
+			clc();
+		endif;
+	ENDUSE;
+	end readc;
+		
+	// bytes based reading methods
+	method tBuffer.readBuffer ( var dest:tBuffer);
+		// reads the buffer from cursor to EOF and 
+		// copies to dest.
+		// advances cursor to EOF
+		// returns carry set if at EOF now.
+		// carry clear if dest contains useful data.
+	begin readBuffer;
+	USE (EAX);
+		if (this.isEof()) then
+			stc();
+		else
+			this.getIndex();
+			
+			this.subBuf(eax, this.length, dest);
+			this.eof();	
+			clc();
+		endif;
+	ENDUSE;
+	end readBuffer;
+
+	method tBuffer.readbytes (destAddr:dword; length:uns32);
+		// read up toength bytes from cursor and copy to dest
+		// memory
+		// advance cursor length bytes
+		// returns carry set if at EOF, carry clear
+		// if data was copied
+		// returns EAX number of bytes copied.
+	begin readbytes;
+	USE (ECX, ESI, EDI);
+		if (this.isEof()) then
+			stc();
+		else
+			this.getCursorToEOFLength();
+			if (length < eax) then
+				mov (length, ecx);
+			else
+				mov (eax, ecx);
+			endif;
+			push (ecx);
+			mov (this.cursor, esi);
+			mov (destAddr, edi);
+			rep.movsb();
+			pop (eax);
+			add (eax, this.cursor);	// return #bytes copied in EAX
+			clc();
+		endif;
+	ENDUSE;
+	end readbytes;
+
+	method tBuffer.readByte; @noframe;
+		// read a byte and return in al zero extend to eax
+		// return carry set = EOF, carry clear = success
+		// advance cursor 1 byte
+	begin readByte;
+		xor (eax, eax);
+		if (this.isEof()) then
+			stc();
+			ret();
+		endif;
+		
+		this.getCursorToEOFLength();
+		if (eax >=1) then
+			mov (this.cursor, eax);
+			movzx ((type byte [eax]), eax);
+			inc (this.cursor);
+			clc(); 
+		else
+			stc();
+		endif;
+		ret();
+	end readByte;
+	
+	method tBuffer.readWord; @noframe;
+		// read a word and return in ax zero extend to eax
+		// return carry set = EOF, carry clear = success
+		// advance cursor 2 bytes
+	begin readWord;
+		xor (eax, eax);
+		if (this.isEof()) then
+			stc();
+			ret();
+		endif;
+		
+		this.getCursorToEOFLength();
+		if (eax >=2) then
+			mov (this.cursor, eax);
+			movzx ((type word [eax]), eax);
+			add (2, this.cursor);
+			clc(); 
+		else
+			xor (eax, eax);
+			stc();
+		endif;
+		ret();
+	end readWord;
+
+	method tBuffer.readDword; @noframe;
+		// read a dword and return in eax
+		// return carry set = EOF, carry clear = success
+		// advance cursor 4 bytes
+	begin readDword;
+		xor (eax, eax);
+		if (this.isEof()) then
+			stc();
+			ret();
+		endif;
+		
+		this.getCursorToEOFLength();
+		if (eax >=4) then
+			mov (this.cursor, eax);
+			mov ([eax], eax);
+			add (4, this.cursor);
+			clc(); 
+		else
+			xor (eax, eax);
+			stc();
+		endif;
+		ret();
+	end readDword;
+
+
+end class_buffer_read_unit;

@@ -1,0 +1,80 @@
+unit class_strbuffer_get_unit;
+
+	#includeonce ("src/hidelib.hhf")
+	#includeonce ("stdout.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	const
+		bufesi :text := "(type tBuffer[esi])";
+
+	method tStrBuffer.getStr (index:uns32);
+		// retreives string pointer at index (zero-based)
+		// returns in EAX
+		// error in carry
+	begin getStr;
+		// some bounds checking
+		mov (this.count, eax);
+		cmp (eax, 0);
+		je error;
+		dec (eax);
+		cmp (index, eax);
+		ja error;
+		
+		USE (ECX, ESI, EDI);
+			mov (this.data, esi);
+			add (tStrBuffer.header_size, esi);	// skip header
+			xor (ecx, ecx);
+			rept:
+			add (4, esi);
+			if (ecx = index) then
+				mov (esi, eax);
+			else
+				// get next index point
+				// set esi to length data of next string
+				inc (ecx);
+				mov ([esi-4], eax);
+				add (4, eax); //1 byte zero + 3 bytes dword boundary
+				and (-4, eax);
+				add (eax, esi);
+				jmp rept;
+			endif;
+		ENDUSE;
+		
+		clc();
+		exit getStr;
+		
+		error:
+		xor (eax, eax);
+		stc();
+	end getStr;
+
+	iterator tStrBuffer.stringInBuffer;
+	begin stringInBuffer;
+		mov (this.count, eax);
+		if (eax > 0) then
+			USE (ECX, ESI, EDI);
+				mov (this.count, edi);
+				mov (this.data, esi);
+				add (tStrBuffer.header_size, esi);
+				xor (ecx, ecx);
+				while (ecx < edi) do
+
+					add (4, esi);
+					mov (esi, eax);
+					USE (ESI, ECX);
+						yield();
+					ENDUSE;
+					inc (ecx);
+					mov ([esi-4], eax);
+					add (4, eax); //1 byte zero + 3 bytes dword boundary
+					and (-4, eax);
+					add (eax, esi);
+				endwhile;
+			ENDUSE;
+		endif;
+	end stringInBuffer;
+
+end class_strbuffer_get_unit;
+

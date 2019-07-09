@@ -1,0 +1,77 @@
+Version: see hide_info.hla
+
+Compiled and tested with HLA 2.14 and hlalib 8
+
+This project builds hidelib.lib from various Job libraries.
+
+hidelib
+	contains useful functions for:
+	crossplatform environment handling
+	crossplatform module info and file execution
+	version info
+	shared data
+	output to stdout
+	low level string compare
+	memory
+
+scanlib
+	low level scanning functions designed to replace
+	scanning functions in the hide namespace (now depricated).
+	
+class
+	general class library containing
+	clone
+	stack
+	heapsort	... now in oldlib
+	rbtree		... now in oldlib
+	
+configclass
+	extensive class that deals with configuration files
+	
+bufferclass
+	a class containing functions to create, manipulate and
+	scan buffers.
+	
+strbufferclass
+	an extension of bufferclass that dynamically collects strings
+	and stores them in a format that is partially HLA string compatible
+	(contains length at [ptr-4]).
+	These strings are meant to be readonly after inserted into the buffer.
+	
+listclass
+	contains several classes focused on linked lists
+	baselist	contains base functions inherited by other lists
+	list		inherits baselist and adds a single value field
+	flist		inherits list and adds several fields.
+				Works with filenames with functions similar to func job
+
+
+build hidelib
+	a target job that combines the libraries produced by all the jobs
+	above into a single library: hidelib.lib
+	It then copies this library to the hlalib folder assuming the HIDE
+	folder and Projects folder contaiing the hidelib folder occupy the
+	same directory level.
+	eg:
+	c:\HIDE\hlalib
+	c:\Projects\hidelib
+	
+Export Headers
+	a target job that copies all the hidelib header files to HIDE\hlainc\hide.
+
+testLib
+	A program job used for testing library functions
+
+	
+config			[oldlib.lib]
+	original configuration library, now depricated.
+	config.lib is now a part of the oldlib project.
+
+func			[oldlib.lib]
+	these are now depricated and part of oldlib project
+
+hidefunc		[oldlib.lib]
+	extensions to hlalib.lib, scanning functions.
+	These are deprecated and now a part of the oldlib project.
+	use scanlib instead
+	

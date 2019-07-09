@@ -1,0 +1,70 @@
+unit config_class_del;
+		
+	#include ("src/hidelib.hhf")
+	#includeonce("stdlib.hhf")
+	?@nodisplay := true;
+	?@noalignstack := true;
+	
+	
+	method tConfig.deleteKey (sec:string; key:string);
+	begin deleteKey;
+	USE (EAX, ECX, ESI, EDI);
+		if (this.findSectionA (sec)) then		
+			if (this.findKeyA (key)) then
+				this.deleteCursorLine();
+			else
+				xor (eax, eax);
+			endif;	
+		else
+			xor (eax, eax);
+		endif;
+	ENDUSE;
+	end deleteKey;
+
+	method tConfig.deleteSection (sec:string);
+
+	begin deleteSection;
+		USE (EAX, EDX );
+		if (this.getSectionBounds (sec) ) then		
+			mov (this.sectionHead, eax);
+			mov (this.sectionTail, edx);
+			this.deleteIndex (eax, edx);
+			this.trim();
+			this.puts (nl);		
+		endif;
+		ENDUSE;
+	end deleteSection;
+
+	method tConfig.deleteItem (sec:string; index:dword);
+			
+	begin deleteItem;
+	USE (ECX);
+		if (this.findSectionA (sec)) then		
+			
+			xor (ecx, ecx);
+			while (ecx < index) do
+				if (this.getChar() = '[' || this.isEof()) then
+					xor (eax, eax);
+					break;
+				endif;
+				
+				this.cursorRightLines (1);
+				inc (ecx);
+			welse
+				mov (1, eax);
+			endwhile;
+			if (eax) then
+				this.deleteCursorLine();
+				if (this.getChar() = '[') then
+					this.puts (nl);
+				endif;
+			endif;
+			
+		else
+			xor (eax, eax);
+		endif;
+	ENDUSE;
+	end deleteItem;
+
+
+end config_class_del;

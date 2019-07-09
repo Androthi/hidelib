@@ -1,0 +1,249 @@
+unit class_buffer_insert;
+	
+	#include ("src/hidelib.hhf")
+	#include ("strings.hhf")
+	#includeonce ("macros/macros.hhf")
+	#includeonce("conv.hhf")
+	#includeonce("fileio.hhf")
+
+	?@noalignstack:= true;
+	?@nodisplay := true;
+
+	
+	// using parent class methods for these from now on	
+	// depricated
+	
+	method tBuffer.inserts (source:string);
+	begin inserts;
+		this.puts( source );
+	end inserts;
+
+	method tBuffer.insertbytes ( startAddr:dword; length:uns32 );
+	begin insertbytes;
+		this.putBytes( startAddr, length );
+	end insertbytes;
+
+	method tBuffer.insertc (c:char);
+	begin insertc;
+		this.putByte( c );
+	end insertc;
+
+	method tBuffer.insertByte (b:byte);
+	begin insertByte;
+		this.putByte( b );
+	end insertByte;
+
+	method tBuffer.insertWord (w:word);
+	begin insertWord;
+		this.putWord( w );
+	end insertWord;
+
+	method tBuffer.insertDword (d:dword);
+	begin insertDword;
+		this.putDword( d );
+	end insertDword;
+
+//=================================================================
+
+	
+	method tBuffer.insertbl (b:boolean);
+	begin insertbl;
+		if (b) then
+			this.inserts ("true");
+		else
+			this.inserts ("false");
+		endif;
+	end insertbl;
+
+	method tBuffer.insertb (b:byte);
+	begin insertb;
+		conv.bToStr ( b, hide.strbuf);
+		this.inserts (hide.strbuf);
+	end insertb;
+
+	method tBuffer.insertw (w:word);
+	begin insertw;
+		conv.wToStr ( w, hide.strbuf);
+		this.inserts (hide.strbuf);
+	end insertw;
+	
+	method tBuffer.insertd (d:dword);
+	begin insertd;
+		conv.dToStr (d,hide.strbuf);
+		this.inserts (hide.strbuf);
+	end insertd;
+
+	method tBuffer.insertq (q:qword);
+	begin insertq;
+		conv.qToStr (q, hide.strbuf);
+		this.inserts (hide.strbuf);
+	end insertq;
+
+	method tBuffer.insertl (l:lword);
+	begin insertl;
+		conv.lToStr (l, hide.strbuf);
+		this.inserts (hide.strbuf);
+	end insertl;
+
+	method tBuffer.insertu8 (u8:uns8);
+	begin insertu8;
+		conv.u8ToStr (u8, 0, ' ', hide.strbuf);
+		this.inserts (hide.strbuf);
+	end insertu8;
+
+	method tBuffer.insertu16 (u16:uns16);
+	begin insertu16;
+		conv.u16ToStr (u16, 0, ' ', hide.strbuf);
+		this.inserts (hide.strbuf);
+	end insertu16;
+
+	method tBuffer.insertu32 (u32:uns32);		
+	begin insertu32;
+		conv.u32ToStr (u32, 0, ' ', hide.strbuf);
+		this.inserts (hide.strbuf);
+	end insertu32;
+
+	method tBuffer.insertu64 (u64:uns64);
+	begin insertu64;
+		conv.u64ToStr (u64, 0, ' ', hide.strbuf);
+		this.inserts (hide.strbuf);
+	end insertu64;
+
+	method tBuffer.insertu128 (u128:uns128);
+	begin insertu128;
+		conv.u128ToStr (u128, 0, ' ', hide.strbuf);
+		this.inserts (hide.strbuf);
+	end insertu128;
+
+	method tBuffer.inserti8 (i8:int8);
+	begin inserti8;
+		conv.i8ToStr (i8, 0, ' ', hide.strbuf);
+		this.inserts (hide.strbuf);
+	end inserti8;
+
+	method tBuffer.inserti16 (i16:int16);
+	begin inserti16;
+		conv.i16ToStr (i16, 0, ' ', hide.strbuf);
+		this.inserts (hide.strbuf);
+	end inserti16;
+
+	method tBuffer.inserti32 (i32:int32);
+	begin inserti32;
+		conv.i32ToStr (i32, 0, ' ', hide.strbuf);
+		this.inserts (hide.strbuf);
+	end inserti32;
+
+	method tBuffer.inserti64 (i64:int64);
+	begin inserti64;
+		conv.i64ToStr (i64, 0, ' ', hide.strbuf);
+		this.inserts (hide.strbuf);
+	end inserti64;
+
+	method tBuffer.inserti128 (i128:int128);
+	begin inserti128;
+		conv.i128ToStr (i128, 0, ' ', hide.strbuf);
+		this.inserts (hide.strbuf);
+	end inserti128;
+	
+	method tBuffer.insertr32 (r32:real32);
+	begin insertr32;
+	USE (EAX);
+		if (this.decimal) then
+			movzx (this.decimal, eax);
+			conv.r32ToStr (r32, 50, eax, ' ', hide.strbuf);
+		else
+			conv.e32ToStr (r32, 50, hide.strbuf);
+		endif;
+		str.trim (hide.strbuf);
+		this.inserts (hide.strbuf);
+	ENDUSE;
+	end insertr32;
+
+	method tBuffer.insertr64 (r64:real64);
+	begin insertr64;
+	USE (EAX);
+		if (this.decimal) then
+			movzx (this.decimal, eax);
+			conv.r64ToStr (r64, 50, eax, ' ', hide.strbuf);
+		else
+			conv.e64ToStr (r64, 50, hide.strbuf);
+		endif;
+		str.trim (hide.strbuf);
+		this.inserts (hide.strbuf);
+	ENDUSE;
+	end insertr64;
+
+	method tBuffer.insertr80 (r80:real80);
+	begin insertr80;
+	USE (EAX);
+		if (this.decimal) then
+			movzx (this.decimal, eax);
+			conv.r80ToStr (r80, 50, eax, ' ', hide.strbuf);
+		else
+			conv.e80ToStr (r80, 50, hide.strbuf);
+		endif;
+		str.trim (hide.strbuf);
+		this.inserts (hide.strbuf);
+	ENDUSE;
+	end insertr80;
+
+	method tBuffer.insertBuffer (var buffer:tBuffer);
+	
+		// depricated, use putBuffer
+	
+	begin insertBuffer;
+	
+		push( eax );
+		mov( buffer, eax );
+		this.putBuffer( [eax] );
+		pop( eax );
+		
+	end insertBuffer;
+
+	method tBuffer.insertFile (fileName:string);
+		var
+			hfile	:dword;
+			size	:dword;
+		endvar;
+	begin insertFile;
+	USE (EAX);	
+		fileio.open (fileName, fileio.r);
+		mov (eax, hfile);
+		filesys.size (hfile);
+		mov (eax, size);
+		this.adjustForInsert (size);
+		mov (this.cursor, eax);
+		fileio.read (hfile, [eax], size);
+		fileio.close (hfile);
+		mov (size, eax);
+		add (eax, this.cursor);
+	ENDUSE;		
+	end insertFile;
+
+	method tBuffer.insertcSet (c:cset);
+	begin insertcSet;
+	USE (EAX, ECX, EDX);
+		mov ( (type dword c), edx);
+		mov (0, ch);
+		this.put32cs();
+		mov ( (type dword c[4]), edx);
+		this.put32cs();
+		mov ( (type dword c[8]), edx);
+		this.put32cs();
+		mov ( (type dword c[12]), edx);
+		this.put32cs();
+	ENDUSE;
+	end insertcSet;
+
+	method tBuffer.insertSet( c:char; count:uns32 );
+	begin insertSet;
+	USE( ECX );
+		xor( ecx, ecx);
+		while( ecx < count ) do
+			this.insertc( c );
+			inc( ecx );
+		endwhile;
+	ENDUSE;
+	end insertSet;
+
+end class_buffer_insert;

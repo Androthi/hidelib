@@ -1,0 +1,240 @@
+unit scan_tokens_unit;
+
+	#includeonce ("hide/hidefunc.hhf")
+	#includeonce ("stdlib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	static(4)
+		scan.token_cset	:cset; @nostorage;
+				cset {' ', #9, ',', '<', '>', '|', '\', '/', '-', #$D, #$A}, {};
+		field_mode	:boolean	:= true;
+		
+	procedure scan.setFieldMode( mode:boolean );
+	
+		// true by default
+		// set to true = every token is returned, even blank ones
+		// set to false = ignore leading/empty delimiters
+	
+	begin setFieldMode;
+		
+		push( eax );
+		mov( mode, al );
+		mov( al, field_mode );
+		pop( eax );
+		
+	end setFieldMode;
+
+	procedure scan.setDelimiters( delims:cset );
+	
+		// change the default delimiter set
+	
+	begin setDelimiters;
+		cs.cpy( delims, scan.token_cset );
+	end setDelimiters;
+
+
+	procedure scan.getTokenLexeme; @noframe;
+		
+		// utility function
+		// returns token start in ESI and token end in EDI
+		// in accordance to field_mode
+		// text between single/double quotes are not considered
+		// as tokens 
+		// up to calling procedures to preserve EAX
+		//
+		// returns carry clear = operation done
+		// returns carry set = ESI, EDI point to valid token
+		// ESI = EDI if ESI currently sits on a delimiter in field mode
+		
+	begin getTokenLexeme;
+		
+		// if no tokens left, return carry clear to signla
+		// end of job
+		mov( [esi], al );
+		test( al, al );
+		jz returnFalse;
+		
+		xor( eax, eax );
+		if( !field_mode ) then
+			
+			// skip over leading delimiters
+			sub( 1, esi );
+			skiploop:
+				add( 1, esi );
+				mov( [esi], al );
+				test( al, al );
+				jz returnFalse;
+				bt( eax, scan.token_cset );
+				jc skiploop;
+			
+		endif;
+		
+		mov( esi, edi );
+		mov( [edi], al );
+		cmp( al, '"' );
+		je doQuote;
+		cmp( al, '''' );
+		jne doBT;
+			
+		doQuote:
+			add( 1, esi );	// don't consider 1st quote
+			add( 1, edi );
+			mov( al, ah );
+			sub( 1, edi );
+			scanquote:
+				add( 1, edi );
+				mov( [edi], al );
+				test( al, al );
+				jz returnTrue;
+				cmp( al, ah );
+				jne scanquote;
+				jmp returnTrue;
+		
+		doBT:
+			sub( 1, edi );
+			scanBT:
+				add( 1, edi );
+				mov( [edi], al );
+				test( al, al );
+				jz returnTrue;
+				bt( eax, scan.token_cset );
+				jnc scanBT;
+				jmp returnTrue;
+			
+		
+		returnFalse:
+			clc();
+			jmp done;
+			
+		returnTrue:
+			// edi could = esi, that is for calling
+			// procedure to work out.
+			stc();
+			
+		done:
+			ret();
+		
+	end getTokenLexeme;
+
+
+	procedure scan.getToken( dest:string ); @noframe;
+		
+		// gets the next token in accordance to field mode
+		// copies token in dest,
+		// advances esi to 1 char beyond copied token
+		// returns:
+		//	carry set = successful operation, dest valid
+		//	carry clear= end of operation, dest invalid.
+	
+	begin getToken;
+		
+		push( ebp );
+		mov( esp, ebp );
+		
+		push( eax );
+		push( edi );
+		
+		mov( dest, eax );
+		test( eax, eax );
+		jz radn;
+		
+		scan.getTokenLexeme();
+		jnc done;
+		
+		mov( edi, eax );
+		sub( esi, eax );
+		jnz next;
+		
+		// we have zero length delim
+		// advance esi by one and return
+		// blank string
+		mov( dest, eax );
+		mov( 0, ( type str.strRec[eax]).length );
+		mov( 0, (type byte [eax] ) );
+		add( 1, esi );
+		jmp returnTrue;
+		
+		next:
+		// we have actual text to copy
+		// between esi and edi
+		scan.extract( dest );
+		
+		// advance esiby skipping over ending delimiter
+		// if it was not pointing to zero
+		mov( edi, esi );
+		cmp( (type byte [esi]), 0 );
+		je returnTrue;
+		
+		add( 1, esi ); 
+		// fall to returnTrue
+		
+		returnTrue:
+			stc();
+		
+		done:
+			pop( edi );
+			pop( eax );
+			pop( ebp );
+			ret( _parms_ );
+		
+		radn:
+			raise( ex.AttemptToDerefNULL );
+			
+	end getToken;
+
+
+	procedure scan.a_getToken; @noframe;
+	
+		// gets the next token according to field mode
+		// returns pointer to string allocated in EAX
+		// returns:
+		//	carry set = successful operation, EAX valid
+		//	carry clear= end of operation, EAX undefined
+
+	
+	begin a_getToken;
+		
+		push( edi );
+		
+		scan.getTokenLexeme();
+		jnc done;
+		
+		mov( edi, eax );
+		sub( esi, eax );
+		jnz next;
+		
+		// we have zero length delim
+		// advance esi by one and return
+		// blank string
+		str.alloc( 0 );
+		add( 1, esi );
+		jmp returnTrue;
+		
+		next:
+		// we have actual text to copy
+		// between esi and edi
+		scan.a_extract();
+		
+		// advance esi by skipping over ending delimiter
+		// if it was not pointing to zero
+		mov( edi, esi );
+		cmp( (type byte [esi]), 0 );
+		je returnTrue;
+		
+		add( 1, esi ); 
+		// fall to returnTrue
+		
+		returnTrue:
+			stc();
+		
+		done:
+			pop( edi );
+			ret();
+			
+	end a_getToken;
+
+
+
+end scan_tokens_unit;

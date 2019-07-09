@@ -1,0 +1,13 @@
+; Export headers everytime changes are made to any of the header files
+
+copy src\hidelib.hhf %i\hide\hidelib.hhf
+copy src\hidefunc.hhf %i\hide\hidefunc.hhf
+copy src_class_config\class_tConfig.hhf %i\hide\class_tconfig.hhf
+copy src\classlib.hhf %i\hide\classlib.hhf
+copy src_class_buf\class_tbuffer.hhf %i\hide\class_tbuffer.hhf
+copy src\class_tstrbuffer.hhf %i\hide\class_tstrbuffer.hhf
+
+copy macrolib\demomacros.hhf %i\macros\demomacros.hhf
+copy macrolib\extensions.hhf %i\macros\extensions.hhf
+copy macrolib\maclib.hhf %i\macros\maclib.hhf
+copy macrolib\macros.hhf %i\macros\macros.hhf

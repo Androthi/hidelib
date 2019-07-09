@@ -1,0 +1,26 @@
+unit class_buf_putl_unit;
+
+	#includeonce ("hide/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	proc
+		
+		tBuf.putLword		:method( l:lword );
+		begin putLword;
+			this.adjustForInsert( 16 );
+			mov( this.cursor, eax );
+			add( 16, eax );
+			mov( (type dword l), edi );
+			mov( edi, [eax-16] );
+			mov( (type dword l[4]), edi );
+			mov( edi, [eax-12] );
+			mov( (type dword l[8]), edi );
+			mov( edi, [eax-8] );
+			mov( (type dword l[12]), edi );
+			mov( edi, [eax-4] );
+			mov( eax, this.cursor );
+		end putLword;
+		
+end class_buf_putl_unit;

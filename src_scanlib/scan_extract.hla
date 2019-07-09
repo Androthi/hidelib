@@ -1,0 +1,92 @@
+unit scan_a_extract_unit;
+
+	#includeonce ("hide/hidefunc.hhf")
+	#include ("stdlib.hhf")
+	
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	procedure scan.extract (dest:string); @noframe;
+	
+		// extract characters between ESI and EDI
+		// copy to dest
+		// no registers are changed
+	
+	begin extract;
+
+		push( ebp );
+		mov( esp, ebp );
+		push( eax );
+		push( ebx );
+		push( ecx );
+		
+		
+		mov( dest, ebx );
+		test( ebx, ebx );
+		jz radn;
+		
+		mov( edi, eax );
+		sub( esi, eax );
+		
+		cmp( eax, (type str.strRec[ebx]).MaxStrLen );
+		ja rso;
+		
+		mov( eax, (type str.strRec[ebx]).length );
+		
+		mov( esi, ecx );	// save start position
+		sub( 1, esi );
+		sub( 1, ebx );
+		copyToDest:
+			add( 1, esi );
+			add( 1, ebx );
+			cmp( esi, edi );
+			je doneCopy;
+			mov( [esi], al );
+			mov( al, [ebx] );
+			jmp copyToDest;
+			
+		doneCopy:
+		mov( #0, (type byte[ebx]) );
+		
+		mov( ecx, esi );
+		
+		pop( ecx );
+		pop( ebx );
+		pop( eax );
+		
+		pop( ebp );
+		ret( _parms_ );
+		
+		radn:
+			raise( ex.AttemptToDerefNULL );
+			
+		rso:
+			raise( ex.StringOverflow );
+		
+	end extract;
+
+
+	procedure scan.a_extract; @noframe;
+	
+		// extract starting from ESI, ending at EDI
+		// on return pointer of string in EAX
+		// ESI = EDI
+	
+	begin a_extract;
+		
+		push( ebp );
+		mov( edi, eax );
+		sub( esi, eax ); // eax = length of needes string
+		str.alloc( eax );
+		mov( eax, ebp );
+		
+		// now extract the string
+		scan.extract( ebp );
+		mov( ebp, eax );
+		pop( ebp );
+		ret();
+
+	end a_extract;
+
+
+end scan_a_extract_unit;

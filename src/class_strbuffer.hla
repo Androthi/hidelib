@@ -1,0 +1,88 @@
+unit class_strbuffer_unit;
+
+	#includeonce ("src/hidelib.hhf")
+	#includeonce ("stdlib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	readonly
+		vmt( tStrBuffer );
+
+	procedure create_tStrBuffer; @noframe;
+	begin create_tStrBuffer;
+		if (! esi) then
+			mem.zalloc (@size (tStrBuffer));
+			mov (eax, esi);
+		else
+			// initialize static/automatic instance to 0
+			mem2.fillMem ([esi], @size(tStrBuffer), 0);
+		endif;
+		ret();
+	end create_tStrBuffer;
+	
+
+	
+	procedure tStrBuffer.create_size ( initialSize:uns32);
+	begin create_size;
+	USE (EAX);
+		create_tStrBuffer();
+		mov (initialSize, eax);
+		if (! eax) then
+			mov (this.default_size, eax);
+		endif;
+		(type tBuffer[esi]).create_size (initialSize);
+		mov (&tStrBuffer._VMT_, this._pVMT_);
+		this.puts ("SBUF");
+		this.putByte (10);
+		this.putByte (0);
+		this.putByte (0);
+		this.putByte (0);
+		this.putDword (0);	// current count
+	ENDUSE;
+	end create_size;
+
+
+	procedure tStrBuffer.create_default; @noframe;
+	begin create_default;
+		USE (EAX);
+			create_tStrBuffer();
+			(type tBuffer[esi]).create_default();
+			mov (&tStrBuffer._VMT_, this._pVMT_);
+		this.puts ("SBUF");
+		this.putByte (10);
+		this.putByte (0);
+		this.putByte (0);
+		this.putByte (0);
+		this.putDword (0);	// current count
+		ENDUSE;
+		ret();
+	end create_default;
+	
+	procedure tStrBuffer.create_file (fileName:string);
+		var
+			//s	:string;
+			e	:dword;
+			
+	begin create_file;
+	
+		mov (eax, e);
+		//mov (str.talloc (64), s);
+		
+		create_tStrBuffer();
+		(type tBuffer[esi]).create_file(fileName);
+		mov (&tStrBuffer._VMT_, this._pVMT_);
+		this.bof();
+		if (this.matchWord ("SBUF") ) then
+			stc();
+		else
+			this.eof();	// anything added must be appended to EOF!
+			mov (this.data, eax);
+			mov ((type dword [eax + tStrBuffer.count_offset]), eax);
+			mov (eax, this.count);
+			clc();
+		endif;
+		mov (e, eax);
+	end create_file;
+
+end class_strbuffer_unit;

@@ -1,0 +1,143 @@
+unit class_buffer_search;
+	
+	
+	#include ("src/hidelib.hhf")
+	#include ("strings.hhf")
+	#includeonce ("macros/macros.hhf")
+
+	?@noalignstack:= true;
+	?@nodisplay := true;
+
+
+	// scanning methods
+	method tBuffer.searchf (s:string);
+	begin searchf;
+		mov (this.data, eax);
+		add (this.length, eax);
+		mov (0, (type byte [eax]));	// make sure it's zero terminated!
+		USE (ESI);
+			mov (this.cursor, esi);
+			scan.find( s );
+			mov( esi, eax );
+		ENDUSE;
+		
+		if( @c ) then
+
+			mov( eax, this.cursor );
+			sub( this.data, eax ); // return index
+			stc();
+			
+		else
+			
+			this.eof();
+			mov( -1, eax );
+			clc();
+			
+		endif;
+		
+	end searchf;
+
+	method tBuffer.isearchf (s:string);
+	begin isearchf;
+		
+		mov (this.data, eax);
+		add (this.length, eax);
+		mov (0, (type byte [eax]));
+		USE (ESI);
+			mov (this.cursor, esi);
+			scan.ifind( s );
+			mov( esi, eax );
+		ENDUSE;
+		
+		
+		if (@c) then
+			
+			mov( eax, this.cursor );
+			sub( this.data, eax ); // return index
+			stc();
+			
+		else
+			
+			mov( -1, eax );
+			clc();
+			
+		endif;
+		
+	end isearchf;
+
+
+	method tBuffer.span (var c:cset);
+	
+		// sets cursor at next char that is not member of cset
+		// returns EAX = index of cursor, or -1 for eof
+		// also carry clear = no error
+		// carry set = error set (same as -1 in EAX)
+	
+	begin span;
+		USE (ECX, EBX);
+
+		mov (this.data, ecx);
+		add (this.length, ecx);	// ecx = EOF
+		mov (this.cursor, edi);
+		xor (eax, eax);
+		mov (c, ebx);
+		
+		while (edi < ecx) do
+			mov ([edi], al);
+			bt (eax, (type dword [ebx]));
+			breakif (@nc);
+			inc (edi);
+		welse
+			
+			mov (-1, eax);
+		endwhile;
+
+		mov (edi, this.cursor);
+		if (eax <> -1) then
+			sub (this.data, edi);	// get index
+			mov (edi, eax);
+			stc();
+		else
+			clc();
+		endif;
+		ENDUSE;
+	end span;
+
+
+	method tBuffer.brk (var c:cset);
+	
+		// sets cursor at next char that is a member of cset
+		// returns EAX = index of cursor, or -1 for eof
+	
+	begin brk;
+		USE (ECX, EBX);
+		mov (this.data, ecx);
+		add (this.length, ecx);	// ecx = EOF
+		mov (this.cursor, edi);
+		xor (eax, eax);
+		mov (c, ebx);
+		
+		while (edi < ecx) do
+			mov ([edi], al);
+			//bt (eax, (type dword c));
+			bt (eax, (type dword [EBX]));
+			breakif (@c);
+			inc (edi);
+		welse
+			
+			mov (-1, eax);
+			
+		endwhile;
+		
+		mov (edi, this.cursor);
+		if (eax <> -1) then
+			sub (this.data, edi);	// get index
+			mov (edi, eax);
+			stc();
+		else
+			clc();
+		endif;
+		ENDUSE;
+	end brk;
+	
+end class_buffer_search;

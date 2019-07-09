@@ -1,0 +1,97 @@
+unit class_flist_unit;
+
+	#includeonce ("src/hidelib.hhf")
+	#includeonce("memory.hhf")
+	#includeonce("strings.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	const
+		listedx	:text := "(type fileNode_t[edx])";
+		listeax	:text := "(type fileNode_t[eax])";
+		listebx	:text := "(type fileNode_t[ebx])";
+
+
+	readonly
+		vmt( tFileList );
+
+
+	procedure tFileList.create; @noframe;
+	begin create;
+	USE (EAX);
+		if (! esi) then
+			mem.zalloc (@size (tFileList));
+			mov (eax, esi);
+		else
+			mem2.fillMem ([esi], @size(tFileList), 0);
+		endif;
+		
+		(type tList[esi]).create();	// call subclass
+		move (&tFileList._VMT_, this._pVMT_);
+	ENDUSE;
+	ret();
+	end create;
+
+	method tFileList.destroy; @noframe;
+	begin destroy;
+	USE (EAX, EBX);
+		mov (this.head, ebx);
+		while (ebx) do
+			str.free (listebx.fname);
+			if (listebx.ipath <> 0) then
+				str.free (listebx.ipath);
+			endif;
+			if (listebx.iname <> 0) then
+				str.free (listebx.iname);
+			endif;
+
+			mov (listebx.next, ebx);
+		endwhile;
+		// frees the actual list memory
+		//call( tListVMT[ @offset( tList.destroy ) ] );
+		super.destroy();
+	ENDUSE;
+	ret();
+	end destroy;
+
+	method tFileList.newNode; @noframe;
+	begin newNode;
+		mem.zalloc (@size (fileNode_t));
+		mov (tFileList.fileNodeID,  (type fileNode_t[eax]).nodeID);
+		ret();
+	end newNode;
+
+
+	method tFileList.appendFile (fname:string);
+		// add a node to the list-tail
+		// returns inserted node in EAX
+	begin appendFile;
+	USE (EDX, ECX);
+		this.newNode();
+		mov (eax, edx);
+		str.a_cpy (fname);
+		mov (eax, listedx.fname);
+		if ( filesys.hasExtension (fname)) then
+			mov (true, listedx.extended);
+		endif;
+		if (filesys.a_extractFilename (fname)) then
+			mov (eax, listedx.iname);
+			filesys.a_extractPath( fname );
+			mov (eax, listedx.ipath);
+			mov (eax, ecx);
+			str.length (eax);
+			add (eax, ecx);
+			dec (ecx);
+			mov ([ecx], al);
+			if (al = ':') then
+				str.catc (listedx.ipath, '\');
+			endif;
+		endif;
+		
+		this.append ([edx]);
+		mov (edx, eax);
+	ENDUSE;
+	end appendFile;
+
+end class_flist_unit;

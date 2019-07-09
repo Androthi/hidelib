@@ -1,0 +1,46 @@
+unit cloneunit;
+	
+	#include ("src/hidelib.hhf")
+	#include ("memory.hhf")
+	
+	readonly
+		//tClassVMT	:VMT(tClone);
+		vmt( tClone );
+	
+	
+method tClone.clone; @nodisplay; @noframe;
+begin clone;
+
+	push (ecx);
+	push (edi);
+	push (esi);
+	
+	mov ( mem2.size (esi), ecx);
+	mov ( mem.alloc (ecx), edi);
+
+	push (edi); // save ptr on stack
+
+	// copy it  mem should be dword aligned
+	// ecx min = 4 for any memory block so...
+	shr (2, ecx);  //ecx := ecx /4
+	rep.movsd();
+
+	pop (eax);	// mem ptr, return this
+	mov (true, (type tClone[eax])._private__clone);
+	pop (esi);
+	pop (edi);
+	pop (ecx);
+	
+	ret();
+	
+end clone;
+
+method tClone.isClone; @nodisplay; @noframe;
+begin isClone;
+	
+	mov (this._private__clone, eax);
+	ret();
+	
+end isClone;
+	
+end cloneunit;

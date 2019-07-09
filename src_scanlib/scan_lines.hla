@@ -1,0 +1,212 @@
+unit scan_lines_unit;
+
+	#includeonce ("hide/hidefunc.hhf")
+	#includeonce ("strings.hhf")
+	#includeonce ("excepts.hhf")
+	#includeonce ("os.hhf")
+	
+	?@nodisplay := true;
+	?@noalignstack := true;
+	
+	procedure scan.nextLine;	@noframe;
+		
+		// source:	esi= pointer to a zero-terminated byte array
+		// Returns:
+		//	carry = set, success, ESI= pointer advanced to first byte of next line
+		//	carry = false, failure, ESI undefined
+		
+	begin nextLine;
+		
+		push( eax );
+		sub( 1, esi );
+		scan:
+			add( 1, esi );
+			mov( [esi], al );
+			test( al, al );
+			jz returnFalse;
+			
+			#if( os.win32 )
+				
+				cmp( al, $0A );
+				je returnTrue;
+				
+			#elseif( os.linux )
+				
+				cmp( al, $0A );
+				je returnTrue;
+				
+			#else
+				// os = mac?
+				cmp( al, $0D );
+				je returnTrue;
+				
+			#endif
+		
+		jmp scan;	
+		
+		returnTrue:
+			// not yet, check last byte
+			add( 1, esi );
+			cmp( (type byte[esi]), 0 );
+			je returnFalse;
+			
+			pop( eax );
+			stc();
+			ret();
+		
+		returnFalse:
+			pop( eax );
+			clc();
+			ret();
+		
+	end nextLine;
+	
+	procedure scan.findEOLN;	@noframe;
+		
+		// utility function
+		//	source:	esi= pointer to zero-terminated byte array
+		// Returns:
+		//	carry = set, success, EDI= pointer the end of the line, just at the nl
+		//		( $0D for Win32 and MacOS, $0A for Linux )
+		//		or pointing at the #0 byte if any movement was made at all
+		//		ESI unchanged
+		//	carry = false, failure, ESI, EDI undefined
+		
+	begin findEOLN;
+		push( eax );
+		mov( esi, edi );
+		sub( 1, edi );
+		scan:
+			add( 1, edi );
+			mov([edi],al);
+			test( al, al );
+			if( @z ) then
+				cmp( edi, esi );
+				je returnFalse;
+				jmp returnTrue;
+			endif;
+			
+			#if( os.win32 )
+			
+				cmp( al, $0D );
+				je returnTrue;
+				
+			#elseif( os.linux )
+				
+				cmp( al, $0A );
+				je returnTrue;
+				
+			#else
+				
+				// os = Mac?
+				cmp( al, $0D );
+				je returnTrue;
+				
+			#endif
+			
+		jmp scan;
+			
+		returnTrue:
+			pop( eax );
+			stc();
+			ret();
+			
+		returnFalse:
+			pop( eax );
+			clc();
+			ret();
+			
+	end findEOLN;
+
+	procedure scan.getLine( dest:string ); @noframe;
+
+		// source:	esi = pointer to zero-terminated string buffer
+		// returns:
+		//	carry set = true,	dest = valid line copied from esi
+		//						ESI = advanced to next line or at EOS
+		//	carry clear = false, dest unchanged, ESI undefined
+		
+	begin getLine;
+		
+		push( ebp );
+		mov( esp, ebp );
+		push( edi );
+		
+		scan.findEOLN();
+		jnc returnFalse;
+		
+		// extract will check for dest = NULL error
+		scan.extract( dest );
+		mov( edi, esi );
+		if( (type byte[esi]) != 0 ) then
+			
+			#if( os.win32 )
+				
+				add( 2, esi );
+				
+			#else
+				
+				add( 1, esi );
+				
+			#endif
+			
+		endif;
+		stc();
+		jmp done;
+		
+		returnFalse:
+			clc();
+
+		done:
+			pop( edi );
+			pop( ebp );
+			ret( _parms_ );
+		
+	end getLine;
+
+	procedure scan.a_getLine; @noframe;
+	
+		// source:	esi = pointer to zero-terminated string buffer
+		// returns:
+		//	carry set = true,	EAX = pointer to string allocated on heap
+		//						ESI = advanced to next line or at EOS
+		//	carry clear = false, EAX, ESI undefined
+		
+	
+	begin a_getLine;
+		push( ebp );
+		mov( esp, ebp );
+		
+		scan.findEOLN();
+		jnc returnFalse;
+		
+		// extract will check for dest = NULL error
+		scan.a_extract();
+		mov( edi, esi );
+		if( (type byte[esi]) != 0 ) then
+			
+			#if( os.win32 )
+				
+				add( 2, esi );
+				
+			#else
+				
+				add( 1, esi );
+				
+			#endif
+			
+		endif;
+		stc();
+		jmp done;
+		
+		returnFalse:
+			clc();
+
+		done:
+			pop( ebp );
+			ret( _parms_ );
+			
+	end a_getLine;
+
+
+end scan_lines_unit;

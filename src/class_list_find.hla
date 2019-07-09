@@ -1,0 +1,29 @@
+unit class_list_find_unit;
+
+	#includeonce ("src/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	const
+		listedx	:text := "(type listNode_t[edx])";
+		listeax	:text := "(type listNode_t[eax])";
+		listebx	:text := "(type listNode_t[ebx])";
+	endconst;
+
+	method tList.findValue ( value:dword );
+		// returns listNode_t in eax
+	begin findValue;
+	USE (EBX);
+		mov (this.head, ebx);
+		while (ebx) do
+			mov (listebx.value, eax);
+			breakif (eax = value);
+			mov (listebx.next, ebx);
+		endwhile;
+		mov (ebx, eax);
+	ENDUSE;
+	end findValue;
+
+
+end class_list_find_unit;

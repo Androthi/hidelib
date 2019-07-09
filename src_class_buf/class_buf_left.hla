@@ -1,0 +1,42 @@
+unit class_buf_left_unit;
+
+	#includeonce ("hide/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	proc
+	
+		tBuf.left	:method( n:uns32 );
+		begin left;
+			
+			mov( this.cursor, eax );
+			cmp( eax, this.data );
+			je at_bof;
+			
+			sub( this.data, eax );
+			if( n > eax ) then
+				
+				mov( this.data, eax );
+				mov( eax, this.cursor );
+			
+			else
+				
+				mov( this.cursor, eax );
+				sub( n, eax );
+				mov( eax, this.cursor );
+				
+			endif;
+			
+			stc();
+			jmp done;
+			
+			at_bof:
+				clc();
+				
+			done:
+			
+		end left;
+
+		
+end class_buf_left_unit;

@@ -1,0 +1,19 @@
+unit class_buf_putbuffer_unit;
+	#includeonce ("hide/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	proc
+
+		tBuf.putBuffer	:method( var buf:tBufferBase );
+		begin putBuffer;
+			
+			mov( buf, edi );
+			mov( (type tBufferBase[edi]).length, eax );
+			mov( (type tBufferBase[edi]).data, edi );
+			this.putBytes( edi, eax );
+			
+		end putBuffer;
+		
+end class_buf_putbuffer_unit;

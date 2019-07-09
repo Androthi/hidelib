@@ -1,0 +1,43 @@
+unit os2_getmodulepath_unit;
+	
+#include ("src/hidefunc.hhf")	
+#include ("os.hhf")
+#include ("strings.hhf")
+#include ("memory.hhf")
+#include ("fileio.hhf")
+
+#if (os.win32)
+	#include ("w.hhf")
+#elseif (os.linux)
+	#include ("linux.hhf")
+#endif
+
+procedure os2.getmodulepath (dest:string); @nodisplay; @noalignstack;
+	var
+		buffer 	:byte[300];
+
+begin getmodulepath;
+	pushad();
+	#if (os.win32)
+
+		w.GetModuleFileName ( NULL, buffer, 299);
+		lea( eax, buffer );
+		str.cpyz(eax, dest);
+		
+	#elseif (os.linux)
+
+		str.talloc (1024);
+		mov (eax, ecx);
+		linux.getpid();
+		str.put ((type string ecx), "/proc/", (type uns32 eax ), "/exe");
+		linux.readlink ((type string ecx), buffer, 299);
+		if (eax) then
+			mov (0, (type byte buffer[eax]));
+			str.cpyz (buffer, dest);
+		endif;
+	#endif
+	popad();
+end getmodulepath;
+
+
+end os2_getmodulepath_unit;

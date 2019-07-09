@@ -1,0 +1,38 @@
+unit scan_skipws_unit;
+
+	#includeonce ("hide/hidefunc.hhf")
+	#includeonce ("chars.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	procedure scan.skipws; @noframe;
+	begin skipws;
+		
+		push( eax );
+		xor( eax, eax );
+		sub( 1, esi );
+		scan:
+			add( 1, esi );
+			mov( [esi], al );
+			test( al, al );
+			jz returnFalse;
+			bt( eax, hide.whiteSpaceCset );
+			jc scan;
+			jmp returnTrue;
+		
+		returnFalse:
+			clc();
+			jmp done;
+		
+		returnTrue:
+			stc();
+			
+		done:
+			pop( eax );
+			ret();
+			
+	end skipws;
+
+
+end scan_skipws_unit;

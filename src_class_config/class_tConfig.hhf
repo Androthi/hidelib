@@ -1,0 +1,169 @@
+#IF ( ! @defined ( class_tConfig_hhf ) )
+	?class_tConfig_hhf := true;
+
+type
+	tConfig	:class inherits( tBuffer );
+		var
+			//_file		:pointer to tBuffer;
+			sectionHead	:uns32;	// index of section header :getSectionBounds()
+			sectionBody	:uns32;	// index of section body (right under the header)
+			sectionTail	:uns32;	// index of end of section :getSectionBounds()
+			indexA		:uns32;	// index of top of section or top of <text> or top of <bin>
+			indexB		:uns32;	// index of bottom of section, or bottom of <text> or bottom of <bin>
+			binlength	:uns32;	// length of binary data, if <bin> section
+			sections	:tList;
+			align(4);
+		
+		
+		const
+			// should start at 11, leave <=10 for tBuffer and super classes
+			binsection	:= @{11};
+			textsection	:= @{12};
+		
+
+		override procedure create_default; @external;
+		override procedure create_file; @external;
+		
+		// depricated, use writeFileName
+		method write (fileName:string); @external;
+		
+		method writeString ( sec:string; key:string; src:string);
+			@external;
+		method _readString (sec:string; key:string; dest:string);
+			@returns ("EAX"); @external;
+		method a_readString (sec:string; key:string);
+			@returns("EAX"); @external;
+		method readBufString (sec:string; key:string; var dest:tBuffer);
+			@returns ("EAX"); @external;
+
+		proc
+			readString	:overloads _readString
+						( "@text( @curObject + ""._readString"" )" );
+			readString	:overloads readBufString
+						( "@text( @curObject + "".readBufString"" )" );
+			readString	:overloads a_readString
+						( "@text( @curObject + "".a_readString"" )" );
+			
+		method readBool (sec:string; key:string);
+			@returns ("@c"); @external;
+		method writeBool (sec:string; key:string; state:boolean);
+			@external;
+		
+		method writeHex (sec:string; key:string; value:dword);
+			@external;
+		method readHex (sec:string; key:string);
+			@returns ("@c"); @external;
+		
+		method writeBin (sec:string; key:string; var addr:dword; size:uns32);
+			@external;
+		method readBin (sec:string; key:string; var addr:dword; size:uns32); @returns ("EAX");
+			@external;
+		
+		method writeInt (sec:string; key:string; value:int32);
+			@external;
+		method readInt (sec:string; key:string);
+			@returns ("@c"); @external;
+		
+		method writeUns (sec:string; key:string; value:uns32);
+			@external;
+		method readUns (sec:string; key:string);
+			@returns ("@c"); @external;
+		
+		method writeReal64( sec:string; key:string; value:real64 ); @external;
+		method readReal64( sec:string; key:string; var dest:real64 ); @returns("@c"); @external;
+		
+		method deleteKey (sec:string; key:string);
+			@external;
+		method deleteSection (sec:string);
+			@external;
+		method deleteItem (sec:string; index:dword);
+			@external;
+		method renameKey (sec:string; currentkey:string; newkey:string);
+			@returns ("EAX"); @external;
+		method renameSection (currentsec:string; newsec:string); @returns ("EAX");
+			@external;
+		
+		method _readSection (sec:string; dest:string);
+			@returns ("EAX"); @external;
+		method a_readSection (sec:string);
+			@returns ("EAX"); @external;
+		method readBufSection (sec:string; var dest:tBuffer );
+			@returns("EAX"); @external;
+			
+		proc
+			readSection	:overloads _readSection
+							( "@text( @curObject + ""._readSection"" )" );
+			readSection	:overloads readBufSection
+							( "@text( @curObject + "".readBufSection"" )" );
+			
+			
+		method getSectionList; @external;
+		method getSectionCount; @external;
+
+		method _writeSection (sec:string; src:string);
+			@external;
+		method readBinSection (sec:string; var dest:tBuffer);
+			@returns ("EAX"); @external;
+		method writeBufSection (sec:string; var src:tBuffer);
+			@external;
+
+		proc
+			writeSection	:overloads _writeSection
+							( "@text( @curObject + ""._writeSection"" )" );
+			writeSection	:overloads writeBufSection
+							( "@text( @curObject + "".writeBufSection"" )" );
+		
+		
+		proc
+			
+			// unlike the readSection methods, these copy the
+			// entire section body, including any <bin> and <text> identifiers.
+			
+			copySection			:method( sec:string; dest:string )
+								{ @returns( "@c") }; @external;  // and eax
+			a_copySection		:method( sec:string )
+								{ @returns( "@c") }; @external;  // and eax
+			copyBufSection		:method( sec:string; var dest:tBuffer )
+								{ @returns( "@c") }; @external;  // and eax
+			a_copyBufSection	:method( sec:string )
+								{ @returns( "@c") }; @external;  // and eax
+		
+			
+			
+		method writeItem (sec:string; index:dword; item:string);
+			@external;
+		method insertItem (sec:string; index:dword; item:string);
+			@external;
+		method readItem (sec:string; index:dword; dest:string);
+			@returns ("EAX"); @external;
+		method setItemTokens (tokens:cset);
+			@external;
+		method readItemToken (sec:string; itemIndex:dword; tokenIndex:dword; dest:string);
+			@returns ("EAX"); @external;
+		
+		
+		method readBufItem (sec:string; index:dword; var dest:tBuffer);
+			@returns ("EAX"); @external;
+		method findItem (sec:string; src:string);
+			@returns ("EAX"); @external;
+
+		method isSectionDefined (sec:string);
+			@returns ("EAX"); @external;
+		method isKeyDefined (sec:string; key:string);
+			@returns ("EAX"); @external;
+		method getItemCount (sec:string);
+			@returns ("EAX"); @external;
+		
+		// PRIVATE METHODS/PROCEDURES
+		method readSections; @external;
+		method findSectionA (sec:string);
+			@returns ("EAX"); @external;
+		method getSectionBounds (sec:string);
+			@returns ("@c"); @external;
+		method findKeyA (key:string);
+			@returns ("EAX"); @external;
+		
+	endclass;
+endtype;
+	
+#ENDIF

@@ -1,0 +1,167 @@
+unit class_buffer_misc;
+	
+		
+	#include ("src/hidelib.hhf")
+	#include ("strings.hhf")
+	#includeonce ("macros/macros.hhf")
+
+	?@noalignstack:= true;
+	?@nodisplay := true;
+
+
+
+
+	method tBuffer.setChar ( src:char; count:uns32);
+	begin setChar;
+	USE (EAX, EBX);
+		mov (this.cursor, ebx);
+		mov (this.data, eax);
+		add (this.length, eax);
+		sub (this.cursor, eax);
+		mov (ebx, eax);
+		if (count > eax) then
+			mov (eax, count);
+		endif;
+		
+		this.delete (count);
+		
+		mov (count, eax);
+		while (eax) do
+			this.insertc (src);
+			dec (eax);
+		endwhile;
+	ENDUSE;
+	end setChar;
+
+
+	method tBuffer.upper (length:uns32);
+	begin upper;
+	USE (EAX, ECX, EDI);
+		mov (this.data, eax);
+		add (this.length, eax);
+		sub (this.cursor, eax);		// eax = number length from cursor to eof
+		if ( length > eax) then
+			mov (eax, length);
+		endif;
+		
+		mov (this.cursor, edi);
+		mov (length,ecx);
+		while (ecx) do
+			mov ([edi], al);
+			if
+			(#{
+				cmp( al, 'a' );
+				jb false;
+				cmp( al, 'z' );
+				ja false;
+			}#) then
+		
+				and ($5f, al);
+				mov( al, [edi] );	// Save result.			
+			endif;
+			
+			inc (edi);
+			dec (ecx);
+
+		endwhile;
+	ENDUSE;
+	end upper;
+
+	method tBuffer.truncate (length:uns32);
+	begin truncate;
+	USE (EAX);
+		mov (length, eax);
+		if (eax > this.length) then
+			mov (0, this.length);
+			mov (this.data, eax);
+			mov (eax, this.cursor);
+		else
+			sub (eax, this.length);
+			mov (this.data, eax);
+			add (this.length, eax);
+			if (this.cursor > eax) then
+				mov (eax, this.cursor);
+			endif;
+		endif;
+	ENDUSE;
+	end truncate;
+
+	method tBuffer.delspace; @noframe;
+	begin delspace;
+		USE (EAX, ECX, EBX);
+		this.bof();
+		mov (this.data, ebx);
+		mov (this.length, ecx);
+		while (ecx) do
+			mov ([ebx], al);
+			if (al not in hide.whiteSpaceCset) then
+				sub (this.data, ebx);
+				this.deleteIndex (0, ebx);
+				break;
+			endif;
+			
+			inc (ebx);
+			dec (ecx);
+		endwhile;
+		ENDUSE;
+		ret();
+	end delspace;
+
+	method tBuffer.trim; @noframe;
+	begin trim;
+	USE (EAX, ECX);
+		this.delspace();
+		this.eof();
+		mov (this.cursor, ecx);
+		forever
+			dec (ecx);
+			mov ([ecx], al);
+			if (al not in hide.whiteSpaceCset) then
+				break;
+			endif;
+		endfor;
+		inc (ecx);
+		mov (ecx, this.cursor);
+		sub (this.data, ecx);
+		mov (ecx, this.length);
+	ENDUSE;
+	ret();
+	end trim;
+
+
+	method tBuffer.lower (length:uns32);
+	begin lower;
+	USE (EAX, ECX, EDI);
+		mov (this.data, eax);
+		add (this.length, eax);
+		sub (this.cursor, eax);		// eax = number length from cursor to eof
+		if ( length > eax) then
+			mov (eax, length);
+		endif;
+		
+		mov (this.cursor, edi);
+		mov (length,ecx);
+		while (ecx) do
+			mov ([edi], al);
+			if
+			(#{
+				cmp( al, 'A' );
+				jb false;
+				cmp( al, 'Z' );
+				ja false;
+			}#) then
+		
+				or( $20, al );		// Magic UC->lc translation.
+				mov( al, [edi] );	// Save result.
+			
+			endif;
+			
+			inc (edi);
+			dec (ecx);
+
+		endwhile;
+	ENDUSE;
+	end lower;
+
+	
+end class_buffer_misc;

@@ -1,0 +1,8 @@
+
+#IF ( ! @defined ( macros_hhf ) )
+	?macros_hhf := true;
+
+	#includeonce ("macros/extensions.hhf")
+	#includeonce ("macros/maclib.hhf")
+
+#ENDIF

@@ -1,0 +1,47 @@
+unit hide_putmem_unit;
+
+#includeonce("stdlib.hhf")
+#includeonce("src/hidefunc.hhf")
+#includeonce("macros/maclib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+proc
+	
+	hide.putMem0 :procedure( var src:dword; len:dword );
+	begin putMem0;
+		USE( ESI, ECX, EAX );
+		mov( src, esi );
+		for( mov( 0, ecx ); ecx < len; inc( ecx ) ) do
+			mov( [esi], al );
+			conv.bToStr( al, hide.strbuf );
+			stdout.put( hide.strbuf, ' ' );
+			inc( esi );
+		endfor;
+		ENDUSE;
+	end putMem0;
+
+	hide.putMem1 :procedure( var src:dword; len:dword; cols:dword );
+	begin putMem1;
+		USE( ESI, ECX );
+		
+		mov( len, ecx );
+		mov( src, esi );
+		while( ecx > cols ) do
+			
+			hide.putMem0( [esi], cols );
+			add( cols, esi );
+			sub( cols, ecx );
+			stdout.newln();
+		welse
+			
+			hide.putMem0( [esi], ecx );
+			
+		endwhile;
+		
+		ENDUSE;
+	end putMem1;
+
+
+end hide_putmem_unit;

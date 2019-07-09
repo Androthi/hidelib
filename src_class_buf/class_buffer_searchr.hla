@@ -1,0 +1,117 @@
+unit class_buffer_searchr_unit;
+	
+	#include ("src/hidelib.hhf")
+	#include ("strings.hhf")
+	#includeonce ("macros/macros.hhf")
+
+	?@noalignstack:= true;
+	?@nodisplay := true;
+
+	// scanning methods
+
+	method tBuffer.searchr (s:string);
+	begin searchr;
+		USE (ESI);
+		mov (this.data, eax);
+		mov (this.cursor, esi);
+		//hide.scanr (eax, s);
+		scan.rfind( eax, s );
+		mov( esi, eax );
+		ENDUSE;
+		
+		if (@c) then
+			mov( eax, this.cursor );
+			sub( this.data, eax );
+			stc();
+			
+		else
+			this.bof();
+			or( -1, eax );
+			clc();
+			
+		endif;
+
+	end searchr;
+
+	method tBuffer.isearchr (s:string);
+	begin isearchr;
+		USE (ESI);
+		mov (this.data, eax);
+		mov (this.cursor, esi);
+		scan.irfind( eax, s );
+		mov( esi, eax );
+		ENDUSE;
+		
+		if (@c) then
+
+			mov (eax, this.cursor);
+			sub (this.data, eax);
+			stc();
+			
+		else
+			or( -1, eax );
+			clc();
+			
+		endif;
+		
+	end isearchr;
+
+	method tBuffer.rspan (var c:cset);
+	begin rspan;
+	USE (ECX, EBX );
+		mov (this.cursor, edi);	// start pos
+		xor (eax, eax);
+		mov (this.data, ecx);
+		mov (c, EBX);
+		
+		while (edi >= ecx) do
+			mov ([edi], al);
+			bt (eax, (type dword [EBX]));
+			breakif (@nc);
+			dec (edi);
+		
+		welse
+			mov (-1, eax);
+		endwhile;
+		
+		mov (edi, this.cursor);
+		if (eax <> -1) then
+			sub (this.data, edi);
+			mov (edi, eax);
+			stc();
+		else
+			clc();
+		endif;
+	ENDUSE;
+	end rspan;
+
+	method tBuffer.rbrk (var c:cset);
+	begin rbrk;
+		USE (ECX, EBX );
+		mov (this.cursor, edi);	// start pos
+		xor (eax, eax);
+		mov (this.data, ecx);
+		mov (c, ebx);
+		
+		while (edi >= ecx) do
+			mov ([edi], al);
+			bt (eax, (type dword [ebx]));
+			breakif (@c);
+			dec (edi);
+		
+		welse
+			mov (-1, eax);
+		endwhile;
+		
+		mov (edi, this.cursor);
+		if (eax <> -1) then
+			sub (this.data, edi);
+			mov (edi, eax);
+			stc();
+		else
+			clc();
+		endif;
+		ENDUSE;
+	end rbrk;
+
+end class_buffer_searchr_unit;

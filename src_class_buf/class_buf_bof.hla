@@ -1,0 +1,19 @@
+unit class_buf_bof_unit;
+
+
+	#includeonce ("hide/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	proc
+		tBuf.bof	:method { @noframe };
+		begin bof;
+			
+			mov( this.data, eax );
+			mov( eax, this.cursor );
+			ret();
+			
+		end bof;
+		
+end class_buf_bof_unit;

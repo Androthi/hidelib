@@ -1,0 +1,314 @@
+#IF ( ! @defined ( classlib_hhf ) )
+	?classlib_hhf := true;
+
+	#includeonce ("macros/macros.hhf")
+	#includeonce ("tables.hhf")
+
+// class library
+type
+	
+	 tClone:	class
+		
+		var
+			_private__clone	:dword;
+		
+		// this class has no create procedure
+		// it must be inherited for using the method.
+		// note: cloned classes should not be destroyed,
+		// use mem.free instead.
+		
+		// clone duplicates a class
+		method clone;
+			@returns ("EAX"); @external;
+		method isClone;
+			@returns ("EAX"); @external;
+		
+	endclass;
+
+	baseNode_t:
+		record
+			next	:dword;
+			prev	:dword;
+			
+			//  nodeID is used to identify this node, 
+			//	in case user has many different records
+			// that inherit baseNode_t
+			nodeID	:dword;
+		endrecord;
+
+	tBaseList:
+		// this class is meant to be subclassed, along with baseNode_t
+		// which offers only the basic next and prev fields.
+		// the utility methods are designed to work with the base node
+		// and not for overriding.
+		// this class has one abstract method: newNode
+		// subclasses should use this method to allocate memory
+		// for the inherited node item and call one of the
+		// node insertion methods
+
+	class
+		
+		var
+			head	:dword;
+			tail	:dword;
+			count	:uns32;
+		
+		// utility methods, no need to override 
+		method getCount;
+			@returns ("EAX"); @external;
+		method getHead;
+			@returns ("EAX"); @external;
+		method getTail;
+			@returns ("EAX"); @external;
+		method getNodeIndex (index:uns32);
+			@returns ("EAX"); @external;
+		method getIndexNode (var lNode:baseNode_t);
+			@returns ("EAX"); @external;
+
+		// instertion methods, do not override
+		// these assume nodes inherit baseNode_t
+		method append (var lNode:baseNode_t);
+			@external;
+		method insert (var lNode:baseNode_t; index:uns32);
+			@external;
+
+		// overridable methods
+		procedure create;
+			@returns ("ESI"); @external;
+
+		 // note: remove your items first then call superclass
+		method destroy;
+			@external;
+		method remove (var lNode:baseNode_t);
+			@external;
+		method removeIndex (index:uns32);
+			@returns ("@nc"); @external;
+	
+		// use this method to allocate memory for inherited node record
+		// then call one of the insertion methods
+		method newNode;
+			@abstract;
+			
+	endclass;
+
+	// use for basic list with 1 value field
+	listNode_t:
+		record inherits (baseNode_t)
+			value	:dword;
+		endrecord;
+			
+	tList: class inherits (tBaseList)
+		
+		const
+			listNodeID	:= -1;
+			
+			
+		override procedure create;
+			@external;
+		method appendValue ( value:dword );
+			@external;
+		method findValue (value:dword);
+			@returns ("EAX"); @external;
+		method setValue ( var lNode:listNode_t; value:dword);
+			@external;
+		method newNode;
+			@returns ("EAX"); @external;
+	endclass;
+
+
+	fileNode_t:
+		record inherits (listNode_t)
+			fname	:string;	// full provided path
+			iname	:string;	// isolated name (or 0 if none)
+			ipath	:string;	// isolated path (or 0 if none)
+			extended:boolean;
+		endrecord;
+
+	tFileList: class inherits (tList)
+	
+		const
+			fileNodeID	:= -2;
+			
+	
+		override procedure create;
+			@external;
+		override method destroy;
+			@external;
+		method findFullPath ( fname:string);
+			@returns ("EAX"); @external;
+		
+		
+		method appendFile ( fname:string);
+			@external;
+		override method remove;
+			@external; 
+		method removeFullPath ( fname:string);
+			@external;
+		
+		method isExtended ( var lNode:fileNode_t);
+			@returns ("EAX"); @external;
+		method isExtension ( var lNode:fileNode_t; ext:string);
+			@returns ("EAX"); @external;
+		
+		method newNode; @returns ("EAX");
+			@external;
+	endclass;
+	
+endtype;
+
+	
+#ENDIF
+
+	#includeonce ("hide/class_tBuffer.hhf")
+	#includeonce ("hide/class_tConfig.hhf")
+	#includeonce ("hide/class_tstrbuffer.hhf")
+	
+type
+	tStack: class inherits ( tBuf );
+		
+		var
+			regVar			:dword;
+		
+	
+		#macro mpush ( _args_[] ):
+			_curarg_, _pType_, _obj_, _invoke_, _argcnt_;
+			
+			?_obj_ :string := @LastObject;
+			?_curarg_ :uns32 := 0;
+
+			#while ( _curarg_ < @elements (_args_))
+				
+				?_invoke_ :string := _obj_;
+				
+				?_pType_ := @pType (@text( _args_[_curarg_] ));
+				
+				#if ( _pType_ = hla.ptDWord | _pType_ = hla.ptInt32 | _pType_ = hla.ptUns32 | _pType_= hla.ptString | _pType_ = hla.ptPointer | _pType_ = hla.ptReal32 )
+					
+					?_invoke_ := _invoke_ + ".putDword(" + _args_[_curarg_] + ");";
+					
+				#elseif ( _pType_ = hla.ptWord | _pType_ = hla.ptInt16 | _pType_ = hla.ptUns16 )  
+
+					?_invoke_ := _invoke_ + ".putWord(" + _args_[_curarg_] + ");";
+					
+				#elseif ( _pType_ = hla.ptBoolean | _pType_ = hla.ptByte | _pType_ = hla.ptInt8 | _pType_ = hla.ptUns8 | _pType_ = hla.ptChar )
+					
+					?_invoke_ := _invoke_ + ".putByte(" + _args_[_curarg_] + ");";
+					
+				#else
+					#error ("tStack error: Unsupported data type used in mpush"); 
+				
+				#endif
+				
+				@text (_invoke_)
+				?_curarg_ += 1;
+			#endwhile
+		#endmacro
+		
+		#macro mpop ( _args_[] ):
+			_curarg_, _pType_, _obj_;
+		
+			?_obj_ :string := @LastObject;
+			?_curarg_ :uns32 := 0;
+
+			#while ( _curarg_ < @elements (_args_))
+				
+				?_invoke_ :string := _obj_;
+				
+				#if (@reg ( _args_[_curarg_]))
+					
+					#if (@reg32 (_args_[_curarg_]))
+						
+						push( eax );
+						?_invoke_ := _invoke_ + ".pop32();";
+						@text (_invoke_)
+						pop( eax );
+						mov ( @text(_obj_).regVar, @text(_args_[_curarg_]));
+						
+					#elseif (@reg16(_args_[_curarg_]))
+						
+						push( eax );
+						?_invoke_ := _invoke_ + ".pop16();";
+						@text (_invoke_)
+						pop( eax );
+						mov ( (type word @text(_obj_).regVar), @text(_args_[_curarg_]));
+						
+					#elseif (@reg8(_args_[_curarg_]))
+						
+						push( eax );
+						?_invoke_ := _invoke_ + ".popr8();";
+						@text (_invoke_)
+						pop( eax );
+						mov ( (type byte @text(_obj_).regVar), @text(_args_[_curarg_]));
+						
+					#else
+					
+						#error ("tStack error: Unsupported register destination for mpop");
+					#endif
+					
+					
+
+					
+				#else
+				
+					?_pType_ := @pType (@text( _args_[_curarg_] ));
+					
+					#if ( _pType_ = hla.ptDWord | _pType_ = hla.ptInt32 | _pType_ = hla.ptUns32 | _pType_= hla.ptString | _pType_ = hla.ptPointer)
+						
+						?_invoke_ := _invoke_ + ".dpop(" + _args_[_curarg_] + ");";
+						
+					#elseif ( _pType_ = hla.ptWord | _pType_ = hla.ptInt16 | _pType_ = hla.ptUns16 )  
+	
+						?_invoke_ := _invoke_ + ".wpop(" + _args_[_curarg_] + ");";
+						
+					#elseif ( _pType_ = hla.ptBoolean | _pType_ = hla.ptInt8 | _pType_ = hla.ptUns8 | _pType_ = hla.ptByte | _pType_ = hla.ptChar )
+						
+						?_invoke_ := _invoke_ + ".bpop(" + _args_[_curarg_] + ");";
+						
+					#else
+						#error ("tStack error: Unsupported data type used in mpop"); 
+					
+					#endif
+					
+					@text (_invoke_)
+						
+				#endif
+				
+				
+				?_curarg_ += 1;
+			#endwhile
+		#endmacro
+	
+		override procedure create_size; @external;
+		override procedure create_default; @external;
+		override procedure create_file; @external;
+
+		
+		// public methods/procs
+		//procedure create ( size:dword);
+		//	@returns("ESI"); @external;
+		//method destroy;
+		//	@external;
+		
+		method dpush( obj:dword ); external;
+		method wpush( obj:word ); external;
+		method bpush( obj:byte ); external;
+		method npush( var src:var; length:uns32 ); external;
+		
+
+		method dpop( var dest: dword );
+			@returns("@c");	@external;
+ 		method wpop( var dest: word );
+			@returns("@c");	@external;
+		method bpop( var dest: byte );
+			@returns("@c");	@external;
+		method npop( var dest:var; length:uns32 );
+			@returns( "@C" ); @external; 
+
+		method pop32; @returns("@c");	@external;
+		method pop16; @returns("@c");	@external;
+		method pop8; @returns("@c");	@external;
+
+		method getnumobjects;
+			@returns ("EAX"); @external;
+	
+	endclass;

@@ -1,0 +1,12 @@
+#if( ! @defined ( hidelib_hhf ) )
+	
+	?hidelib_hhf := true;
+	
+	#includeonce( "macros/macros.hhf" )
+	#includeonce( "hide/hidefunc.hhf" )
+	#includeonce( "hide/classlib.hhf" )
+	#includeonce ("hide/class_tBuffer.hhf")
+	#includeonce ("hide/class_tConfig.hhf")
+	#includeonce ("hide/class_tstrbuffer.hhf")
+
+#endif

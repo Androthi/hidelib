@@ -1,0 +1,203 @@
+unit scan_pfind_unit;
+
+	#includeonce ("hide/hidefunc.hhf")
+	#includeonce ("strings.hhf")
+	#includeonce ("excepts.hhf")
+	#include("stdout.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+
+	procedure scan.pfind( toFind:string; caseSensitive:boolean ); @noframe;
+		
+		// source:		ESI = pointer to zero terminated string
+		//	searches for "toFind" with pattern matching
+		//		'*' matches zero or more characters up to next character in source
+		//		'?' matches any 1 character
+		//
+		//	if 'caseSensitive' is true, search is case sensitive
+		//
+		//	returns:
+		//		carry set = 	success
+		//						ESI = pointer to start of matched string
+		//						EDI = pointer to 1 character beyond matched string 
+		//
+		//		carry clear =	failure
+		//						no register changed
+		//
+		
+		var
+			eaxSave		:dword;
+			ebxSave		:dword;
+			ecxSave		:dword;
+			edxSave		:dword;
+			startESI	:dword;
+			startStar	:dword;
+		
+	begin pfind;
+		
+		push( ebp );
+		mov( esp, ebp );
+		sub( _vars_, esp );
+		
+		mov( eax, eaxSave );
+		mov( ebx, ebxSave );
+		mov( ecx, ecxSave );
+		mov( edx, edxSave );
+		mov( esi, startESI );
+		mov( 0, startStar );	// special condition where '*' is first character in toFind
+		
+		mov( toFind, ebx );
+		test( ebx, ebx );
+		jz radn;
+		
+		mov( (type str.strRec[ebx]).length, eax );
+		test( eax, eax );
+		jz returnFalse;
+		
+		mov( esi, ecx );	// ecx = current cursor
+		sub( 1, ecx );
+		
+		// check for special case
+		mov( toFind, ebx );
+		cmp( (type byte[ebx]), '*' );
+		jne reset;
+		mov( esi, startStar );
+		reset:
+			add( 1, ecx );
+			mov( ecx, esi );
+			mov( toFind, ebx );
+			sub( 1, ebx );
+			sub( 1, esi );
+
+			scan:
+				add( 1, esi );
+				add( 1, ebx );
+				mov( [ebx], ah );
+				
+				// if we get to the end of ebx and we're still
+				// in the scan loop, then search was successful
+				test( ah, ah );
+				jz returnTrue;
+				
+				cmp( ah, '?' );
+				je matchAnyOne;
+				
+				cmp( ah, '*' );
+				je matchUntil;
+				
+				// match exactly one
+				mov( [esi], al );
+				test( al, al );
+				jz returnFalse;
+				
+				cmp( al, ah );
+				je scan;
+				
+				cmp( caseSensitive, false );
+				jne reset;
+				
+				mov( ax, dx );
+				and( $dfdf, dx );
+				cmp( dl, 'A' );
+				jb reset;
+				cmp( dl, 'Z' );
+				ja reset;
+				cmp( dl, dh );
+				je scan;
+				jmp reset;
+				
+				matchUntil:
+					// we could have messed up situations where
+					// the user passes a string with '**?' etc.
+					add( 1, ebx );
+					mov( [ebx], ah );
+					test( ah, ah );
+					
+					// match until zero will always succeed
+					// but we have to find end of string in ESI
+					jz scanToEOS;
+					
+					cmp( ah, '*' );
+					je matchUntil;
+					
+					cmp( ah, '?' );
+					je matchUntil;
+					
+					// match until we find ah
+					sub( 1, esi );
+					match:
+						add( 1, esi );
+						mov( [esi], al );
+						test( al, al );
+						jz returnFalse;
+						
+						cmp( al, ah ); 
+						je scan;
+					
+						cmp( caseSensitive, false );
+						jne match;
+						
+						// don't mess up ah!
+						mov( ax, dx );
+						and( $dfdf, dx );
+						cmp( dl, 'A' );
+						jb match;
+						cmp( dl, 'Z' );
+						ja match;
+						cmp( dl, dh );
+						je scan;
+						jmp match;
+						
+				scanToEOS:
+					mov( [esi], al );
+					test( al, al );
+					jz returnTrue;
+					add( 1, esi );
+					jmp scanToEOS;
+					
+				matchAnyOne:
+					mov( [esi], al );
+					test( al, al );
+					jz returnFalse;
+					jmp scan;
+		
+		returnTrue:
+			mov( esi, edi );
+			mov( startStar, eax );
+			test( eax, eax );
+			jz isECX;
+			mov( eax, esi );
+			stc();
+			jmp done;
+			
+			isECX:
+				mov( ecx, esi );
+				stc();
+				jmp done;
+		
+		returnFalse:
+			mov( startESI, esi );
+			clc();
+			
+			
+		done:
+	
+			mov( eaxSave, eax );
+			mov( ebxSave, ebx );
+			mov( ecxSave, ecx );
+			mov( edxSave, edx );
+		
+			mov( ebp, esp );
+			pop( ebp );
+			ret( _parms_ );
+		
+		radn:
+			raise( ex.AttemptToDerefNULL );
+			
+	end pfind;
+
+
+
+end scan_pfind_unit;

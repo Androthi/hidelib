@@ -1,0 +1,49 @@
+unit class_config_rename_unit;
+
+	#includeonce ("src/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	method tConfig.renameKey (sec:string; currentkey:string; newkey:string);
+	begin renameKey;
+		if (this.findSectionA (sec)) then
+			if (this.findKeyA (currentkey)) then
+				
+				this.cursorToBOL();
+				this.span (hide.whiteSpaceCset);
+				str.length (currentkey);
+				this.delete (eax);
+				this.inserts (newkey);
+				mov (1, eax);
+			else
+				xor (eax, eax);
+			endif;
+		else
+			xor (eax, eax);
+		endif;
+		
+	end renameKey;
+
+	method tConfig.renameSection (currentsec:string; newsec:string);
+		var
+			s	:string;
+			
+	begin renameSection;
+		mov (str.talloc (1024), s);
+		
+		this.bof();
+		str.put (s, '[', currentsec, ']');
+		if (this.searchf (s) ) then
+			this.right (1);
+			str.length (currentsec);
+			this.delete (eax);
+			this.puts (newsec);
+			mov (1, eax);
+		else
+			xor (eax, eax);
+		endif;
+	end renameSection;
+  
+
+end class_config_rename_unit;

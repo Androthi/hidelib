@@ -1,0 +1,76 @@
+unit class_buf_sub_unit;
+
+	#includeonce ("hide/hidelib.hhf")
+
+	#include("stdlib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	proc
+		
+		tBuf.subBuf		:method( startIndex:uns32; length:uns32; var dest:var );
+		begin subBuf;
+	
+			push( eax );
+	
+			mov( startIndex, eax );
+			cmp( eax, this.length );
+			ja fail;
+			
+			add( length, eax );	// eax = end index
+			if( eax > this.length ) then
+				mov( this.length, eax );
+				sub( startIndex, eax );	// eax = length to copy
+			else
+				mov( length, eax );
+			endif;
+			
+			mov( this.data, edi );
+			add( startIndex, edi );
+			
+			
+			push( esi );
+			mov( dest, esi );
+
+			(type tBuf[esi]).putBytes( edi, eax );
+			
+			pop( esi );
+			stc();
+			jmp done;
+			
+			fail:
+				clc();
+			
+			done:
+			pop( eax );
+			
+		end subBuf;
+
+		
+		tBuf.a_subBuf	:method( startIndex:uns32; length:uns32 );
+		begin a_subBuf;
+			
+			mov( startIndex, eax );
+			mov( eax, this.length );
+			ja fail;
+			
+			push( esi );
+			tBuf.create( length );
+			mov( esi, eax );
+			pop( esi );
+			this.subBuf( startIndex, length, [eax] );
+			jmp done;
+			
+			fail:
+				xor( eax, eax );
+				clc();
+			
+			done:
+			
+		end a_subBuf;
+
+
+		
+
+end class_buf_sub_unit;

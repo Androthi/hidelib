@@ -1,0 +1,5 @@
+; execute this script whenever changes are made to any library module
+
+[BUILD]
+polib @src\combinelibs.txt
+copy hidelib.lib %h\hlalib\hidelib.lib

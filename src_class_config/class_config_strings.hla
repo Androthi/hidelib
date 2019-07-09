@@ -1,0 +1,113 @@
+unit config_class_strings;
+	
+	#include ("src/hidelib.hhf")
+	?@nodisplay := true;
+	?@noalignstack := true;
+	
+	
+	const
+		bufebx :text := "(type tBuffer [ebx])";
+		bufesi :text := "(type tBuffer [esi])";
+
+	method tConfig._readString (sec:string; key:string; dest:string);
+	begin _readString;
+		mov (dest, eax);
+		test (eax, eax);
+		jz done;
+		if (this.findSectionA (sec)) then		
+			if (this.findKeyA (key)) then
+			
+				this.getLineFromCursor (dest);
+				mov (1, eax);
+			else
+				xor (eax, eax);
+				endif;	
+		else
+			xor (eax, eax);
+		endif;
+		done:
+	end _readString;
+
+	method tConfig.readBufString (sec:string; key:string; var dest:tBuffer);
+	begin readBufString;
+		USE (ECX);
+		mov (dest, eax);
+		test (eax, eax);
+		jz done;
+		if (this.findSectionA (sec)) then		
+			if (this.findKeyA (key)) then
+				
+				this.a_getLineFromCursor();
+				mov (eax, ecx);
+				
+				push( esi );
+				mov (dest, esi);
+				bufesi.erase();
+				bufesi.puts ( (type string ecx) );
+				bufesi.bof();
+				pop(esi );
+				
+				str.free (ecx);
+				mov (1, eax);
+			else
+				xor (eax, eax);
+			endif;	
+		else
+			xor (eax, eax);
+		endif;
+		done:
+		ENDUSE;
+	end readBufString;
+
+
+	method tConfig.a_readString (sec:string; key:string);
+	begin a_readString;
+		if (this.findSectionA (sec)) then
+			if (this.findKeyA (key)) then
+				this.a_getLineFromCursor();
+			else
+				xor (eax, eax);
+			endif;	
+		else
+			xor (eax, eax);
+		endif;
+	end a_readString;
+
+
+	method tConfig.writeString ( sec:string; key:string; src:string);
+		var
+			buf	:pointer to tBuffer;
+
+	begin writeString;
+		USE (EAX, EBX, EDX);
+		mov( esi, buf );
+		if (this.findSectionA (sec)) then
+			if (this.findKeyA (key)) then
+				
+				// found, overwrite
+				this.getIndex();
+				mov (eax, ecx);
+				this.cursorToEOL();
+				this.setBlock (ecx, eax);
+				this.replaceBlockString (src);
+				
+			else
+				
+				// append key at end of list
+				this.cursorLeft (1);	// rewind the skip the '[' if present
+				this.rspan (hide.whiteSpaceCset);	// reverse to 1st non-space char
+				this.cursorRight (1);
+				buf.insert (nl, key, '=', src);
+			endif;
+			
+		else
+	
+			this.eof();
+			buf.insert (nl, '[', sec, ']', nl, key, '=', src, nl);
+			
+		endif;
+		ENDUSE;
+	end writeString;
+
+	
+end config_class_strings;

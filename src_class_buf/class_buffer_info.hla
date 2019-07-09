@@ -1,0 +1,133 @@
+unit class_buffer_info;
+		
+	#include ("src/hidelib.hhf")
+	#include ("strings.hhf")
+	#includeonce ("macros/macros.hhf")
+
+	?@noalignstack:= true;
+	?@nodisplay := true;
+
+
+	// information methods
+	method tBuffer.getBufferSize; @noframe;
+	begin getBufferSize;
+		mov (this.vSize, eax);
+		ret();
+	end getBufferSize;
+
+	method tBuffer.getBufferLength; @noframe;
+	begin getBufferLength;
+		mov (this.length, eax);
+		ret();
+	end getBufferLength;
+
+	// depricated, use method getIndex
+	method tBuffer.getCursorIndex; @noframe;
+	begin getCursorIndex;
+		this.getIndex();
+		ret();
+	end getCursorIndex;
+
+
+	method tBuffer.getChar; @noframe;
+	begin getChar;
+	USE (ECX);
+		mov (this.data, ecx);
+		add (this.length, ecx);
+		mov (this.cursor, eax);
+		if (eax <= ecx) then
+			movzx ((type byte [eax]), eax);
+			clc();
+		else
+			or (-1, eax);
+			stc();	// set carry to signal EOF
+		endif;
+	ENDUSE;
+	ret();
+	end getChar;
+
+	// depricated, use isEOF
+	method tBuffer.checkEOF; @noframe;
+	begin checkEOF;
+		
+		if( this.isEof() ) then
+			mov( 1, eax );
+		else
+			xor( eax, eax );
+		endif;
+		ret();
+		
+	end checkEOF;
+
+
+	method tBuffer.getCursor; @noframe;
+	begin getCursor;
+		mov (this.cursor, eax);
+		ret();
+	end getCursor;
+
+	method tBuffer.getBufferPtr; @noframe;
+	begin getBufferPtr;
+		mov (this.data, eax);
+		ret();
+	end getBufferPtr;
+
+	method tBuffer.getEOF; @noframe;
+	begin getEOF;
+		mov (this.data, eax);
+		add (this.length, eax);
+		ret();
+	end getEOF;
+
+	method tBuffer.getNumLines; @noframe;
+	begin getNumLines;
+	USE (EBX, ECX, EDX);
+		mov (this.data, ebx);
+		mov (ebx, edx);
+		add (this.length, edx);
+		xor (ecx, ecx);
+		while (ebx < edx) do
+			mov ([ebx], al);
+			if (al = $a) then
+				inc (ecx);
+			endif;
+			inc (ebx);
+		endwhile;
+		if (ecx) then
+			inc (ecx);	// count last line too
+		endif;
+		mov (ecx, eax);
+	ENDUSE;
+	ret();
+	end getNumLines;
+
+	method tBuffer.getLineNum; @noframe;
+	begin getLineNum;
+	USE (EBX, ECX, EDX);
+		xor (ecx, ecx);	// start with 0 lines
+		mov (this.cursor, edx);	// EOF
+		mov (this.data, ebx);	// BOF
+		while (ebx < edx) do
+			mov ([ebx], al);
+			if (al = $a) then
+				inc (ecx);
+			endif;
+			inc (ebx);
+		endwhile;
+		if (ecx) then
+			inc (ecx);
+		endif;
+		mov (ecx, eax);
+	ENDUSE;
+	ret();
+	end getLineNum;
+
+	method tBuffer.getCursorToEOFLength; @noframe;
+	begin getCursorToEOFLength;
+		this.getEOF();
+		sub (this.cursor, eax);
+		ret();
+	end getCursorToEOFLength;
+
+
+end class_buffer_info;

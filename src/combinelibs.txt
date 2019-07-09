@@ -1,0 +1,10 @@
+-out:hidelib.lib
+
+units\hidefunc.lib
+units\class.lib
+units\configclass.lib
+units\bufferclass.lib
+units\listclass.lib
+units\strbuffer.lib
+units\scanlib.lib
+

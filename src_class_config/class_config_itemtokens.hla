@@ -1,0 +1,68 @@
+unit class_config_itemtokens_unit;
+
+	#include ("src/hidelib.hhf")
+	#include ("stdlib.hhf")
+	//#include ("cset.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+/*
+	Item tokens:
+		- set character set of valid delimiters using setItemTokens
+		-read tokens by calling:
+			readItemToken ( section, itemIndex, tokenIndex, dest );
+			
+		Eg:
+		[Tokens]
+		item1,token1,token2,token3
+		item2,token1,token2,token3
+		
+		xxx.readItemToken ( "Tokens", 0, 0, dest);	// will read "item1"
+		xxx.readItemToken ( "Tokens", 0, 2, dest);	// will read "token2"
+*/
+	
+	const
+		bufesi	:text := "(type tBuffer [esi])";
+
+	static
+		itemTokens	:cset := { #0, ',', ' ', #$09, #$0A, #$0D };
+		
+
+	method tConfig.setItemTokens (tokens:cset);
+	begin setItemTokens;
+		cs.cpy (tokens, itemTokens);
+	end setItemTokens;
+
+	method tConfig.readItemToken (sec:string; itemIndex:dword; tokenIndex:dword; dest:string);
+		var
+			buf	:tBuffer;
+			
+	begin readItemToken;
+		USE (ESI, EDI, ECX);
+		push (esi);
+		buf.create();
+		bufesi.setDelimiters (itemTokens);
+		pop (esi);
+		if (this.readBufItem (sec, itemIndex, buf)) then
+			
+			lea (esi, buf);
+			bufesi.bof();
+			xor (ecx, ecx);
+			while (ecx <= tokenIndex) do
+				if (bufesi.getToken (dest)) then
+					breakif (ecx = tokenIndex);
+					inc (ecx);
+				else
+					xor (eax, eax);
+					break;
+				endif;
+			welse
+				xor (eax, eax);
+			endwhile;
+		endif;
+		ENDUSE;
+	end readItemToken;
+
+
+end class_config_itemtokens_unit;

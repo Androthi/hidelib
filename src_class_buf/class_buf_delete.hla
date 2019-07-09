@@ -1,0 +1,26 @@
+unit class_buf_delete_unit;
+
+	#includeonce ("hide/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	proc
+		
+		tBuf.delete	:method( length:uns32);
+		begin delete;
+			
+			mov( this.length, edi );
+			add( this.data, edi );
+			mov( edi, eax );
+			sub( this.cursor, eax );
+			if( length > eax ) then
+				sub( this.cursor, edi );
+				mov( edi, length );
+			endif;
+			this.adjustForDelete( length );
+			mov( this.cursor, eax );
+			
+		end delete;
+
+end class_buf_delete_unit;

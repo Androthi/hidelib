@@ -1,0 +1,77 @@
+unit class_buf_substring_unit;
+
+	#includeonce ("hide/hidelib.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	proc
+		
+		tBuf.subString		:method( startIndex:uns32; length:uns32; dest:string );
+		begin subString;
+
+			push( eax );
+	
+			mov( startIndex, eax );
+			cmp( eax, this.length );
+			ja fail;
+			
+			add( length, eax );	// eax = end index
+			if( eax > this.length ) then
+				mov( this.length, eax );
+				sub( startIndex, eax );	// eax = length to copy
+			else
+				mov( length, eax );
+			endif;
+			
+			mov( this.data, edi );
+			push( esi );
+			add( startIndex, edi );
+			mov( edi, esi );
+			add( eax, edi );
+			scan.extract( dest );
+			pop( esi );
+			stc();
+			jmp done;
+			
+			fail:
+				clc();
+			
+			done:
+			pop( eax );
+			
+		end subString;
+		
+		tBuf.a_subString	:method( startIndex:uns32; length:uns32 );
+		begin a_subString;
+	
+			mov( startIndex, eax );
+			cmp( eax, this.length );
+			ja fail;
+			
+			add( length, eax );	// eax = end index
+			if( eax > this.length ) then
+				mov( this.length, eax );
+				sub( startIndex, eax );	// eax = length to copy
+			else
+				mov( length, eax );
+			endif;
+			
+			mov( this.data, edi );
+			push( esi );
+			add( startIndex, edi );
+			mov( edi, esi );
+			add( eax, edi );
+			scan.a_extract();
+			pop( esi );
+			stc();
+			jmp done;
+			
+			fail:
+				clc();
+			
+			done:
+		end a_subString;
+
+
+end class_buf_substring_unit;

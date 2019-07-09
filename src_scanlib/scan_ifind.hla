@@ -1,0 +1,113 @@
+unit scan_ifind_unit;
+
+	#includeonce ("hide/hidefunc.hhf")
+	#includeonce ("strings.hhf")
+	#includeonce ("excepts.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+	
+	procedure scan.ifind( toFind:string ); @noframe;
+	
+		// source = ESI
+		// case insensitive search for string "toFind"
+		// returns carry = true for success
+		//			ESI = pointer to start of found string in source
+		//			EDI = pointer to end of found string in source
+		// returns carry = false for failure
+		//			ESI unchanged, EDI undefined
+		
+		var
+			saveEAX	:dword;
+			saveEBX	:dword;
+			saveECX	:dword;
+			saveEDX	:dword;
+			cursor	:dword;
+			startESI:dword;
+		
+	begin ifind;
+		push( ebp );
+		mov( esp, ebp );
+		sub( _vars_, esp );
+		
+		mov( eax, saveEAX );
+		mov( ebx, saveEBX );
+		mov( ecx, saveECX );
+		mov( edx, saveEDX );
+		
+		mov( toFind, edx );
+		test( edx, edx );
+		jz radn;
+		
+		mov( esi, startESI );
+		sub( 1, esi );
+		scan:
+			add(1, esi );
+			cmp( (type byte [esi]), 0 );
+			je	returnFalse;
+	
+			mov( esi, cursor );
+			mov( edx, edi );
+			mov ( (type str.strRec [edi]).length, ecx);
+
+			cmpLoop:
+		        mov( [esi], al );
+		        mov( [edi], ah );
+		        add( 1, esi );
+		        add( 1, edi );
+		        test( al, al );
+		        jz _continue;
+		        cmp( al, ah );
+		        je next;
+		        mov( ax, bx );
+		        and( $dfdf, bx );
+		        cmp( bl, 'A' );
+		        jb _continue;
+		        cmp( bl, 'Z' );
+		        ja _continue;
+		        cmp( bl, bh );
+		        jne _continue;
+				next:
+				sub (1, ecx);
+				jnz cmpLoop;
+				jmp returnTrue;
+				
+			_continue:
+				mov( cursor, esi );
+				jmp scan;
+	
+
+
+		returnTrue:
+			// edi = pointer to just beyond end of found string
+			mov( esi, edi );
+			
+			// esi = pointer to start of found string
+			mov( cursor, esi );
+			stc();	// carry = true
+			jmp done;
+		
+		returnFalse:
+			mov( startESI, esi );
+			clc();
+			
+		done:
+			mov( saveEAX, eax );
+			mov( saveECX, ecx );
+			mov( saveEBX, ebx );
+			mov( saveEDX, edx );
+			
+			mov( ebp, esp );
+			pop( ebp );
+			ret( _parms_ );
+		
+		radn:
+			raise( ex.AttemptToDerefNULL );
+		
+	end ifind;	
+
+end scan_ifind_unit;
+
+
+
+

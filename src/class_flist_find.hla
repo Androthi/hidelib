@@ -1,0 +1,28 @@
+unit class_flist_find_unit;
+
+	#includeonce ("src/hidelib.hhf")
+	#includeonce("strings.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+	const
+		listedx	:text := "(type fileNode_t[edx])";
+		listeax	:text := "(type fileNode_t[eax])";
+		listebx	:text := "(type fileNode_t[ebx])";
+	endconst;
+	
+	method tFileList.findFullPath (fname:string);
+	begin findFullPath;
+	USE (EBX);
+		mov (this.head, ebx);
+		while (ebx) do
+			breakif ( str.ieq ( listebx.fname, fname));
+			mov (listebx.next, ebx);
+		endwhile;
+		mov (ebx, eax);
+	ENDUSE;
+	end findFullPath;
+	
+	
+	
+end class_flist_find_unit;

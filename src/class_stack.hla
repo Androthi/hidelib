@@ -1,0 +1,261 @@
+unit stackclassunit;
+			
+	#include ("src/hidelib.hhf")
+	#include ("memory.hhf")
+	#include ("excepts.hhf")
+	#includeonce ("macros/macros.hhf")
+	#include ("stdio.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	readonly
+		vmt( tStack );
+
+	proc
+
+	create_tStack	:procedure { @noframe };
+	begin create_tStack;
+		if( ! esi ) then
+			mem.zalloc( @size( tStack) );
+			mov( eax, esi);
+		else
+			mem2.fillMem( [esi], @size( tStack ), 0 );
+		endif;
+		ret();
+	end create_tStack;
+
+	
+	tStack.create_size	:procedure( initialSize:uns32 );
+	begin create_size;
+		push( eax );
+		
+		create_tStack();
+		mov( initialSize, eax );
+		if( ! eax ) then
+			mov( this.default_size, eax );
+		endif;
+		
+		(type tBuf[esi]).create_size( initialSize );
+		mov( &tStack._VMT_, this._pVMT_ );
+		
+		pop (eax);
+	end create_size;
+	
+	tStack.create_default	:procedure { @noframe };
+	begin create_default;
+		push( eax );
+		
+		create_tStack();
+		(type tBuf[esi]).create_default();
+		mov( &tStack._VMT_, this._pVMT_ );
+		
+		pop( eax );
+		ret();
+	end create_default;
+
+	tStack.create_file	:procedure( fileName:string );
+	begin create_file;
+		push( eax );
+		
+		create_tStack();
+		(type tBuf[esi]).create_file( fileName );
+		mov( &tStack._VMT_, this._pVMT_ );
+		this.eof();
+		
+		pop( eax );
+	end create_file;
+
+
+	tStack.getnumobjects	:method { @noframe };
+	begin getnumobjects;
+		push( edx );
+		xor( edx, edx );
+		mov( this.length, eax );
+		mov( 4, edi );
+		div( edi );
+		if( edx ) then
+			inc( eax );
+		endif;
+		pop( edx );
+		ret();
+		
+	end getnumobjects;
+
+	tStack.dpush	:method( obj:dword );
+	begin dpush;
+	
+		// synonymous with putDword
+		this.putDword( obj );
+		
+	end dpush;
+
+	tStack.wpush	:method( obj:word );
+	begin wpush;
+		
+		// synonymous with putWord
+		this.putWord( obj );
+		
+	end wpush;
+
+	tStack.bpush	:method( obj:byte );
+	begin bpush;
+		
+		// synonymous with putByte
+		this.putByte( obj );
+		
+	end bpush;
+	
+	tStack.npush	:method( var src:var; length:uns32 );
+	begin npush;
+		
+		// synonymous with putBytes except for passing
+		// mechanism.
+		mov( src, edi );
+		this.putBytes( edi, length );
+		
+	end npush;
+
+	tStack.pop32		:method { @noframe };
+	begin pop32;
+		
+		mov( this.cursor, eax );
+		cmp( eax, this.data );
+		je underflow;
+		sub( 4, eax );
+		cmp( eax, this.data );
+		jb underflow;
+		mov( eax, this.cursor );
+		mov( [eax], eax );
+		push( eax );
+		this.delete( 4 );
+		pop( eax );
+		mov( eax, this.regVar );
+		
+		stc();
+		ret();
+		
+		underflow:
+			xor( eax, eax );
+			ret();
+			
+	end pop32;
+
+
+	tStack.pop16	:method { @noframe };
+	begin pop16;
+	
+		mov( this.cursor, eax );
+		cmp( eax, this.data );
+		je underflow;
+		sub( 2, eax );
+		cmp( eax, this.data );
+		jb underflow;
+		mov( eax, this.cursor );
+		movzx( (type word[eax]), eax );
+		push( eax );
+		this.delete( 2 );
+		pop( eax );
+		mov( eax, this.regVar );
+		
+		stc();
+		ret();
+		
+		underflow:
+			xor( eax, eax );
+			ret();
+			
+	end pop16;
+
+	tStack.pop8		:method { @noframe };
+	begin pop8;
+	
+		mov( this.cursor, eax );
+		cmp( eax, this.data );
+		je underflow;
+		sub( 1, eax );
+		mov( eax, this.cursor );
+		movzx( (type byte[eax]), eax );
+		push( eax );
+		this.delete( 1 );
+		pop( eax );
+		mov( eax, this.regVar );
+		
+		stc();
+		ret();
+		
+		underflow:
+			xor( eax, eax );
+			ret();
+			
+	end pop8;
+
+
+	tStack.dpop		:method( var dest:dword );
+	begin dpop;
+		USE( EAX );
+		
+		this.pop32();	jnc done;
+		mov( dest, edi );
+		mov( eax, [edi] );
+		stc();
+		
+		done:
+		ENDUSE;
+	end dpop;
+
+	tStack.wpop		:method( var dest:word );
+	begin wpop;
+		USE( EAX );
+		
+		this.pop16();	jnc done;
+		mov( dest, edi );
+		mov( ax, [edi] );
+		stc();
+		
+		done:
+		ENDUSE;
+	end wpop;
+	
+	tStack.bpop		:method( var dest:byte );
+	begin bpop;
+		USE( EAX );
+		
+		this.pop8();	jnc done;
+		mov( dest, edi );
+		mov( al, [edi] );
+		stc();
+		
+		done:
+		ENDUSE;
+	end bpop;
+	
+	tStack.npop		:method( var dest:var; length:uns32 );
+	begin npop;
+
+		mov( this.cursor, eax );
+		cmp( eax, this.data );
+		je underflow;
+		sub( length, eax );
+		cmp( eax, this.data );
+		jb underflow;
+		mov( eax, this.cursor );
+		USE( ESI, ECX, EAX );
+		mov( eax, esi );
+		mov( length, ecx );
+		mov( dest, edi );
+		rep.movsb();
+		ENDUSE;
+		mov( 0, this.regVar );
+		this.delete( length );
+		
+		stc();
+		jmp done;
+		
+		underflow:
+			xor( eax, eax );
+			
+		done:
+	end npop;
+
+end stackclassunit;

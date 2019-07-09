@@ -1,0 +1,117 @@
+unit class_config_cpysec_unit;
+	
+	#include ("src/hidelib.hhf")
+	#includeonce ("macros/extensions.hhf")
+	#include("stdlib.hhf")
+	
+	proc
+		tConfig.copySection		:method( sec:string; dest:string );
+		begin copySection;
+			
+			if( this.getSectionBounds( sec ) ) then
+			
+				mov( this.sectionBody, eax );
+				mov( this.sectionTail, edi );
+
+				if( eax = edi ) then
+					
+					if( dest = 0 ) then
+						str.alloc( 4 );
+						
+					else
+						
+						str.cpy( "", dest );
+						mov( dest, eax );
+						
+					endif;
+					
+				else
+					
+					sub( eax, edi );
+					if( dest = 0 ) then
+						
+						this.a_subString( eax, edi );
+						
+					else
+						
+						this.subString( eax, edi, dest );
+						mov( dest, eax );
+						
+					endif;
+				endif;
+				
+				stc();
+				
+			endif;
+			
+		end copySection;
+		
+		
+		tConfig.a_copySection	:method( sec:string );
+		begin a_copySection;
+			
+			this.copySection( sec, 0 );
+			
+		end a_copySection;
+
+		
+		tConfig.copyBufSection	:method( sec:string; var dest:tBuffer );
+		
+			var
+				buf	:pointer to tBuffer;
+				
+		
+		begin copyBufSection;
+			
+			if( this.getSectionBounds( sec ) ) then
+			
+				push( esi );
+				mov (dest, esi);
+				if( ! esi ) then
+					tBuffer.create();
+				else
+					(type tBuffer[esi]).erase();
+				endif;
+				mov( esi, buf );
+				pop( esi );
+			
+				mov( this.sectionBody, eax );
+				mov( this.sectionTail, edi );
+				
+
+				if( eax != edi ) then
+					
+					// only copy if there is something to copy!
+					sub( eax, edi );
+					this.subBuf( eax, edi, val buf );
+					
+					// terminate this sucker with a 0 to make things friendly.
+					push( esi );
+					mov( buf, esi );
+					(type tBuffer[esi]).getEOF();
+					mov (#0, (type byte[eax]));
+					(type tBuffer[esi]).bof();
+					pop( esi );
+					
+				endif;
+				
+				mov( buf, eax );
+				stc();
+				
+			endif;
+			
+			
+		end copyBufSection;
+		
+		tConfig.a_copyBufSection	:method( sec:string );
+		begin a_copyBufSection;
+			
+			this.copyBufSection( sec, NULL );
+			
+		end a_copyBufSection;
+
+
+
+
+
+end class_config_cpysec_unit;

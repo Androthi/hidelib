@@ -1,0 +1,53 @@
+unit hide_putn_unit;
+
+#includeonce("stdout.hhf")
+#includeonce("excepts.hhf")
+#includeonce("src/hidefunc.hhf")
+
+
+procedure hide.putn(var src:dword; n:uns32);
+	@nodisplay; @noalignstack; @noframe;
+	
+	// 	outputs n characters to stdout starting at address
+	//	passed in src
+	
+begin putn;
+	
+	push( ebp );
+	mov( esp, ebp );
+	
+	push( eax );
+	push( ebx );
+	push( ecx );
+	
+	mov( src, ebx );
+	test( ebx, ebx );
+	jz raiseDerefNULL;
+	
+	mov( ebx, ecx );
+	add( n, ecx );
+	sub( 1, ebx );
+	_putn:
+
+		add( 1, ebx );
+		cmp( ebx, ecx );
+		je _xputn;
+		mov( [ebx], al );
+		stdout.putc( al );
+		jmp _putn;
+		
+	_xputn:
+
+	pop( ecx );
+	pop( ebx );
+	pop( eax );
+	
+	pop( ebp );
+	ret( _parms_ );
+	
+	raiseDerefNULL:
+		raise( ex.AttemptToDerefNULL );
+	
+end putn;
+
+end hide_putn_unit;

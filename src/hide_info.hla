@@ -1,0 +1,25 @@
+unit hide_info_unit;
+
+	#includeonce ("hide/hidefunc.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+proc
+
+	hide.version :procedure {@noframe};
+	begin version;
+		mov( hide.versionStr, eax );
+		ret();
+	end version;
+	
+	hide.vnote :procedure {@noframe};
+	begin vnote;
+		mov( hide.versionNote, eax );
+		ret();
+	end vnote;
+
+	
+
+
+end hide_info_unit;

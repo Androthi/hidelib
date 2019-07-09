@@ -1,0 +1,272 @@
+program testLib;
+
+	#includeonce ("stdlib.hhf")
+	#includeonce ("src/hidelib.hhf")
+	#includeonce ("macros/macros.hhf")
+	#includeonce ("macros/extensions.hhf")
+
+	?@nodisplay := true;
+	?@noalignstack := true;
+
+	static
+		strbuf	:str.strvar (1024);
+		strbuf2	:str.strvar (1024);
+		tknset	:cset	:= {','};
+		
+			strings :string[] := [
+				"Promulgate:" nl 
+				"1 : to make (as a doctrine) known by open declaration : PROCLAIM" nl
+				"2 a : to make known or public the terms of (a proposed law)" nl
+				"  b : to put (a law) into action or force", nl
+				"Famous quote: 'to thine own self be true'",
+				"Verily, this is another string",
+				"How many more strings?", 
+				"this is the last one"
+			];
+		matchstr :string := "	// now." nl "program HIDE_MAIN;";
+
+	storage
+		con		:tConfig;
+		buf		:tBuffer;
+		buf2	:tBuffer;
+		sbuf	:tStrBuffer;
+		sbuf2	:tStrBuffer;
+		lst		:tBaseList;
+
+		edt		:tEditBuffer;
+		edt2	:tEditBuffer;
+
+	type
+		binrec:
+			record
+				one	:dword;
+				two	:dword;
+				three:dword;
+			endrecord;
+			
+	static
+		binr	:binrec;
+		overfl	:dword := $AAAA_AAAA;
+		
+
+begin testLib;
+
+	hide.version();
+	stdout.put ("testing hidelib.lib v", (type string eax), nl);
+
+	call testEditBufferClass;
+	//call testBufferClass;
+	//call testConfigClass;
+	//call testStrBufferClass;
+	//call testList;
+	//call testScan;
+	//call testEnv;
+	
+	exit testLib;
+	
+	testEditBufferClass::
+	
+		edt.create_default();
+		edt.destroy();
+
+		edt2.create_file("testlib.hla");	
+		
+		jnc error;
+		edt2.saveAs("savedas.txt");
+		
+		
+	ret();
+	
+	error:
+		stdout.put("error" nl );
+	ret();
+	
+	//bm=testBufferClass
+	testBufferClass::
+		//buf.create();
+		//buf2.create();
+		//buf2.append (" yowdy" nl);
+		//mov (100, eax);
+		//buf.insert ( (type uns32 eax), eax, buf2  );
+		//buf.toOut();
+		//buf.destroy();
+		//buf2.destroy();
+		//buf.create();
+		//buf.insert (matchstr);
+		//buf.cursorToBOF();
+		//buf.searchf ("w.");
+		//if (buf.matchWord ("w") != -1) then
+			//stdout.put ("not" nl);
+		//endif;
+		//buf.checkEOF();
+		
+		buf.create();
+		buf.insert ( strings[0] );
+		buf.toOut(); stdout.newln();
+		buf.cursorToBOF();
+		forever
+			//breakif (buf.checkEOF() );
+			buf.span (tBuffer.whiteSpaceNL_cs);
+			breakif (@c);
+			buf.getChar();
+			stdout.putc (al);
+			inc (buf.cursor);
+		endfor;
+//		buf.cursorToBOF();
+//		forever
+//			if( buf.searchf( "action" ) != -1 ) then
+//				buf.insert ("/");
+//				buf.cursorRight(2);
+//			else
+//				break;
+//			endif;
+//		endfor;
+		buf.toOut();
+		buf.toFile("temp.txt");
+		stdout.newln();
+		buf.erase();
+		buf.insertSet( 'b', 10 );
+		stdout.newln();
+		buf.toOut();
+		stdout.newln();
+		buf.destroy();
+	ret();
+
+	//bm=testStrBufferClass
+	testStrBufferClass:
+		sbuf.create();
+		sbuf.put (strings[0]);
+			hide.putz ([eax]);
+			stdout.put (nl, "len = ", (type uns32 [eax-4]), nl nl);
+			
+		sbuf.put (strings[4]);
+			hide.putz ([eax]);
+			stdout.put (nl, "len = ", (type uns32 [eax-4]), nl nl);
+			
+		sbuf.putz (strings[8]);
+		sbuf.putz (strings[12]);
+
+		sbuf.getCount();
+		stdout.put ("count = ", eax, nl);
+		
+		stdout.put (nl "testing get by index: 2" nl);
+		sbuf.get (2);
+		stdout.put ((type string eax), nl);
+		
+		sbuf.get (3);
+		stdout.put ((type string eax), nl);
+		
+		// test iterator
+		stdout.put (nl "testing iterator" nl);
+		foreach sbuf.stringInBuffer() do
+			stdout.put ("index ", (type uns32 ecx), " :", (type string eax), nl);			
+		endfor;
+		
+		sbuf.toFile ("sbuf.bin");
+		sbuf.destroy();
+		sbuf2.create ("sbuf.bin");
+		sbuf2.toFile ("sbuf2.bin");
+		stdout.put ("from sbuf.bin" nl);
+		foreach sbuf2.stringInBuffer() do
+			stdout.put ("index ", (type uns32 ecx), " :", (type string eax), nl);
+		endfor;
+		sbuf2.destroy();
+	ret();
+	
+	
+	//bm=testConfigClass
+	testConfigClass::
+		stdout.put ("testing configclass" nl);
+		con.create();
+		con.writeString ("Section One", "String 1", "this is a string");
+		con.writeString ("Section Two", "String 2", "this is another string");
+		con.writeHex	("Section One", "Hex 1", eax);
+		con.renameSection ("Section Two", "New Section");
+		con.renameKey ("Section One", "String 1", "New String");
+		con.setItemTokens (tknset);
+		con.writeItem ("Tokens", -1, "one,tkn1,,tkn3");
+		con.writeItem ("Tokens", -1, "two,tkn1,tkn2,tkn3");
+		stdout.put ("read token" nl);
+		if (con.readItemToken ("Tokens", 0, 0, strbuf)) then
+			stdout.put ("Read Token Index 0,0 :", strbuf, nl);
+		endif;
+		if (con.readItemToken ("Tokens", 1, 3, strbuf)) then
+			stdout.put ("Read Token Index 1,3 :", strbuf, nl);
+		endif;
+		if (con.readItemToken ("Tokens", 0, 2, strbuf)) then
+			stdout.put ("Read Token Index 0, 2 :", strbuf, nl);
+		endif;
+		
+		mov( 1, binr.one );
+		mov( 2, binr.two );
+		mov( 3, binr.three );
+		con.writeBin( "Bin Section", "Bin Key", &binr, @size( binr ) ); 
+		
+		stdout.put ("overfl = ", overfl, nl);
+		con.readBin( "Bin Section", "Bin Key", &binr, @size( binr ) );
+		stdout.put ("overfl = ", overfl, nl, binr.one, nl, binr.two,nl, binr.three,nl);
+		
+		con.write		("test\test.ini");
+		con.destroy();
+
+//		con.create( "test.ini" );
+//		con.getItemCount( "Items" );
+//		mov( eax, ecx );
+//		xor( edx,edx );
+//		while (edx < ecx ) do
+//			con.readItem( "Items", edx, strbuf );
+//			stdout.put (">", strbuf, nl);
+//			inc( edx );
+//		endwhile;
+//		con.getSectionList();
+//		mov (eax, ebx);
+//		while (ebx) do
+//			stdout.put ( "Header :", (type string (type listNode_t[ebx]).value), nl );
+//			mov ( (type listNode_t[ebx]).next, ebx);
+//		endwhile;
+//		con.destroy();
+		//fileio.delete ("test.ini");
+	ret();
+	
+	//bm=testList
+	testList:
+		
+	ret();
+	
+	//bm=testScan
+	testScan:
+		mov( strings, esi );
+		if ( scan.match( "Promulgate" ) ) then
+			stdout.put ("matched, passed" nl);
+		else
+			stdout.put ("nomatch, failed" nl);
+		endif;
+		scan.nextLine();
+		if ( scan.match( "Promulgate" ) ) then
+			stdout.put ("matched, failed" nl);
+		else
+			stdout.put ("nomatch, passed" nl);
+		endif;		
+	ret();
+	
+	//bm=testEnv
+	testEnv:
+		env2.put("one", "1");
+		env2.put("two", "2");
+		env2.put("three", "3");
+		
+		env2.get("one", strbuf);
+		if( str.ne( strbuf, "1" ) )then
+			stderr.put("Error in env2 unit; env = ", strbuf, nl );
+		endif;
+		env2.get("two", strbuf );
+		if(str.ne( strbuf, "2" ) )then
+			stderr.put("Error in env2 unit; env = ", strbuf, nl );
+		endif;
+		env2.get("three", strbuf);
+		if( str.ne( strbuf, "3")) then
+			stderr.put("Error in env2 unit; env = ", strbuf, nl );
+		endif;
+	ret();
+	
+end testLib;

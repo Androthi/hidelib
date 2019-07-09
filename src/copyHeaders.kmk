@@ -1,0 +1,2 @@
+[BUILD]
+copy src\hidefunc.hhf %h\hlalib\hide

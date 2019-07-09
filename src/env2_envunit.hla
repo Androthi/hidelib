@@ -1,0 +1,386 @@
+unit envunit;
+
+#include ("src/hidefunc.hhf")
+#include ("os.hhf")
+#include ("strings.hhf")
+#include ("memory.hhf")
+
+?@nodisplay := true;
+
+#if( os.win32 )
+	// dll prototypes
+	static
+	
+		GetEnvironmentVariable:
+			procedure( varName:string; var buffer:var; bufSize:uns32 );
+			@stdcall; 
+			@external( "__imp__GetEnvironmentVariableA@12" );
+			
+		SetEnvironmentVariable:
+			procedure(lpName:string; lpValue:string	);
+		@stdcall;
+		@returns( "eax" );
+		@external( "__imp__SetEnvironmentVariableA@8" );
+ 	
+		GetEnvironmentStrings: procedure;
+		@stdcall;
+		@returns( "eax" );
+		@external( "__imp__GetEnvironmentStringsA@0" );
+
+		ExitProcess: procedure(returnCode:dword);
+		@stdcall;
+		@external( "__imp__ExitProcess@4" );
+	endstatic;
+	
+#elseif (os.linux)
+
+	#includeonce ("linux.hhf")
+
+	// setup general and linux-system specific data
+	static
+		envp		:dword;	@external( "_envp__hla_" );
+		originalenv	:dword;
+	endstatic;
+	
+#endif
+
+procedure env2.getstrings;	@noframe;
+begin getstrings;
+	
+	#if (os.linux)
+		
+		mov (envp, eax);
+		
+	#elseif (os.win32)
+
+		GetEnvironmentStrings();
+	
+	#endif
+	
+	ret();
+	
+end getstrings;
+
+#if (os.win32)
+	procedure env2.get (envVar:string; dest:string);
+	
+	var
+			localBuffer	: char[4096];
+
+	begin get;
+	
+		
+		push (ecx);
+		GetEnvironmentVariable( envVar, localBuffer, @elements(localBuffer)-1 );
+		
+		// EAX contains zero if GetEnvironmentVariable
+		// did not find the env variable string.
+	
+		if( eax <> 0 ) then
+		
+			// If the string is too long to fit in dest, then
+			// str.cpyz will raise the exception:
+			lea( eax, localBuffer );
+			str.cpyz( eax, dest );
+			mov( true, eax );	// Return true if we found the var.
+		else
+			mov (false, eax );	
+		endif;
+	
+		pop (ecx);
+	
+	end get;
+
+	
+	procedure env2.a_get (envVar:string);
+	
+	var
+		localBuffer	:char[4096];
+	
+	begin a_get;
+	
+		push( ecx );
+		push( edx );
+		
+		GetEnvironmentVariable( envVar, localBuffer, @elements(localBuffer)-1 );
+		if( eax <> 0 ) then
+			
+			lea( eax, localBuffer );
+			str.a_cpyz( eax );
+			
+		endif;
+		pop( edx );
+		pop( ecx );
+	
+	end a_get;
+
+
+	procedure env2.put (envStr:string; envValue:string);
+	begin put;
+		SetEnvironmentVariable( envStr, envValue);
+	end put;
+ 
+
+#elseif (os.linux)
+
+	procedure env2.get (envVar:string; dest:string);
+		
+	var
+		rtnResult	:dword;
+	endvar;
+			
+	begin get;
+
+		push( ecx );
+		push( edx );
+		push( esi );
+		push( edi );
+		pushfd();
+		cld();
+		mov( false, rtnResult );
+		str.cpy("", dest);	// string might have data from before
+		begin FoundEnvStr;
+		
+			mov( envp, edx );
+			while( (type dword [edx]) ) do
+		
+				// See if the environment variable name matches the
+				// string at the beginning of the line:
+	
+				mov( [edx], esi );
+				mov( envVar, edi );
+				mov( (type str.strRec [edi]).length, ecx );
+				repe.cmpsb();
+				if( @e ) then
+			
+					// Okay, we've matched the variable name prefix, now
+					// verify that an "=" immediately follows the variable name:
+				
+					if( (type char [esi]) = '=' ) then
+				
+						str.cpyz( [esi+1], dest );
+						mov( true, rtnResult );
+						exit FoundEnvStr;
+						
+					endif;
+				
+				endif;
+				
+				// Skip to next environment string:
+				
+				add( 4, edx );		
+		
+			endwhile;
+		
+		end FoundEnvStr;
+		
+		popfd();
+		pop( edi );
+		pop( esi );
+		pop( edx );
+		pop( ecx );
+		mov( rtnResult, eax );
+		
+	end get;
+
+	procedure env2.a_get (envVar:string);
+		var
+			dest	:string;
+		endvar;
+		
+	begin a_get;
+		
+		str.talloc (4096);
+		mov( eax, dest );
+		if ( env2.get( envVar, (type string eax))) then
+	
+			str.a_cpy( dest );
+	
+		else
+	
+			xor( eax, eax );	// Return NULL if no such env var.
+	
+		endif;
+	
+	end a_get;
+
+	procedure env2.put (envStr:string; envValue:string);
+		var
+			newenv		:dword;
+			combstr		:string;
+			envexists	:dword;
+			remove		:boolean;
+		endvar;
+	begin put;
+
+		pushad();
+		
+		mov (envStr, eax);
+		test (eax,eax);			//> raise exception here.
+		jz _end;
+		
+		// determine how to deal with the environment
+		mov (envValue, eax);
+		if (! eax) then
+			mov (true, remove);
+		else
+			mov (false, remove);
+		endif;
+		
+		/*
+			compute the size of the current environment
+			while we are at it, see if the "envStr" symbol exists.
+			If so, put it's address in "envexists", otherwise set
+			"envexists to 0.
+		*/
+		
+		mov (0, envexists);
+		mov (envp, edx);
+		xor (ebx, ebx);
+		while ( (type dword [edx]) <> NULL) do
+			
+			mov( [edx], esi );
+			mov( envStr, edi );
+			mov( (type str.strRec [edi]).length, ecx );
+			repe.cmpsb();
+			if( @e ) then
+				
+				// Okay, we've matched the variable name prefix, now
+				// verify that an "=" immediately follows the variable name:
+			
+				if( (type char [esi]) = '=' ) then
+			
+					// match
+					mov ( edx, envexists);		// copy the address
+				endif;
+			
+			endif;
+		
+			inc (ebx);
+			add (4, edx);
+		endwhile;
+	
+		/*
+			from this point, if "envexists" is null and "remove"
+			is true, we don't need to go on
+		*/
+		
+		if (  envexists=NULL  && remove = true) then
+			jmp _end;
+		endif;
+	
+		mov (ebx, eax);		// save number of envp entries in ecx	
+		if ( envexists = NULL && remove=false ) then
+			inc (eax);		// we need room for one more
+		elseif ( remove ) then
+			dec (eax);		// we are freeing a string
+		endif;
+		inc (eax);			// for NULL termination
+		
+		shl (2, eax);		// eax = eax * 4
+		mem.alloc (eax);
+		mov (eax, newenv);
+		
+		/*
+			setup a scrap string and
+			copy the user environment to it
+		*/
+		
+		if ( ! remove ) then
+			mov ( str.length (envStr), ecx);
+			add ( str.length (envValue), ecx);
+			inc (ecx);
+			mov ( str.alloc (ecx), combstr);
+			str.put (combstr, envStr, '=', envValue);
+				
+			// copy old env into new env
+			mov (ebx, ecx);
+			mov (newenv, edi);
+			mov (envp, esi);
+			rep.movsd();
+	
+			// where we NULL terminate depends on "envexists"
+		
+			if (! envexists) then
+		
+				mov (0, (type dword [edi+4]) );
+							
+			else
+			
+				mov (0, (type dword [edi]) );
+				mov (envexists, ebx);			// set edi to insertion point
+				sub (envp, ebx);				// get offset from start
+				mov (newenv, edi);				// and find index of string in
+				add (ebx, edi);					// new memory structure
+	
+				// did we allocate this string before?
+				if (str.isInHeap ([edi])) then
+					str.free ([edi]);
+				endif;
+				
+			endif;
+			
+			mov (combstr, [edi]);
+	
+	
+		else
+		
+			// remove the environment variable.
+			mov (newenv, edi);
+			mov (envp, esi);
+			mov (envexists, ebx);
+			// copy by hand
+			while ( (type dword [esi]) <> NULL ) do
+			
+				if (esi = ebx) then
+					// this is the string to remove
+					// determine if we allocated it
+					if (str.isInHeap ([ebx])) then
+						str.free ([ebx]);
+					endif;
+				else
+				
+					// nope, just copy it.
+					mov ([esi], eax);
+					mov (eax, [edi]);
+					add (4, edi);
+				
+				endif;
+			
+				add (4, esi);
+			
+			endwhile;
+		
+			mov (0, (type dword [edi]) );
+			
+		endif;
+		
+		// check to see if this is a new block
+		// or the original
+	
+		if (originalenv = NULL ) then
+			// We don't have any previous allocated block
+			mov (envp, eax);
+			mov (eax, originalenv);	// save since this will change.
+		
+		else
+			// free the old block!
+			if (str.isInHeap(envp) ) then
+				mem.free (envp);
+			endif;
+		endif;
+		
+		// save the new memory pointer
+		mov (newenv, eax);
+		mov (eax, envp);	
+	
+	_end:
+		popad();
+		
+	end put;
+
+#endif
+
+
+
+end envunit;
