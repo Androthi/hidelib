@@ -1,6 +1,7 @@
 unit class_list_set_unit;
 
-	#includeonce ("hide/hidelib.hhf")
+	//#includeonce ("src\hidelib.hhf")
+	#includeonce ("src\classlib.hhf")
 
 	?@nodisplay := true;
 	?@noalignstack := true;

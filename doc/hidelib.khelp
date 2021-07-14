@@ -170,7 +170,7 @@ Class Library
 ..tConfig.writeSection = writeSection
 ..tConfig.writeString = writeString
 ..tConfig.writeHex = writeHex
-..tConfig.writeBin = writeBin
+..t2.writeBin = writeBin
 ..tConfig.writeInt = writeInt
 ..tConfig.writeUns = writeUns
 ..tConfig.writeBool = writeBool

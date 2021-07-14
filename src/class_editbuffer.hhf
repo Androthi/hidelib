@@ -1,0 +1,1025 @@
+#IF ( ! @defined ( class_tEditBuf_hhf ) )
+	?class_tEditBuf_hhf := true;	
+	
+	#includeonce("stdlib.hhf")
+
+type
+
+	cSetPtr		:pointer to cset;
+	
+	tEditBuf:
+		
+		// new buffer class to replace tBuffer
+		// basic operation will be the same, functions
+		// lists and returns better designed.
+		// this will be used for the edit class extension
+		
+		class
+			
+			var
+				filepath		:string;	// name and path of buffer for use in saving
+				absSize			:uns32;		// absolute size of buffer
+				vSize			:uns32;		// virtual size of buffer = (absSize -4)
+				data			:dword;		// pointer to the buffer data
+				length			:uns32;		// current in-use size of buffer
+				cursor			:dword;		// current cursor position in data + block end
+				selection		:dword;		// cursor used as origin of block operations
+				flags			:dword;		// buffer options flags
+				delimiters		:cSetPtr;		// pointer to character set used by buffer
+				
+					
+				align( 4 );
+				
+			const
+				default_size	:uns32 := 4096;
+				
+				flag_skip_delims:= @{0};	// skip empty delimiters if true (@nz)
+				flag_overwrite	:= @{1};	// put functions overwrite
+				flag_selection	:= @{2};	// buffer has selection
+				
+
+			proc
+				
+				/** creation procedures and overloads  **/
+				
+				create_default	:procedure
+								{@returns ("ESI")};
+								@external;
+				
+				create_size		:procedure( initialSize:uns32)
+								{ @returns ("ESI") };
+								@external;
+						
+				create_file		:procedure( fileName:string)
+								{ @returns("ESI")};
+								@external;
+				
+				create	:overloads @text( @curObject + ".create_default" );
+				create	:overloads @text( @curObject + ".create_size" );
+				create	:overloads @text( @curObject + ".create_file" );
+				
+
+				/** maintainence methods  **/
+				
+				destroy			:method;
+								@external;
+				
+				// resize buffer to size
+				//	returns @c if no data is lost
+				//	returns @nc if resized smaller and data has been cut
+				resize			:method( size:uns32 )
+								{ @returns("@c") };
+								@external;
+				
+				
+				/**		options setting methods		*/
+				
+				setDelimiters	:method( c:cSetPtr);
+								@external;
+								
+				setOverwrite	:method( state:boolean );
+								@external;
+				
+				
+				/**	file I/O methods	**/
+				// loads a file into the buffer
+				// resets it if there is any existing data
+				// cursor is at BOF
+				load			:method( fileName:string )
+								{@returns("@c")};
+								@external;
+				
+				// saves the buffer with the current filename
+				save			:method
+								{@returns("@c")};
+								@external;
+								
+				// saves the buffer with a new filename
+				// this will be the new filename of the buffer
+				saveAs			:method( fileName:string );
+								@external;
+								
+				// places fileName at current cursor pos
+				// cursor is advanced to EOF of inserted
+				// file
+				// returns cursor in EAX
+				putFile			:method( fileName:string )
+								{@returns("EAX")};
+								@external;
+				
+				
+				// empties the buffer, frees the memory
+				// and resets to default_size
+				reset			:method;
+								@external;
+								
+				
+				/** 	data entry methods		**/
+				// steps
+				// check for selecton block, if yes, delete selection
+				// check for overwrite, if no, shift data appropriately
+				// place data
+				
+				// place byte/word/dword at current character pos
+				
+				putByte			:method( b:byte )
+								{@returns("EAX")};
+								@external( "EDITBUFFER_PUTBYTE" );
+				putc			:method( c:char )
+								{@returns("EAX")};
+								@external( "EDITBUFFER_PUTBYTE" );
+								
+				putWord			:method( w:word )
+								{@returns("EAX")};
+								@external;
+				putDword		:method( d:dword )
+								{@returns("EAX")};
+								@external;
+				
+				// places length bytes from startAddr at cursor pos.
+				putBytes		:method( startAddr:dword; length:uns32 )
+								{@returns("EAX")};
+								@external;
+				
+				// sets 'count' byts of 'b' from cursor
+				setByte			:method( b:byte; count:uns32 )
+								{@returns("EAX")};
+								@external;
+				
+				// place string at cursor position
+				puts			:method( s:string )
+								{@returns("EAX")};
+								@external;
+								
+				// place a zstring at cursor position
+				putz			:method( z:zstring );
+								@external;
+				
+				// places an edit buffer at cursor
+				putBuffer		:method( var buf:tEditBuf )
+								{@returns("EAX")};
+								@external;
+								
+				
+				/**		cursor reading/retreival operations		**/
+				
+				// returns @c if cursor at eof
+				// returns eof in eax regardless
+				isEof			:method
+								{@returns( "@c" )};
+								@external;
+				
+				// conversion and output
+				toString		:method( dest:string );
+								@external;
+				a_toString		:method
+								{@returns( "EAX" )};
+								@external;
+				
+				// writes buffer contents to stdout
+				write			:method;
+								@external;
+				
+				// writes buffer contents starting from cursor
+				// to stdout
+				writeCursor		:method;
+								@external;
+								
+				
+				/**		block operation methods		**/
+				
+				// sets the selection cursor at pos
+				// activates flag_selection on success
+				// returns @c on success
+				// returns @nc if pos is out of bounds OR > cursor pos 
+				setSelection		:method( pos:dword )
+										{ @returns( "@c" ) };
+										@external;
+										
+				// sets the selection cursor at index
+				// activates flag_selection on success
+				// returns @c on success
+				// returns @nc if pos is out of bounds OR >= cursor pos
+				setSelectionIndex		:method( index:uns32 )
+										{ @returns( "@c" ) };
+										@external;
+				
+				// careful with using these overloads.  if you want to set
+				// a dword as index, make sure you type cast as uns32
+				//setSelection		:overloads @text( @curObject + ".setSelection" );
+				//setSelection		:overloads @text( @curObject + ".setSelectionIndex" );  
+
+				
+				// copies selection to dest.
+				// memory exception will occur if dest isn't large enough
+				// returns @c if there was a selection
+				copySelection			:method( dest:string )
+										{@returns( "@c" ) };
+										@external;
+				
+				// same as above, but deletes the selection
+				// resest flag_selection
+				cutSelection			:method( dest:string )
+										{@returns( "@c" ) };
+										@external;
+										
+				
+				// deletes the current selection block and shifts data left
+				// does nothing if no selection
+				// resets flag_selection 
+				// returns @nc if there is index error (selection > cursor )
+				// note that any put operation will also delete 
+				// any current selection
+				deleteSelection			:method
+										{@returns( "@c" )};
+										@external;
+				
+				
+				/** 	cursor methods		**/
+				
+				// deletes length bytes from cursor
+				delete			:method( length:uns32 );
+								@external;
+								
+				// retreives the index of the cursor				
+				index		:method
+								{@returns("EAX")};
+								@external;
+				
+
+				// retreivse the index of the selection cursor
+				selectionIndex	:method
+								{@returns("EAX")};
+								@external;
+				// info methods
+				// returns the current byte under the cursor
+				// does not advance cursor
+				// @c = ok
+				// @nc = eof
+				peekByte		:method
+								{@returns("EAX")};
+								@external;
+				
+				// returns the line number of the cursor
+				getLineNum		:method
+								{@returns("EAX")};
+								@external;
+				
+				// returns the total number of lines in buffer
+				getNumLines		:method
+								{@returns("EAX")};
+								@external;
+
+
+				// data extraction between positions
+				// does not change cursor position
+				extract			:method( startPos:dword; endPos:dword; dest:string );
+								@external;
+				a_extract		:method( startPos:dword; endPos:dword )
+								{@returns("EAX")};
+								@external;
+				// estracts to dest buffer, returns @c if ok
+				// returns @nc if no data copied
+				extractBuf		:method( startPos:dword; endPos:dword; var dest:tEditBuf )
+								{@returns("@c")};
+								@external;
+				//todo extractIndex
+				
+				// reading methods
+				// returns value or eof in EAX
+				// advances cursor by appropriate number of bytes
+				// @c = success
+				// @nc= eof
+				getByte			:method
+								{@returns("@c")};
+								@external;
+				getWord			:method
+								{@returns("@c")};
+								@external;
+				getDword		:method
+								{@returns("@c")};
+								@external;
+				
+				// gets line from cursor to eol, advances cursor to
+				// next line
+				// returns @c = op success, line copies
+				// @nc = no line copied, cursor at eof
+				getLine			:method( dest:string )
+								{@returns("@c")};
+								@external;
+				
+				method getBuf ( var dest:tEditBuf); @returns ("@c"); @external;
+				method getBytes (dest:dword; length:uns32); @returns ("@c"); @external;
+				
+			proc
+				// cursor methods
+				
+				// sets cursor to eof
+				// returns cursor in EAX
+				eof			:method
+							{@returns("EAX")};
+							@external;
+
+				bof			:method
+							{@returns("EAX")};
+							@external;
+							
+				// tries to move cursor to index
+				// if out of bounds, moves to eof
+				// returns cursor in EAX
+				// sets carry clear if eof
+				// sets carry if ok
+				moveTo		:method( index:uns32 )
+							{@returns("EAX")};
+							@external;
+				
+				// tries to move cursor left/right num spaces
+				// if out of bounds, moves to bof/eof
+				// returns cursor in eax
+				right		:method( num:uns32 )
+							{@returns("EAX")};
+							@external;
+
+				left		:method( num:uns32 )
+							{@returns("EAX")};
+							@external;
+				
+				// advances cursor to next/prev line
+				// returns cursor in eax
+				// @c = cursor at next/prev line
+				// @nc = cursor at eof/bof
+				
+				nextLine	:method
+							{@returns("EAX")};
+							@external;
+
+				prevLine	:method
+							{@returns("EAX")};
+							@external;
+
+				
+				// these methods all return the cursor position in eax
+				method bol; @returns("EAX"); @external;
+				method eol; @returns("EAX"); @external;
+				method bow; @returns("EAX"); @external;
+				method eow; @returns("EAX"); @external;
+				method left ( num:uns32); @returns("EAX"); @external;
+				method right (num:uns32); @returns("EAX"); @external;
+				
+				// these move the cursor up or down num 'lines' attempting
+				// to maintain cursor position relative to the BOL
+				method up( num:uns32 ); @returns( "EAX" ); @external;
+				method down( num:uns32 ); @returns( "EAX" ); @external;
+
+
+
+				
+			proc
+				// *** PRIVATE METHODS *** //
+				sizeBuffer		:method ( expandTo:uns32); @external;
+				adjustForInsert	:method ( size:uns32 ); @external;
+				adjustForDelete	:method ( size:uns32 ); @external;
+				//method put32cs; @external;
+
+
+		endclass;
+
+#ENDIF
+
+
+/*
+		// tokens
+		method getToken (dest:string); @returns ("EAX"); @external;
+		method a_getToken; @returns ("EAX"); @external;
+		method skipDelimiters; @returns ("EAX"); @external;
+
+		// data buffer manipulation methods
+		// text based insertion methods
+		method insertbl (b:boolean); @external;
+		method insertb (b:byte); @external;
+		method insertw (w:word); @external;
+		method insertd (d:dword); @external;
+		method insertq (q:qword); @external;
+		method insertl (l:lword); @external;
+		method insertu8 (u8:uns8); @external;
+		method insertu16 (u16:uns16); @external;
+		method insertu32 (u32:uns32); @external;
+		method insertu64 (u64:uns64); @external;
+		method insertu128 (u128:uns128); @external;
+		method inserti8 (i8:int8); @external;
+		method inserti16 (i16:int16); @external;
+		method inserti32 (i32:int32); @external;
+		method inserti64 (i64:int64); @external;
+		method inserti128 (i128:int128); @external;
+		method insertr32 (r32:real32); @external;
+		method insertr64 (r64:real64); @external;
+		method insertr80 (r80:real80); @external;
+		method insertcSet (c:cset); @external;
+		method insertSet( c:char; count:uns32); @external;
+
+		
+		method deleteCursorLine; @external;
+		method deleteCursorToEOL; @external;
+		method deleteIndex ( start_index:uns32; end_index:uns32); @external; 
+		method replaceCursor ( s:string); @external;
+		method replaceIndex ( index:uns32; s:string); @external;
+		method setChar ( src:char; count:uns32); @external;
+		method trim; @external;
+		method delspace; @external;
+		method truncate (length:uns32); @external;
+		method upper (length:uns32); @external;
+		method lower (length:uns32); @external;
+
+
+		// scanning methods ( depricated )
+		method searchf (s:string); @returns ("EAX"); @external;
+		method isearchf (s:string); @returns ("EAX"); @external;
+		method searchr (s:string); @returns ("EAX"); @external;
+		method isearchr (s:string); @returns ("EAX"); @external;
+
+		method match (s:string);	@returns ("EAX"); @external;
+		method imatch (s:string);	@returns ("EAX"); @external;
+		method matchWord (s:string); @returns ("EAX"); @external;
+		method imatchWord (s:string); @returns ("EAX"); @external;
+				
+		method cmpBuffer (var buffer:tBuffer); @returns ("@E"); @external;
+		method icmpBuffer (var buffer:tBuffer); @returns ("@E"); @external;
+		method span (var c:cset); @returns ("EAX"); @external;
+		method rspan (var c:cset); @returns ("EAX"); @external;
+		method brk (var c:cset); @external;
+		method rbrk (var c:cset); @external;
+
+		// cursor methods	return cursor position address
+		method getCursorWord (dest:string); @returns("EAX"); @external;
+		method getCursorLine (dest:string); @returns("EAX"); @external;
+		method getLineFromCursor (dest:string); @returns ("EAX"); @external;
+		method a_getLineFromCursor; @returns ("EAX"); @external;
+		method getWordFromCursor (dest:string); @returns ("EAX"); @external;
+		
+		// option setting methods
+		method setDecimalPoints (n:byte); @external;
+
+
+*/
+/*
+
+	rcursor:
+		procedure( s:blob ) {@returns( "eax" )}; 
+		external( "BLOB_RCURSOR" );
+	
+	wcursor:
+		procedure( s:blob ) {@returns( "eax" )}; 
+		external( "BLOB_WCURSOR" );
+	
+	putQword:
+		procedure( b:blob; q:qword );
+		external( "BLOB_PUTQWORD" );
+
+	putTbyte:
+		procedure( b:blob; tb:tbyte );
+		external( "BLOB_PUTTBYTE" );
+
+	putLword:
+		procedure( b:blob; l:lword );
+		external( "BLOB_PUTLWORD" );
+
+
+
+	getQword:
+		procedure( b:blob ) {@returns( "edx:eax" )};
+		external( "BLOB_GETQWORD" );
+
+	getTbyte:
+		procedure( b:blob; var tb:tbyte );
+		external( "BLOB_GETTBYTE" );
+
+	getLword:
+		procedure( b:blob; var l:lword );
+		external( "BLOB_GETLWORD" );
+
+
+	// BLOB Assignment and copy functions.
+	
+	a_cpy:
+		procedure( src:blob ) {@returns( "eax" )}; 
+		external( "BLOB_A_CPY" );
+
+	cpy:
+		procedure( src:blob; dest:blob ) {@returns( "eax" )}; 
+		external( "BLOB_CPY" ); 
+
+	fillb:
+		procedure( theValue:byte; numBytes:dword; dest:blob ) {@returns( "eax" )}; 
+		external( "BLOB_FILLB" ); 
+
+	fillw:
+		procedure( theValue:word; numWords:dword; dest:blob ) {@returns( "eax" )}; 
+		external( "BLOB_FILLW" ); 
+
+	filld:
+		procedure( theValue:dword; numDWords:dword; dest:blob ) {@returns( "eax" )}; 
+		external( "BLOB_FILLD" ); 
+		
+
+	// Comparison functions:
+	
+	eq:
+		procedure( src1:blob; src2:blob ) {@returns( "@c" )}; 
+		external( "BLOB_EQ" );
+
+	ne:
+		procedure( src1:blob; src2:blob ) {@returns( "@c" )}; 
+		external( "BLOB_NE" );
+
+
+	// Scanning functions
+	
+	index2:
+		procedure( src1:blob; src2:blob ) {@returns( "@c" )};	// and EAX 
+		external( "BLOB_INDEX2" );
+
+	index3:
+		procedure ( src1:blob; offs:dword; src2:blob )  
+			{@returns( "@c" )};	// and EAX 
+		external( "BLOB_INDEX3" );
+	
+	// Note: the following are isomorphisms of the above,
+	// they depend upon the fact that string and blob objects
+	// are structure compatible. Actual functions will need to
+	// be written if this ever changes (that is, a string, minus the
+	// zero terminating byte, must be equal to a blob object without
+	// the wcursor and rcursor fields).
+	
+	indexStr2:
+		procedure( src1:blob; src2:string ) {@returns( "@c" )};	// and EAX 
+		external( "BLOB_INDEX2" );
+
+	indexStr3:
+		procedure( src1:blob; offs:dword; src2:string ) 
+			{@returns( "@c" )};	// and EAX 
+		external( "BLOB_INDEX3" );
+
+	rindex2:
+		procedure( src1:blob; src2:blob ) {@returns( "@c" )};	// and EAX 
+		external( "BLOB_RINDEX2" );
+
+	rindex3:
+		procedure( src1:blob; offs:dword; src2:blob )	
+			{@returns( "@c" )};	// and EAX 
+		external( "BLOB_RINDEX3" );
+
+
+	rindexStr2:
+		procedure( src1:blob; src2:string ) {@returns( "@c" )};	// and EAX 
+		external( "BLOB_RINDEX2" );
+
+	rindexStr3:
+		procedure( src1:blob; offs:dword; src2:string )	
+			{@returns( "@c" )};	// and EAX 
+		external( "BLOB_RINDEX3" );
+
+	chpos2:
+		procedure( src1:blob; src2:char ) {@returns( "@c" )};	// and EAX 
+		external( "BLOB_CHPOS2" );
+
+	chpos3:
+		procedure( src1:blob; offs:dword; src2:char ) 
+			{@returns( "@c" )}; 	// and EAX 
+		external( "BLOB_CHPOS3" );
+
+	rchpos2:
+		procedure( src1:blob; src2:char ) {@returns( "@c" )};	// and EAX 
+		external( "BLOB_RCHPOS2" );
+
+	rchpos3:
+		procedure( src1:blob; offs:dword; src2:char )
+			{@returns( "@c" )};	// and EAX 
+		external( "BLOB_RCHPOS3" );
+
+	catsub5:
+		procedure(src2:string;start:dword;	len	:dword;	src1:string;dest:blob);
+		external( "BLOB_CATSUB5" );
+
+	a_catsub:
+		procedure( src2:string; start:dword; len:dword; src1:string ) 
+			{@returns( "eax" )}; 
+		external( "BLOB_A_CATSUB" );
+	
+proc	
+	// Value concatenation/put routines:
+			 
+	newln:
+		procedure( dest:blob );
+		external( "BLOB_NEWLN" );
+
+	putbool:
+		procedure( dest:blob;  b:boolean );
+		external( "BLOB_CATBOOL" );
+
+	putsSize:
+		procedure( dest:blob; s:string; width:int32; fill:char );
+		external( "BLOB_CATSSIZE" );
+
+	catcset:
+		procedure( dest:blob;  c:cset );
+		external( "BLOB_CATCSET" );
+
+	putcset:
+		procedure( dest:blob;  c:cset );
+		external( "BLOB_CATCSET" );
+
+
+	catbin8:
+		procedure( dest:blob;  b:byte );
+		external( "BLOB_CATBIN8" );
+
+	putbin8:
+		procedure( dest:blob;  b:byte );
+		external( "BLOB_CATBIN8" );
+
+	catq:
+		procedure( dest:blob;  q:qword );
+		external( "BLOB_CATQ" );
+
+	cattb:
+		procedure( dest:blob;  tb:tbyte );
+		external( "BLOB_CATTB" );
+		
+	catl:
+		procedure( dest:blob;  l:lword );
+		external( "BLOB_CATL" );
+
+
+	putb:
+		procedure( dest:blob;  b:byte );
+		external( "BLOB_CATB" );
+
+	putw:
+		procedure( dest:blob;  w:word );
+		external( "BLOB_CATW" );
+
+	putd:
+		procedure( dest:blob;  d:dword );
+		external( "BLOB_CATD" );
+
+	putq:
+		procedure( dest:blob;  q:qword );
+		external( "BLOB_CATQ" );
+
+	puttb:
+		procedure( dest:blob;  tb:tbyte );
+		external( "BLOB_CATTB" );
+		
+	putl:
+		procedure( dest:blob;  l:lword );
+		external( "BLOB_CATL" );
+
+	puth8:
+		procedure( dest:blob;  b:byte );
+		external( "BLOB_CATH8" );
+
+	puth16:
+		procedure( dest:blob;  w:word );
+		external( "BLOB_CATH16" );
+
+	puth32:
+		procedure( dest:blob;  d:dword );
+		external( "BLOB_CATH32" );
+
+	puth64:
+		procedure( dest:blob;  q:qword );
+		external( "BLOB_CATH64" );
+
+	puth80:
+		procedure( dest:blob;  tb:tbyte );
+		external( "BLOB_CATH80" );
+
+	puth128:
+		procedure( dest:blob;  l:lword );
+		external( "BLOB_CATH128" );
+
+
+	puth8Size:
+		procedure( dest:blob;  b:byte; size:dword; fill:char );
+		external( "BLOB_CATH8SIZE" );
+
+	puth16Size:
+		procedure( dest:blob;  w:word; size:dword; fill:char );
+		external( "BLOB_CATH16SIZE" );
+
+	puth32Size:
+		procedure( dest:blob;  d:dword; size:dword; fill:char );
+		external( "BLOB_CATH32SIZE" );
+
+	puth64Size:
+		procedure( dest:blob;  q:qword; size:dword; fill:char );
+		external( "BLOB_CATH64SIZE" );
+
+	puth80Size:
+		procedure( dest:blob;  tb:tbyte; size:dword; fill:char );
+		external( "BLOB_CATH80SIZE" );
+
+	puth128Size:
+		procedure( dest:blob;  l:lword; size:dword; fill:char );
+		external( "BLOB_CATH128SIZE" );
+
+
+	putu8:
+		procedure( dest:blob;  u8:byte );
+		external( "BLOB_CATU8" );
+
+	putu8Size:
+		procedure
+		( 
+			dest:blob; 
+			u8:byte; 
+			width:int32; 
+			fill:char 
+		);
+		external( "BLOB_CATU8SIZE" );
+
+	putu16:
+		procedure( dest:blob;  u16:word );
+		external( "BLOB_CATU16" );
+
+	putu16Size:
+		procedure
+		( 
+			dest:blob; 
+			u16:word; 
+			width:int32;
+			fill:char 
+		);
+		external( "BLOB_CATU16SIZE" );
+
+	putu32:
+		procedure( dest:blob;  u32:dword );
+		external( "BLOB_CATU32" );
+
+	putu32Size:
+		procedure
+		( 
+			dest:blob;
+			u32:dword; 
+			width:int32;
+			fill:char 
+		);
+		external( "BLOB_CATU32SIZE" );
+
+	putu64:
+		procedure( dest:blob;  u64:qword );
+		external( "BLOB_CATU64" );
+
+	putu64Size:
+		procedure
+		( 
+			dest:blob;
+			u64:qword; 
+			width:int32;
+			fill:char 
+		);
+		external( "BLOB_CATU64SIZE" );
+
+	putu128:
+		procedure( dest:blob;  u128:lword );
+		external( "BLOB_CATU128" );
+
+	putu128Size:
+		procedure
+		( 
+			dest:blob;
+			u128:lword; 
+			width:int32;
+			fill:char 
+		);
+		external( "BLOB_CATU128SIZE" );
+
+
+	puti8:
+		procedure( dest:blob;  i8:byte );
+		external( "BLOB_CATI8" );
+
+	puti8Size:
+		procedure
+		( 
+			dest:blob;
+			i8:byte; 
+			width:int32; 
+			fill:char 
+		);
+		external( "BLOB_CATI8SIZE" );
+
+	puti16:
+		procedure( dest:blob;  i16:word );
+		external( "BLOB_CATI16" );
+
+	puti16Size:
+		procedure
+		( 
+			dest:blob;
+			i16:word; 
+			width:int32;
+			fill:char 
+		);
+		external( "BLOB_CATI16SIZE" );
+
+	puti32:
+		procedure( dest:blob;  i32:dword );
+		external( "BLOB_CATI32" );
+
+	puti32Size:
+		procedure
+		( 
+			dest:blob; 
+			i32:dword; 
+			width:int32;
+			fill:char 
+		);
+		external( "BLOB_CATI32SIZE" );
+
+	puti64:
+		procedure( dest:blob;  i64:qword );
+		external( "BLOB_CATI64" );
+
+	puti64Size:
+		procedure
+		( 
+			dest:blob; 
+			i64:qword; 
+			width:int32;
+			fill:char 
+		);
+		external( "BLOB_CATI64SIZE" );
+
+	puti128:
+		procedure( dest:blob;  i128:lword );
+		external( "BLOB_CATI128" );
+
+	puti128Size:
+		procedure
+		( 
+			dest:blob; 
+			i128:lword; 
+			width:int32;
+			fill:char 
+		);
+		external( "BLOB_CATI128SIZE" );
+
+
+	putr80:
+		procedure
+		( 
+			dest	:blob; 
+			r		:real80; 
+			width	:uns32; 
+			decpts	:uns32;
+			fill	:char
+		);
+		external( "BLOB_CATR80" );
+
+	putr64:
+		procedure
+		( 
+			dest	:blob; 
+			r		:real64; 
+			width	:uns32; 
+			decpts	:uns32;
+			fill	:char
+		);
+		external( "BLOB_CATR64" );
+
+	putr32:
+		procedure
+		( 
+			dest	:blob; 
+			r		:real32; 
+			width	:uns32; 
+			decpts	:uns32;
+			fill	:char
+		);
+		external( "BLOB_CATR32" );
+
+	pute80:
+		procedure
+		( 
+			dest	:blob; 
+			r		:real80; 
+			width	:uns32 
+		);
+		external( "BLOB_CATE80" );
+
+
+	pute64:
+		procedure
+		( 
+			dest	:blob; 
+			r		:real64; 
+			width	:uns32 
+		);
+		external( "BLOB_CATE64" );
+
+
+	pute32:
+		procedure
+		( 
+			dest	:blob; 
+			r		:real32; 
+			width	:uns32 
+		);
+		external( "BLOB_CATE32" );
+
+
+	// Blob stream input functions:
+	
+
+proc
+	readLn:
+		procedure( src:blob );
+		external( "BLOB_READLN" );
+
+	eoln:
+		procedure( src:blob ) {@returns( "al" )}; 
+		external( "BLOB_EOLN" );
+
+
+	getc:
+		procedure( src:blob  ) {@returns( "al" )}; 
+		external( "BLOB_GETC" );
+
+	gets:
+		procedure( src:blob; s:string );
+		external( "BLOB_GETS" );
+
+	a_gets:
+		procedure( src:blob  );
+		external( "BLOB_A_GETS" );
+
+
+	geti8:
+		procedure( src:blob  ) {@returns( "al" )}; 
+		external( "BLOB_GETI8" );
+
+	geti16:
+		procedure( src:blob  ){ @returns( "ax" )}; 
+		external( "BLOB_GETI16" );
+
+	geti32:
+		procedure( src:blob  ) {@returns( "eax" )}; 
+		external( "BLOB_GETI32" );
+
+	geti64:
+		procedure( src:blob  ) {@returns( "edx:eax" )}; 
+		external( "BLOB_GETI64" );
+
+	geti128:
+		procedure( src:blob; var dest:lword );
+		external( "BLOB_GETI128" );
+
+
+	getu8:
+		procedure( src:blob  ) {@returns( "al" )}; 
+			external( "BLOB_GETU8" );
+
+	getu16:
+		procedure( src:blob  ){ @returns( "ax" )}; 
+		external( "BLOB_GETU16" );
+
+	getu32:
+		procedure( src:blob  ) {@returns( "eax" )}; 
+		external( "BLOB_GETU32" );
+
+	getu64:
+		procedure( src:blob ) {@returns( "edx:eax" )}; 
+		external( "BLOB_GETU64" );
+
+	getu128:
+		procedure( src:blob; var dest:lword );
+		external( "BLOB_GETU128" );
+
+
+	geth8:
+		procedure( src:blob  ) {@returns( "al" )}; 
+		external( "BLOB_GETH8" );
+
+	geth16:
+		procedure( src:blob  ){ @returns( "ax" )}; 
+		external( "BLOB_GETH16" );
+
+	geth32:
+		procedure( src:blob  ) {@returns( "eax" )}; 
+		external( "BLOB_GETH32" );
+
+	geth64:
+		procedure( src:blob  ) {@returns( "edx:eax" )}; 
+		external( "BLOB_GETH64" );
+
+	geth128:
+		procedure( src:blob; var dest:lword );
+		external( "BLOB_GETH128" );
+
+
+	getf:
+		procedure( src:blob ) {@returns( "st0" )}; 
+		external( "BLOB_GETF" );
+
+*/

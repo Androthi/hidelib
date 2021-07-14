@@ -1,0 +1,151 @@
+
+#if( ! @defined( hidelib2_hhf ) )
+	?hidelib2_hhf := true;
+
+namespace util;
+	procedure fillMem ( var startAddr:dword; size:dword; fillChar:byte ); @external ("UTIL_FILLMEM");
+end util;
+
+namespace scan;
+	
+	// scan procedures are low level scan functions that use
+	// ESI as source, reserve EAX and EDI for other return values
+	// error checking is at minimum, it is caller responsibility to
+	// insure ESI and parameters contain legal values
+
+	static
+		token_cset	:cset; @external;
+		
+	
+	// find HLA string in buffer pointed at by ESI
+	// return start in ESI, end in EDI
+	// ifind is case insensitive 
+	procedure find( toFind:string ); @returns( "@c" ); @external( "SCAN_FIND" );
+	procedure ifind( toFind:string ); @returns( "@c" ); @external( "SCAN_IFIND" );
+	// specieal find procedure, looks for character, advances EDI, leaves ESI unchanged
+	procedure findc( toFind:char ); @returns( "@c" ); @external( "SCAN_FINDC" );
+	
+	
+	// pattern matched find
+	// 	'*' matches any number of characters
+	//	'?' matches any one character
+	// eg:
+	// scan.pfind( "abc*45??65" );
+	// matches "abc", any number of characters, "45", any 2 characters
+	// and "65"
+	procedure pfind( toFind:string; caseSensitive:boolean ); @returns( "@c" ); @external( "SCAN_PFIND" );
+	
+	// string/word matching, uses delimiter set
+	procedure match( toMatch:string ); @returns("@c"); @external( "SCAN_MATCH" );
+	procedure imatch( toMatch:string ); @returns("@c"); @external( "SCAN_IMATCH" );
+	procedure matchWord( toMatch:string ); @returns("@c"); @external( "SCAN_MATCHWORD" );
+	procedure imatchWord( toMatch:string ); @returns("@c" ); @external( "SCAN_IMATCHWORD" );
+	
+	
+	// line functions
+	procedure nextLine; @returns( "@c" ); @external( "SCAN_NEXTLINE" );
+	procedure findEOLN;	@returns( "@c" ); @external( "SCAN_FINDEOLN" );
+	procedure a_getLine; @returns( "@c" ); @external( "SCAN_A_GETLINE" );
+	procedure getLine( dest:string ); @returns( "@c" ); @external( "SCAN_GETLINE" );
+	
+	// skip over white space and alphanumeric chars
+	procedure skipws; @returns( "@c" ); @external( "SCAN_SKIPWS" );
+	procedure skipan; @returns( "@c" ); @external( "SCAN_SKIPALPHANUM" );
+	
+	// tokenize
+	procedure getToken( dest:string ); @returns( "@c" ); @external( "SCAN_GETTOKEN" );
+	procedure a_getToken; @returns( "@c" ); @external( "SCAN_A_GETTOKEN" );
+	procedure getTokenLexeme; @returns( "@c" ); @external( "SCAN_GETTOKENLEXEME" );
+
+	// utility functions
+	procedure setDelimiters( delims:cset ); @external( "SCAN_setDelimiters" );
+	procedure setFieldMode( mode:boolean ); @external( "SCAN_SETFIELDMODE" );
+	
+	
+	// extract a string starting from ESI and ending at EDI
+	// returns string pointer in EAX or string in dest
+	procedure a_extract; @returns("EAX"); @external ("SCAN_A_EXTRACT");
+	procedure extract( dest:string ); @external ("SCAN_EXTRACT");
+	
+end scan;
+
+
+
+// =============================================================================
+// work in progress, incomplete
+//==============================================================================
+
+#if( ! @defined( class_tBuffer_hhf) )
+	?class_tBuffer_hhf := true;
+
+type
+	tBuffer:
+		class
+			var
+				fileName	:string;// pointer to filename, if any, 0 otherwise
+				data		:dword;	// data pointer
+				EOB			:dword;	// virtual end of buffer ( EOF + 4 = absolute end of buffer
+				EOF			:dword;	// current end of file pointer (length = eof - data)
+				blockStart	:dword;	// position of block start (in data) 
+				cursor		:dword;	// position of the cursor (in data) + end of block
+				flags		:dword;	// maintains internal options about buffer
+			
+				delimCset	:cset;	// cset pointer for tokenizer features
+				decimal		:byte;	// for real number insertion, if decimal = 0, converts to scientific form
+			align(4);
+
+
+		const
+			default_size		:uns32 := 4094;
+			
+			// flags
+			block_active	:= @{0};
+			delims_skip		:= @{1};
+
+			//  three creation procedures
+			//		create_size to start buffer with initial size
+			//		create_default to start buffer with default size (4094 bytes)
+			//		create_file opens a file into the buffer
+			#macro create( parms[] );
+				
+				hla.overload( parms );
+	
+					hla.signature(  @text(@curObject).create_default() )
+					hla.signature(  @text(@curObject).create_size( uns32 ) )
+					hla.signature(  @text(@curObject).create_file( string ) )
+	
+				hla.endoverload
+	
+			#endmacro
+			
+			procedure create_size ( initialSize:uns32); @returns ("ESI"); @external;
+			procedure create_default; @returns ("ESI"); @external;
+			procedure create_file ( fileName:string); @returns("ESI"); @external;
+			
+			// destroy the class and free all memory assiciated with it
+			method destroy; @external;
+			
+			//  resets the buffer to default size (4096 bytes) and clears the data 
+			method reset; @external;
+			
+			// terminates the buffer with requested character
+			// this will not alter any data in the buffer, nor its size
+			// useful for terminating with 0 and treating the entire buffer as
+			// a zero terminates string
+			method terminate ( value:byte ); @external;
+			
+			method setDelimiters (c:cset); @external;
+
+			// output methods
+			method toOut; @external;
+
+
+			// *** PRIVATE METHODS ***
+			// messing with these can corrupt the class!
+			method expandBuffer ( expandTo:uns32); @external;
+			method adjustForInsert ( size:uns32 ); @external;
+			method adjustForDelete ( size:uns32 ); @external;
+		endclass;
+
+#endif
+#endif

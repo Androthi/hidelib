@@ -1,0 +1,34 @@
+
+
+#IF ( ! @defined ( class_bufferbase_hhf ) )
+	?class_bufferbase_hhf := true;	
+	
+	type
+		
+		tBufferBase		:class
+		
+			var
+				absSize		:uns32;	// absolute size of data buffer
+				vSize		:uns32;	// virtual size = absSize -4
+				data		:dword;	// memory pointer
+				length		:uns32;	// current bytes of data used 
+				cursor		:dword;	// position of the cursor (in data) + end of block
+
+			const
+				default_size		:uns32 := 4094;
+		
+			proc
+				
+				create_default	:procedure {@returns("ESI")}; @external;
+				create_size		:procedure( size:uns32 ) {@returns("ESI")}; @external;
+				create_file		:procedure( fileName:string ) {@returns("ESI")}; @external;
+				
+				sizeBuffer		:method( expandTo:uns32 ); @external;
+
+				
+			
+		endclass;
+		
+		
+
+#ENDIF

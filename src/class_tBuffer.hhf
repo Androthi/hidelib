@@ -1,0 +1,577 @@
+#IF ( ! @defined ( class_tBuffer_hhf ) )
+	?class_tBuffer_hhf := true;	
+	
+	#includeonce("stdlib.hhf")
+	
+	
+type
+	
+	
+	tBufferBase		:class
+		
+		/*
+		 * the buffer base class is the basic 'memory' manager
+		 * of the buffer.  it handles allocation and resizing of
+		 * buffer, also adjusts for insert and delete
+		 * by moving characters left or right of cursor
+		*/
+		
+		var
+			absSize		:uns32;	// absolute size of data buffer
+			vSize		:uns32;	// virtual size = absSize -4
+			data		:dword;	// data pointer
+			length		:uns32;	// current bytes of data used
+			cursor		:dword;	// position of the cursor (in data) + end of block
+			flags		:dword;	// maintains internal options about buffer
+
+			fileName	:string; // maintains name of file if create_file is used
+			
+		const
+			default_size		:uns32 := 4094;
+			
+			inHeap		:= @{0};
+		
+		proc	
+			
+			// object creation procedures
+			
+			create_size		:procedure( initialSize:uns32 )
+							{ @returns ("ESI")}; @external;
+			create_default	:procedure
+							{ @returns ("ESI")}; @external;
+			create_file		:procedure( fileName:string )
+							{ @returns("ESI")}; @external;
+
+			create			:overloads create_default
+							( "@text( @curObject + "".create_default"" )" );
+			create			:overloads create_size
+							( "@text( @curObject + "".create_size"" )" );
+			create			:overloads create_file
+							( "@text( @curObject + "".create_file"" )" );
+			
+			// object maintainence methods
+			destroy			:method; @external;
+			erase			:method; @external;
+			resize			:method( size:uns32 )
+							{ @returns("@c") }; @external;
+			
+			
+			// private methods
+			sizeBuffer		:method( sizeTo:uns32 ); @external;
+			adjustForInsert	:method( size:uns32 ); @external;
+			adjustForDelete	:method( size:uns32 ); @external;
+			
+
+	endclass;
+	
+	tBuf: class inherits( tBufferBase );
+		
+		override procedure create_size; @external;
+		override procedure create_default; @external;
+		override procedure create_file; @external;
+
+		proc
+			putByte			:method( b:byte ) {@returns("EAX")}; @external;
+			putBytes		:method( startAddr:dword; length:uns32 )
+							{@returns("EAX")}; @external;
+			
+			putWord			:method( w:word ) {@returns("EAX") }; @external;
+			putDword		:method( d:dword ) {@returns("EAX")}; @external;
+			putQword		:method( q:qword ) {@returns("EAX")}; @external;
+			putLword		:method( l:lword ) {@returns("EAX")}; @external;
+			
+			puts			:method( s:string ) {@returns("EAX")}; @external;
+			putz			:method( z:zstring ) {@returns("EAX")};	@external;
+			
+			putBuffer		:method( var buf:tBufferBase )
+							{ @returns("EAX") }; @external;
+	
+			putFile			:method( fileName:string )
+							{ @returns("EAX") }; @external;
+			
+			
+			delete			:method( length:uns32 )
+							{ @returns("EAX") }; @external;
+			
+			// basic buffer information methods
+			isEof			:method { @returns("@c") }; @external;
+			eq				:method (var buf:var)
+							{ @returns( "@c" ) }; @external;
+			
+			ieq				:method (var buf:var)
+							{ @returns( "@c" ) }; @external;
+			
+			// extraction
+			
+			subBuf			:method( startIndex:uns32; length:uns32; var dest:var )
+							{ @returns( "@c" ) }; @external;
+			
+			a_subBuf		:method( startIndex:uns32; length:uns32 )
+							{ @returns( "@c" ) }; @external;  // and eax
+			
+			subString		:method( startIndex:uns32; length:uns32; dest:string )
+							{ @returns( "@c" ) }; @external;
+							
+			a_subString		:method( startIndex:uns32; length:uns32 )
+							{ @returns( "@c" ) }; @external;  // and eax
+							
+			
+			
+			// basic cursor methods
+			left			:method( n:uns32 ) { @returns( "@c" ) }; @external;  // and eax
+			right			:method( n:uns32 ) { @returns( "@c" ) }; @external;	// and eax
+			moveTo			:method( index:uns32 )
+							{ @returns( "@c" ) }; @external; // and eax
+			eof				:method{ @returns( "EAX" ) }; @external;
+			bof				:method{ @returns( "EAX" ) }; @external;
+			
+			getIndex		:method{ @returns( "EAX" ) }; @external;
+			
+			writeStdout		:method; @external;
+			writeFile		:method {@returns("@c")}; @external;
+			writeFileName	:method (fileName:string); @external;
+			writeString		:method( s:string ) { @returns("EAX") }; @external;
+			
+			
+			
+		#macro _put_ ( _object_, _arg_ ): _typename_, _invoke_, _ptype_;
+			
+			?_ptype_ := @pType (_arg_);
+			?_invoke_ :string := _object_;
+			
+			#if (_ptype_ == hla.ptString)
+			
+				?_invoke_ := _invoke_ + ".puts(";
+			
+			#elseif( _ptype_ == hla.ptZString )
+				
+				?_invoke_ := _invoke_ + ".putz(";
+				
+			#else
+				#error ("tBuffer: Unsupported data type :", @string(_arg_), "  :  ", _typename_); 
+			#endif
+			
+			?_invoke_ +=  @string(_arg_) + ");";
+			//#print( _invoke_ )
+			@text (_invoke_)
+			
+		#endmacro
+
+		#macro put (_args_[]):
+			_obj_, _param_;
+		
+			?_obj_ :string := @curObject;
+			
+			#for( _param_ in _args_ )
+				tBuf._put_ (_obj_, @text(_param_));
+			#endfor		
+		#endmacro
+
+	endclass;
+	
+	tBuffer: class inherits( tBuf );
+		
+		var
+			blockstart	:dword;	// position of block start (in data) 
+			delimiters	:cset;	// cset pointer for tokenizer features
+			decimal		:byte;	// for real number insertion, if decimal = 0, converts to scientific form
+			align(4);
+
+		const
+			default_delimCset	:cset := { #0, ' ', #9, ',', '<', '>', '|', '\', '/', '-','_', #$D, #$A};
+			
+			// flags
+			block_active	:= @{2};
+			delims_skip		:= @{3};
+
+		
+		// private macro 
+		#macro _put ( _object_, _arg_ ): _typename_, _invoke_, _ptype_;
+			
+			?_ptype_ := @pType (_arg_);
+			?_invoke_ :string := _object_;
+			
+			#if (_ptype_ == hla.ptClass)
+				?_typename_ :string := @typename (_arg_);
+				#if (_typename_ == "tBuffer")
+					?_invoke_ += ".insertBuffer(";
+				#else
+					#error ("tBuffer: Unsupported data type :", @string(_arg_), "  :  ", _typename_);
+				#endif 
+			#elseif (_ptype_ == hla.ptString)
+				?_invoke_ := _invoke_ + ".inserts(";
+			#elseif (_ptype_ == hla.ptByte)
+				?_invoke_ := _invoke_ + ".insertb(";
+			#elseif (_ptype_ == hla.ptChar)
+				?_invoke_ := _invoke_ + ".insertc(";
+			#elseif (_ptype_ == hla.ptWord)
+				?_invoke_ := _invoke_ + ".insertw(";
+			#elseif (_ptype_ == hla.ptDWord)
+				?_invoke_ := _invoke_ + ".insertd(";
+			#elseif (_ptype_ == hla.ptQWord)
+				?_invoke_ := _invoke_ + ".insertq(";
+			#elseif (_ptype_ == hla.ptLWord)
+				?_invoke_ := _invoke_ + ".insertl(";
+			#elseif (_ptype_ == hla.ptInt8)
+				?_invoke_ := _invoke_ + ".inserti8(";
+			#elseif (_ptype_ == hla.ptInt16)
+				?_invoke_ := _invoke_ + ".inserti16(";
+			#elseif (_ptype_ == hla.ptInt32)
+				?_invoke_ := _invoke_ + ".inserti32(";
+			#elseif (_ptype_ == hla.ptInt64)
+				?_invoke_ := _invoke_ + ".inserti64(";
+			#elseif (_ptype_ == hla.ptInt128)
+				?_invoke_ := _invoke_ + ".inserti128(";
+			#elseif (_ptype_ == hla.ptUns8)
+				?_invoke_ := _invoke_ + ".insertu8(";
+			#elseif (_ptype_ == hla.ptUns16)
+				?_invoke_ := _invoke_ + ".insertu16(";
+			#elseif (_ptype_ == hla.ptUns32)
+				?_invoke_ := _invoke_ + ".insertu32(";
+			#elseif (_ptype_ == hla.ptUns64)
+				?_invoke_ := _invoke_ + ".insertu64(";
+			#elseif (_ptype_ == hla.ptUns128)
+				?_invoke_ := _invoke_ + ".insertu128(";
+			#elseif (_ptype_ == hla.ptReal32)
+				?_invoke_ := _invoke_ + ".insertr32(";
+			#elseif (_ptype_ == hla.ptReal64)
+				?_invoke_ := _invoke_ + ".insertr64(";
+			#elseif (_ptype_ == hla.ptReal80)
+				?_invoke_ := _invoke_ + ".insertr80(";
+			#elseif (_ptype_ == hla.ptBoolean)
+					?_invoke_ := _invoke_ + ".insertbl(";
+					
+			#else
+				#error ("tBuffer: Unsupported data type :", @string(_arg_), "  :  ", _typename_); 
+			#endif
+			
+			?_invoke_ +=  @string(_arg_) + ");";
+			@text (_invoke_)
+			
+		#endmacro
+		
+		#macro _get ( _object_, _arg_ ): _typename_, _invoke_;
+			
+			?_typename_ :string := @typename (_arg_);
+			?_invoke_ :string := _object_;
+						
+			#if (_typename_ == "tBuffer")
+				?_invoke_ += ".readBuffer(";
+			#elseif (_typename_ == "string")
+				?_invoke_ := _invoke_ + "reads (";					
+			#elseif (_typename_ == "char")
+				?_invoke_ := _invoke_ + ".readc(";
+			#else
+				#error ("tBuffer: Unsupported data type :", @string(_arg_), "  :  ", _typename_); 
+			#endif
+			
+			?_invoke_ +=  @string(_arg_) + ");";
+			@text (_invoke_)
+			
+		#endmacro
+		
+		#macro append (_args_[]):
+			_obj_, _param_;
+				
+			?_obj_ :string := @LastObject;
+			@text(_obj_).eof();
+			
+			#for( _param_ in _args_ )
+				tBuffer._put (_obj_, @text(_param_));
+			#endfor		
+		#endmacro
+		
+		#macro appendFiles ( _args_[]): _parms_, _obj_;
+			?_obj_ :string := @CurObject;
+			@text(_obj_).eof();
+			#for (_parms_ in _args_)
+				@text(_obj_).insertFile ( @text (_parms_) );
+			#endfor
+		#endmacro
+	
+		#macro insert (_args_[]):
+			_obj_, _param_;
+		
+			?_obj_ :string := @CurObject;
+			
+			#for( _param_ in _args_ )
+				tBuffer._put (_obj_, @text(_param_));
+			#endfor		
+		#endmacro
+
+		#macro replaceBlock ( _arg_ );
+			
+			#if (@typename (_arg_) == "tBuffer" )
+				
+				@text (@LastObject).replaceBlockBuffer (_arg_);
+				
+			#elseif (@typename (_arg_) == "string" )
+			
+				@text (@LastObject).replaceBlockString (_arg_);
+			
+			#else
+				#error ("tBuffer.replaceBlock: unsupported type");
+			#endif
+			
+		#endmacro
+		
+		#macro toString ( _arg_[] );
+			#if ( @elements (_arg_) = 0 )
+		
+				@text (@LastObject)._toString (0)
+				
+			#elseif ( @elements (_arg_) = 1 )
+		
+				#if ( @typename ( @text(_arg_[0]) ) = "string" )
+					@text (@LastObject)._toString ( @text (_arg_[0]))
+				#else
+					#error ("tBuffer.toString: no argument or pass a string");
+				#endif
+
+			#else
+				#error ("tBuffer.toString: no argument or pass a string");
+			#endif
+		#endmacro
+		
+		// *** PUBLIC METHODS ***
+		// object maintenence and initialization
+		override procedure create_size; @external;
+		override procedure create_default; @external;
+		override procedure create_file; @external;			
+		
+		// tokens
+		method getToken (dest:string);
+			@returns ("EAX"); @external;
+		method a_getToken;
+			@returns ("EAX"); @external;
+		method skipDelimiters;
+			@returns ("EAX"); @external;
+
+		// data buffer manipulation methods
+		// text based insertion methods
+		
+		method insertbl (b:boolean); @external;
+		method insertb (b:byte); @external;
+		method insertw (w:word); @external;
+		method insertd (d:dword); @external;
+		method insertq (q:qword); @external;
+		method insertl (l:lword); @external;
+		method insertu8 (u8:uns8); @external;
+		method insertu16 (u16:uns16); @external;
+		method insertu32 (u32:uns32); @external;
+		method insertu64 (u64:uns64); @external;
+		method insertu128 (u128:uns128); @external;
+		method inserti8 (i8:int8); @external;
+		method inserti16 (i16:int16); @external;
+		method inserti32 (i32:int32); @external;
+		method inserti64 (i64:int64); @external;
+		method inserti128 (i128:int128); @external;
+		method insertr32 (r32:real32); @external;
+		method insertr64 (r64:real64); @external;
+		method insertr80 (r80:real80); @external;
+		method insertcSet (c:cset); @external;
+		method insertSet( c:char; count:uns32); @external;
+
+		method openFile (fileName:string); @external;
+		
+		// text based reading methods
+		method reads (dest:string);
+			@returns ("@nc"); @external;
+		method readc (var dest:char);
+			@returns ("@nc"); @external;
+		method readw (dest:string);
+			@returns ("@nc"); @external;
+		
+		// bytes based reading methods
+		method readBuffer ( var dest:tBuffer);
+			@returns ("@nc"); @external;
+		method readbytes (destAddr:dword; length:uns32);
+			@returns ("@nc"); @external;
+		method readByte;
+			@returns ("EAX"); @external;
+		method readWord;
+			@returns ("EAX"); @external;
+		method readDword;
+			@returns ("EAX"); @external;
+		
+
+		method deleteCursorLine; @external;
+		method deleteCursorToEOL; @external;
+		method deleteIndex ( start_index:uns32; end_index:uns32); @external; 
+		method replaceCursor ( s:string); @external;
+		method replaceIndex ( index:uns32; s:string); @external;
+		method setChar ( src:char; count:uns32); @external;
+		method trim; @external;
+		method delspace; @external;
+		method truncate (length:uns32); @external;
+		method upper (length:uns32); @external;
+		method lower (length:uns32); @external;
+
+		// block operation methods
+		method setBlock (start_index:uns32; end_index:uns32); @external;
+		method getBlockStart;
+			@returns("EAX"); @external;  // end block is always cursor 
+		method getBlockText	(dest:string); @external;
+		method deleteBlock; @external;
+		method replaceBlockString (s:string); @external;		// see macro replaceBlock
+		method replaceBlockBuffer (var buf:tBuffer); @external; // for these 2
+
+		// scanning methods
+		method searchf (s:string);
+			@returns ("@c"); @external; // and eax
+		method isearchf (s:string);
+			@returns ("@c"); @external; // and eax
+		method searchr (s:string);
+			@returns ("@c"); @external; // and eax
+		method isearchr (s:string);
+			@returns ("@c"); @external; // and eax
+
+		method match (s:string);
+			@returns ("@c"); @external;
+		method imatch (s:string);
+			@returns ("@c"); @external;
+		method matchWord (s:string);
+			@returns ("@c"); @external;
+		method imatchWord (s:string);
+			@returns ("@c"); @external;
+
+		method span (var c:cset);
+			@returns ("@c"); @external;  // and eax
+		method rspan (var c:cset);
+			@returns ("@c"); @external;  // and eax
+		method brk (var c:cset);
+			@returns( "@c" ); @external; // and eax
+		method rbrk (var c:cset);
+			@returns( "@c" ); @external; // and eax
+
+		// cursor methods	return cursor position address
+		method cursorToBOL;
+			@returns("EAX"); @external;
+		method cursorToEOL;
+			@returns("EAX"); @external;
+		method cursorToBOW;
+			@returns("EAX"); @external;
+		method cursorToEOW;
+			@returns("EAX"); @external;
+		method cursorLeftLines (num:uns32);
+			@returns ("EAX"); @external;
+		method cursorRightLines (num:uns32);
+			@returns ("EAX"); @external;
+		method getCursorWord (dest:string);
+			@returns("EAX"); @external;
+		method getCursorLine (dest:string);
+			@returns("EAX"); @external;
+		method getLineFromCursor (dest:string);
+			@returns ("EAX"); @external;
+		method a_getLineFromCursor;
+			@returns ("EAX"); @external;
+		method getWordFromCursor (dest:string);
+			@returns ("EAX"); @external;
+
+		method nextLine;
+			@returns ("EAX"); @external;
+		method prevLine;
+			@returns ("EAX"); @external;
+		
+
+		// option setting methods
+		method setDecimalPoints (n:byte); @external;
+		method setDelimiters (c:cset); @external;
+		method setDelimSkipMode (set:boolean); @external;
+
+		// information methods
+		method getBufferSize;
+			@returns ("EAX"); @external;
+		method getBufferLength;
+			@returns ("EAX"); @external;
+		method getCursor;
+			@returns ("EAX"); @external;
+		method getChar;
+			@returns ("AL"); @external;
+		method getBufferPtr;
+			@returns ("EAX"); @external;
+		method getEOF;
+			@returns ("EAX"); @external;
+		method getNumLines;
+			@returns ("EAX"); @external;
+		method getLineNum;
+			@returns ("EAX"); @external;
+		method getCursorToEOFLength;
+			@returns ("EAX"); @external;
+
+		// *** PRIVATE METHODS ***
+		method put32cs; @external;
+		
+		
+		
+		// depricated methods, use similar
+		// methods in parent class
+		
+		// use method getIndex
+		method getCursorIndex;	@returns ("EAX"); @external;
+		
+		// use puts
+		method inserts (source:string); @external;
+
+		// putBytes from parent class
+		method insertbytes ( startAddr:dword; length:uns32 ); @external;
+		// depricated, use putByte from parent class
+		method insertc (c:char); @external; // alias insertByte
+		method insertByte (b:byte); @external;
+		
+		// depricated, use putWord from parent class
+		method insertWord (w:word); @external;
+		
+		// depricated, use putDword from parent class
+		method insertDword (d:dword); @external;
+		
+		method insertBuffer (var buffer:tBuffer); @external;
+		method insertFile (fileName:string); @external;
+
+		// use delete
+		method deleteCursor ( length:uns32); @external;
+
+		// output methods... depricated, use parent class methods:
+		// writeStdout, writeFile, writeString
+		method toOut; @external;
+		method toFile (fileName:string); @external;
+		method _toString (dst:string);
+			@returns ("EAX"); @external;
+
+		// use method eq and ieq
+		method cmpBuffer (var buffer:tBuffer);
+			@returns ("@E"); @external;
+		method icmpBuffer (var buffer:tBuffer);
+			@returns ("@E"); @external;
+
+		// use method isEof
+		method checkEOF;
+			@returns ("EAX"); @external;
+
+		// use methods moveTo, left, right, eof, bof
+		method cursorTo (index:uns32);
+			@returns("EAX"); @external;
+		method cursorLeft ( num:uns32);
+			@returns("EAX"); @external;
+		method cursorRight (num:uns32);
+			@returns("EAX"); @external;
+		method cursorToEOF;
+			@returns("EAX"); @external;
+		method cursorToBOF;
+			@returns("EAX"); @external;
+
+		// data extraction methods
+		// use subBuf, a_subBuf, subString, a_subString
+		method extract ( start_index:uns32; end_index:uns32; dest:string );
+			@external;
+		method a_extract ( start_index:uns32; end_index:uns32 );
+			@returns ("EAX"); @external;
+		method extractToBuffer ( start_index:uns32; end_index:uns32; var dest:tBuffer);
+			@external;
+
+
+		
+	endclass;
+endtype;
+
+#ENDIF

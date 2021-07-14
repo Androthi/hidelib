@@ -6,7 +6,7 @@ Project Version=10
 usetemp=false
 useunits=true
 useback=true
-findscope=00000001
+findscope=00000002
 findflags=00000001
 mainfile=Test\testLib.hla
 

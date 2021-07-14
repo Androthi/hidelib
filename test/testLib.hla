@@ -2,7 +2,6 @@ program testLib;
 
 	#includeonce ("stdlib.hhf")
 	#includeonce ("src/hidelib.hhf")
-	#includeonce ("macros/macros.hhf")
 	#include("hide/dbgwin.hhf")
 	
 	?@nodisplay := true;

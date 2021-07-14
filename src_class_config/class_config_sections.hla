@@ -1,11 +1,9 @@
 unit config_class_sections;
 	
-	//#includeonce ("stdlib.hhf")
-	#include ("src/hidelib.hhf")
-	#includeonce ("macros/extensions.hhf")
+	#include ("src\hidelib.hhf")
+	//#includeonce ("macros/extensions.hhf")
 	
 	#include("stdlib.hhf")
-	//#include("hide/dbgwin.hhf")
 	
 	?@nodisplay := true;
 	?@noalignstack := true;

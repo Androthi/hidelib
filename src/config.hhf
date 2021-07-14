@@ -1,0 +1,59 @@
+#if( ! @defined( config_hhf ) )
+	?config_hhf := true;
+	
+#includeonce("os.hhf")
+#includeonce("fileio.hhf")
+#includeonce("conv.hhf")
+#includeonce("strings.hhf")
+#includeonce("memory.hhf")
+#includeonce("excepts.hhf")
+#includeonce("stdout.hhf")		//> temp for debug
+#includeonce("macros/macros.hhf")
+#if(os.win32)
+	#includeonce("hide\dbgwin.hhf")
+#endif
+
+
+procedure CheckFile(var pPath:string);				@external("CONFIG_CHECKFILE");
+procedure OpenFile(var pPath:string; readfunc:boolean);	@returns("EAX"); @external("CONFIG_OPENEXISTING");
+procedure LoadFile (var hFile:dword ; val Size:dword);	@external("CONFIG_LOADFILE");
+procedure SaveFile (var File:string);				@external("CONFIG_SAVEFILE");
+procedure FindSection; 							@external("CONFIG_FINDSECTION");
+procedure FindKey;							@external("CONFIG_FINDKEY");
+procedure GetKey; 							@external("CONFIG_GETKEY");
+
+procedure InsertKey;	 						@external("CONFIG_INSERTKEY");
+procedure InsertSection;						@external("CONFIG_INSERTSECTION");
+procedure AppendSection; 						@external("CONFIG_APPENDSECTION");
+procedure NewSection(pSection:string; pKey:string; pValue:string);	@external("CONFIG_NEWSECTION");
+procedure _GetCount;							@external("CONFIG_GETCOUNT"); 
+
+
+	#macro OSplus;				// skips over CR/LF based on OS
+		#if (os.win32)
+			add (2, esi);				
+		#elseif (os.linux)
+			inc (esi);
+		#endif
+	#endmacro;
+	
+	#macro OSminus;			// rewinds over CR/LF based on OS
+		#if (os.win32)
+			sub(2,esi);
+		#elseif (os.linux)
+			dec(esi);
+		#endif
+	#endmacro;
+
+static
+	hFile			:dword;		@external;
+	
+	base_ptr		:dword;		@external;		// spare base pointer
+	base_count		:dword;		@external;		// spare base count pointer
+	source_start	:string;	@external;		// source string base pointer
+	key_return		:string;	@external;		// GetKey return string/temporary strings
+
+endstatic;
+
+
+#endif
