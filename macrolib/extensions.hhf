@@ -128,5 +128,14 @@ static		// keep bison happy
 	returns ( { cmp (src, dest); }, "@nbe" )
 #endmacro
 
+// the following macros are for adding clearly visible notes in source
+#macro NOTE( _msg_ );
+	//_msg_
+#endmacro
+
+#macro TODO( _msg_ );
+	//_msg_
+#endmacro
+
 
 #ENDIF

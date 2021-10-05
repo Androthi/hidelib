@@ -8,8 +8,8 @@ unit hide_data_unit;
 
 	static
 		
-		hide.versionStr		:string := "1.71.78";
-	 	hide.versionNote	:string := "Built with HLA 2.14, stdlib v8";
+		hide.versionStr		:string := "1.72.01";
+	 	hide.versionNote	:string := "Built with HLA 2.16, stdlib v8";
 		
 		hide.whiteSpaceCset	:cset := { ' ', #$0A, #$0D, #$09 };
 		

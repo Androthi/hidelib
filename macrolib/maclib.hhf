@@ -70,17 +70,6 @@
 
 
 //=========================================================================\\
-// Use:
-// myStr :zstr ( "This is a zero terminated, dword aligned string" );
-// depricated -- hla now offers z string natively.
-#macro mzstr ( _strData_ );
-	byte; @nostorage;
-	byte _strData_,0;
-	align(4);
-#endmacro;
-
-
-//=========================================================================\\
 // These trio of macros allows for a simple way of generating constants
 // enumX ( n, args...) starts the constants at n
 // enum0 starts the constants at 0
@@ -436,9 +425,10 @@ namespace str;
 #endmacro
 end str;
 
+
+// might be broken, removing
+/*
 //=========================================================================\\
-
-
 // 	- assign
 //
 // 	Definition:
@@ -520,7 +510,7 @@ end str;
 		?_curparm_ := _curparm_ + 1;
 	#endwhile
 #endmacro
-
+*/
 
 //=========================================================================\\
 

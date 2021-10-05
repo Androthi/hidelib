@@ -121,8 +121,6 @@ unit config_class_sections;
 		if ( this.getSectionBounds(sec)  ) then
 			
 			// overwrite section
-			//this.findSectionA (sec);
-			//mov (this.indexA, eax);
 			mov( this.sectionBody, eax );
 			mov (this.sectionTail, edx);
 			this.setBlock (eax, edx);

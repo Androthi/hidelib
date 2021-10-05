@@ -35,7 +35,9 @@ unit class_baselist_unit;
 		mov (this.head, ebx);
 		while (ebx) do
 			mov (listebx.next, edx);
-			mem.free (ebx);
+			if( mem.isInHeap( ebx )) then
+				mem.free (ebx);
+			endif;
 			mov (edx, ebx);
 		endwhile;
 		
