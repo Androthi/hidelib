@@ -12,6 +12,7 @@ unit class_config_bool_unit;
 		
 		mov (str.talloc (128), s);
 		if (this._readString (sec, key, s)) then
+			str.trim (s);
 			if (str.eq (s, "true")) then
 				mov (true, eax);
 				stc();
